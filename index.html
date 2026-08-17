@@ -172,6 +172,8 @@
   .calendar-choice { display: flex; align-items: center; gap: 9px; font-size: 0.86rem; }
   .calendar-choice input { width: auto; }
   .calendar-choice .swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .calendar-group-title { margin: 7px 0 1px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+  .calendar-group-title:first-child { margin-top: 0; }
   .ambient-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .ambient-status { margin-top: 9px; padding: 10px 12px; border-radius: 10px; background: var(--paper); font-size: 0.78rem; line-height: 1.5; }
   .ambient-status:empty { display: none; }
@@ -533,13 +535,24 @@ function renderCalendarPicker() {
   }
   const selected = Array.isArray(CONFIG.calendarIds) ? CONFIG.calendarIds : liveCalendars.map(cal => cal.id);
   picker.innerHTML = '';
-  liveCalendars.forEach(cal => {
-    const label = document.createElement('label');
-    label.className = 'calendar-choice';
-    label.innerHTML = `<input type="checkbox" value="${escapeHtml(cal.id)}" ${selected.includes(cal.id) ? 'checked' : ''}>
-      <span class="swatch" style="background:${cal.backgroundColor || '#5B6C8A'}"></span>
-      <span>${escapeHtml(cal.summary || cal.id)}${cal.primary ? ' (primary)' : ''}</span>`;
-    picker.appendChild(label);
+  const groups = [
+    { title: 'My calendars', calendars: liveCalendars.filter(cal => cal.accessRole === 'owner') },
+    { title: 'Other calendars', calendars: liveCalendars.filter(cal => cal.accessRole !== 'owner') },
+  ];
+  groups.forEach(group => {
+    if (!group.calendars.length) return;
+    const heading = document.createElement('div');
+    heading.className = 'calendar-group-title';
+    heading.textContent = group.title;
+    picker.appendChild(heading);
+    group.calendars.forEach(cal => {
+      const label = document.createElement('label');
+      label.className = 'calendar-choice';
+      label.innerHTML = `<input type="checkbox" value="${escapeHtml(cal.id)}" ${selected.includes(cal.id) ? 'checked' : ''}>
+        <span class="swatch" style="background:${cal.backgroundColor || '#5B6C8A'}"></span>
+        <span>${escapeHtml(cal.summaryOverride || cal.summary || cal.id)}${cal.primary ? ' (primary)' : ''}${cal.hidden ? ' (hidden)' : ''}</span>`;
+      picker.appendChild(label);
+    });
   });
 }
 function closeSettings() { overlay.classList.remove('active'); }
@@ -681,8 +694,15 @@ async function fetchAllData() {
    as the Tasks lanes below. ---- */
 async function fetchCalendar() {
   try {
-    const calList = await gfetch('https://www.googleapis.com/calendar/v3/users/me/calendarList');
-    const calendars = (calList.items || []).filter(c => !c.deleted);
+    const calendars = [];
+    let pageToken = '';
+    do {
+      const params = new URLSearchParams({ showHidden: 'true', maxResults: '250' });
+      if (pageToken) params.set('pageToken', pageToken);
+      const calList = await gfetch(`https://www.googleapis.com/calendar/v3/users/me/calendarList?${params}`);
+      calendars.push(...(calList.items || []).filter(c => !c.deleted));
+      pageToken = calList.nextPageToken || '';
+    } while (pageToken);
     liveCalendars = calendars;
     renderCalendarPicker();
     const selectedCalendars = Array.isArray(CONFIG.calendarIds)
@@ -721,15 +741,26 @@ async function fetchTasks() {
   try {
     const listsResp = await gfetch('https://www.googleapis.com/tasks/v1/users/@me/lists');
     const lists = listsResp.items || [];
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 
     const results = await Promise.all(lists.map(async list => {
-      const data = await gfetch(`https://www.googleapis.com/tasks/v1/lists/${list.id}/tasks?showCompleted=true&showHidden=true`);
-      return (data.items || [])
-        .filter(t => t.title)
+      const tasks = [];
+      let pageToken = '';
+      do {
+        const params = new URLSearchParams({ showCompleted: 'false', showHidden: 'false', maxResults: '100' });
+        if (pageToken) params.set('pageToken', pageToken);
+        const data = await gfetch(`https://www.googleapis.com/tasks/v1/lists/${list.id}/tasks?${params}`);
+        tasks.push(...(data.items || []));
+        pageToken = data.nextPageToken || '';
+      } while (pageToken);
+      return tasks
+        .filter(t => t.title && t.status !== 'completed' && t.due && t.due.slice(0, 10) <= todayKey)
         .map(t => ({
           label: t.title,
           who: list.title,
-          done: t.status === 'completed',
+          done: false,
+          due: t.due,
           taskId: t.id,
           tasklistId: list.id,
         }));
@@ -1105,7 +1136,7 @@ function renderTaskLanes() {
   el.innerHTML = '';
 
   if (tasks.length === 0) {
-    el.innerHTML = '<div class="empty-state">No task lists found. Create a list per person in Google Tasks.</div>';
+    el.innerHTML = '<div class="empty-state">No tasks due today or overdue. 🎉</div>';
     return;
   }
 
