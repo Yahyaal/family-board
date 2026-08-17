@@ -169,14 +169,45 @@
   .grocery-add button:disabled, .grocery-add input:disabled { opacity: 0.55; cursor: not-allowed; }
 
   .calendar-picker { display: grid; gap: 8px; max-height: 180px; overflow-y: auto; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
-  .calendar-choice { display: flex; align-items: center; gap: 9px; font-size: 0.86rem; }
-  .calendar-choice input { width: auto; }
+  .field label.calendar-choice { display: flex; align-items: center; gap: 9px; margin-bottom: 0; font-size: 0.86rem; font-weight: 500; }
+  .field .calendar-choice input { width: auto; }
   .calendar-choice .swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .calendar-group-title { margin: 7px 0 1px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
   .calendar-group-title:first-child { margin-top: 0; }
   .ambient-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .ambient-status { margin-top: 9px; padding: 10px 12px; border-radius: 10px; background: var(--paper); font-size: 0.78rem; line-height: 1.5; }
   .ambient-status:empty { display: none; }
+
+  /* ================= MORNINGS ================= */
+  .morning-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(220px, 0.9fr) minmax(280px, 1.1fr); gap: 24px; }
+  .morning-clock-side, .morning-menu-side { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .morning-menu-side { align-items: stretch; border-left: 1px solid var(--line); padding-left: 24px; }
+  .analog-clock { --ring-color: #9A8F7A; position: relative; width: min(36vh, 300px); max-width: 100%; aspect-ratio: 1; border-radius: 50%; border: 14px solid var(--ring-color); background: #fff; box-shadow: 0 0 0 5px color-mix(in srgb, var(--ring-color) 20%, transparent), var(--shadow); }
+  .analog-clock.ring-green { --ring-color: #5F8B63; }
+  .analog-clock.ring-orange { --ring-color: #D0842F; }
+  .analog-clock.ring-red { --ring-color: #B94F3D; }
+  .clock-number { position: absolute; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--ink-soft); transform: translate(-50%, -50%); }
+  .clock-number.n12 { left: 50%; top: 10%; } .clock-number.n3 { left: 90%; top: 50%; }
+  .clock-number.n6 { left: 50%; top: 90%; } .clock-number.n9 { left: 10%; top: 50%; }
+  .clock-hand { position: absolute; left: 50%; bottom: 50%; transform-origin: 50% 100%; border-radius: 999px; transform: translateX(-50%) rotate(0deg); }
+  .clock-hand.hour { width: 7px; height: 27%; background: var(--ink); }
+  .clock-hand.minute { width: 5px; height: 37%; background: var(--ink-soft); }
+  .clock-hand.second { width: 2px; height: 40%; background: var(--red); }
+  .clock-pin { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--ink); }
+  .morning-clock-label { margin-top: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--ink-soft); }
+  .morning-menu-title { margin: 0 0 16px; font-family: 'Fraunces', serif; font-size: clamp(1.5rem, 3vw, 2rem); }
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .menu-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-height: 100px; }
+  .menu-card .kind { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-soft); }
+  .menu-card .food { margin-top: 8px; font-family: 'Fraunces', serif; font-size: clamp(1.15rem, 2.4vw, 1.55rem); line-height: 1.2; }
+  .morning-note { margin-top: 12px; font-size: 0.75rem; color: var(--ink-soft); }
+  @media (max-width: 680px) {
+    .morning-layout { grid-template-columns: 42% 58%; gap: 12px; }
+    .morning-menu-side { padding-left: 12px; }
+    .analog-clock { border-width: 9px; }
+    .menu-grid { grid-template-columns: 1fr; gap: 7px; }
+    .menu-card { min-height: 0; padding: 10px 12px; }
+  }
 
   .panel-footnote { font-size: 0.75rem; color: var(--ink-soft); margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); flex-shrink: 0; }
   .empty-state { margin: auto; text-align: center; color: var(--ink-soft); font-size: 0.95rem; padding: 20px; }
@@ -272,6 +303,7 @@
         <button class="tab-btn active" data-tab="calendar">Calendar</button>
         <button class="tab-btn" data-tab="tasks">Tasks</button>
         <button class="tab-btn" data-tab="grocery">Grocery</button>
+        <button class="tab-btn" data-tab="mornings">Mornings</button>
       </div>
 
       <div class="tab-panels">
@@ -295,6 +327,28 @@
           </form>
           <ul class="grocery-list" id="groceryList"></ul>
           <div class="panel-footnote" id="groceryFootnote">Backed by a shared Sheet — add items from your phone, they show up here.</div>
+        </div>
+
+        <div class="tab-panel" id="tab-mornings">
+          <div class="eyebrow-tag demo" id="morningsEyebrow">Demo data</div>
+          <div class="morning-layout">
+            <div class="morning-clock-side">
+              <div class="analog-clock" id="morningClock" aria-label="Current time">
+                <span class="clock-number n12">12</span><span class="clock-number n3">3</span>
+                <span class="clock-number n6">6</span><span class="clock-number n9">9</span>
+                <span class="clock-hand hour" id="morningHourHand"></span>
+                <span class="clock-hand minute" id="morningMinuteHand"></span>
+                <span class="clock-hand second" id="morningSecondHand"></span>
+                <span class="clock-pin"></span>
+              </div>
+              <div class="morning-clock-label" id="morningClockLabel"></div>
+            </div>
+            <div class="morning-menu-side">
+              <h2 class="morning-menu-title">Today’s Menu</h2>
+              <div class="menu-grid" id="morningMenu"></div>
+              <div class="morning-note" id="morningMenuNote"></div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -346,6 +400,18 @@
       <label for="sheetRangeInput">Sheet range</label>
       <input type="text" id="sheetRangeInput" placeholder="Groceries!A2:C200">
       <div class="hint">Columns, in order: Item, Qty, Done (TRUE/FALSE). Row 1 is a header row and is skipped.</div>
+    </div>
+
+    <div class="field">
+      <label for="menuSheetIdInput">Morning menu — Spreadsheet ID</label>
+      <input type="text" id="menuSheetIdInput" placeholder="Spreadsheet ID">
+      <div class="hint">May be the same spreadsheet as groceries or a different one.</div>
+    </div>
+
+    <div class="field">
+      <label for="menuSheetRangeInput">Morning menu range</label>
+      <input type="text" id="menuSheetRangeInput" placeholder="Mornings!A2:E200">
+      <div class="hint">Columns: Weekday, Main, Veggie, Fruit, Extra. Use Monday through Friday in the first column.</div>
     </div>
 
     <div class="field">
@@ -463,6 +529,10 @@ const DEMO_GROCERIES = [
   { label: "Coffee", qty: "1 bag", done: false },
 ];
 
+const DEMO_MORNING_MENU = {
+  main: 'Turkey sandwich', veggie: 'Cucumber slices', fruit: 'Apple', extra: 'Pretzels'
+};
+
 const MOCK_PHOTOS = [
   "https://picsum.photos/seed/family1/1600/1000",
   "https://picsum.photos/seed/family2/1600/1000",
@@ -476,6 +546,7 @@ let liveEvents = null;   // array or null (null = not fetched yet / not connecte
 let liveCalendars = null;// calendars visible to the signed-in account
 let liveTasks = null;    // array of {label, who, done, taskId, tasklistId}
 let liveGroceries = null;// array of {label, qty, done, rowNumber}
+let liveMorningMenu = null;// {main, veggie, fruit, extra} for today's row
 
 let accessToken = null;
 let tokenClient = null;
@@ -507,9 +578,28 @@ function tick() {
   document.getElementById('dateline').textContent = dateStr;
   document.getElementById('idleDate').textContent = dateStr;
   washEl.style.background = washForHour(h24);
+  updateMorningClock(now);
 }
 tick();
-setInterval(tick, 15000);
+setInterval(tick, 1000);
+
+function updateMorningClock(now = new Date()) {
+  const seconds = now.getSeconds();
+  const minutes = now.getMinutes() + seconds / 60;
+  const hours = (now.getHours() % 12) + minutes / 60;
+  document.getElementById('morningHourHand').style.transform = `translateX(-50%) rotate(${hours * 30}deg)`;
+  document.getElementById('morningMinuteHand').style.transform = `translateX(-50%) rotate(${minutes * 6}deg)`;
+  document.getElementById('morningSecondHand').style.transform = `translateX(-50%) rotate(${seconds * 6}deg)`;
+
+  const clock = document.getElementById('morningClock');
+  clock.classList.remove('ring-green', 'ring-orange', 'ring-red');
+  const hour = now.getHours() + now.getMinutes() / 60;
+  let status = 'Outside morning schedule';
+  if (hour < 4) { clock.classList.add('ring-green'); status = 'Green · plenty of time'; }
+  else if (hour < 7) { clock.classList.add('ring-orange'); status = 'Orange · getting close'; }
+  else if (hour < 10) { clock.classList.add('ring-red'); status = 'Red · time to go'; }
+  document.getElementById('morningClockLabel').textContent = status;
+}
 
 /* =========================================================================
    SETTINGS MODAL
@@ -519,6 +609,8 @@ function openSettings() {
   document.getElementById('clientIdInput').value = CONFIG.clientId || '';
   document.getElementById('sheetIdInput').value = CONFIG.sheetId || '';
   document.getElementById('sheetRangeInput').value = CONFIG.sheetRange || 'Groceries!A2:C200';
+  document.getElementById('menuSheetIdInput').value = CONFIG.menuSheetId || '';
+  document.getElementById('menuSheetRangeInput').value = CONFIG.menuSheetRange || 'Mornings!A2:E200';
   document.getElementById('ambientClientIdInput').value = CONFIG.ambientClientId || '';
   document.getElementById('ambientClientSecretInput').value = '';
   document.getElementById('idleMinutesInput').value = CONFIG.idleMinutes || 5;
@@ -565,6 +657,8 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   CONFIG.clientId = document.getElementById('clientIdInput').value.trim();
   CONFIG.sheetId = document.getElementById('sheetIdInput').value.trim();
   CONFIG.sheetRange = document.getElementById('sheetRangeInput').value.trim() || 'Groceries!A2:C200';
+  CONFIG.menuSheetId = document.getElementById('menuSheetIdInput').value.trim();
+  CONFIG.menuSheetRange = document.getElementById('menuSheetRangeInput').value.trim() || 'Mornings!A2:E200';
   CONFIG.ambientClientId = document.getElementById('ambientClientIdInput').value.trim();
   ambientClientSecret = document.getElementById('ambientClientSecretInput').value.trim();
   CONFIG.idleMinutes = Math.max(1, Number(document.getElementById('idleMinutesInput').value) || 5);
@@ -628,7 +722,7 @@ function setConnected(connected) {
   document.getElementById('syncNote').textContent = connected
     ? 'Synced with your Google account'
     : 'Showing demo data';
-  ['calendarEyebrow', 'tasksEyebrow', 'groceryEyebrow'].forEach(id => {
+  ['calendarEyebrow', 'tasksEyebrow', 'groceryEyebrow', 'morningsEyebrow'].forEach(id => {
     const el = document.getElementById(id);
     el.textContent = connected
       ? (id === 'calendarEyebrow' ? 'Google Calendar' : id === 'tasksEyebrow' ? 'Google Tasks' : 'Google Sheet')
@@ -644,11 +738,12 @@ document.getElementById('connectBtn').addEventListener('click', () => {
       google.accounts.oauth2.revoke(accessToken, () => {});
     }
     accessToken = null;
-    liveEvents = liveCalendars = liveTasks = liveGroceries = null;
+    liveEvents = liveCalendars = liveTasks = liveGroceries = liveMorningMenu = null;
     setConnected(false);
     renderCalendar();
     renderTaskLanes();
     renderGroceries();
+    renderMorningMenu();
     return;
   }
   if (!CONFIG.clientId) { openSettings(); return; }
@@ -685,7 +780,7 @@ async function gfetch(url, options) {
 }
 
 async function fetchAllData() {
-  await Promise.allSettled([fetchCalendar(), fetchTasks(), fetchGroceries()]);
+  await Promise.allSettled([fetchCalendar(), fetchTasks(), fetchGroceries(), fetchMorningMenu()]);
 }
 
 /* ---- Calendar: one "lane" per calendar the account has, tagged by that
@@ -812,6 +907,23 @@ async function fetchGroceries() {
     liveGroceries = liveGroceries || [];
   }
   renderGroceries();
+}
+
+async function fetchMorningMenu() {
+  if (!CONFIG.menuSheetId) { liveMorningMenu = null; renderMorningMenu(); return; }
+  try {
+    const range = CONFIG.menuSheetRange || 'Mornings!A2:E200';
+    const data = await gfetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.menuSheetId}/values/${encodeURIComponent(range)}`);
+    const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const row = (data.values || []).find(values => (values[0] || '').toString().trim().toLowerCase() === weekday);
+    liveMorningMenu = row ? {
+      main: row[1] || '', veggie: row[2] || '', fruit: row[3] || '', extra: row[4] || ''
+    } : null;
+  } catch (err) {
+    console.error('Morning menu fetch failed', err);
+    liveMorningMenu = null;
+  }
+  renderMorningMenu();
 }
 
 async function toggleLiveGrocery(item) {
@@ -1054,6 +1166,7 @@ function checkSVG() {
 function currentEvents() { return isConnected && liveEvents ? liveEvents : DEMO_EVENTS; }
 function currentTasks() { return isConnected && liveTasks ? liveTasks : DEMO_TASKS; }
 function currentGroceries() { return isConnected && liveGroceries ? liveGroceries : DEMO_GROCERIES; }
+function currentMorningMenu() { return isConnected ? liveMorningMenu : DEMO_MORNING_MENU; }
 
 function renderCalendar() {
   const events = currentEvents();
@@ -1212,6 +1325,29 @@ function renderGroceries() {
   });
 }
 
+/* =========================================================================
+   RENDER: MORNING MENU
+   ========================================================================= */
+function renderMorningMenu() {
+  const menu = currentMorningMenu();
+  const el = document.getElementById('morningMenu');
+  const note = document.getElementById('morningMenuNote');
+  const categories = [
+    ['Main', 'main'], ['Veggie', 'veggie'], ['Fruit', 'fruit'], ['Extra', 'extra'],
+  ];
+  el.innerHTML = categories.map(([label, key]) => `
+    <div class="menu-card">
+      <div class="kind">${label}</div>
+      <div class="food">${escapeHtml(menu && menu[key] ? menu[key] : '—')}</div>
+    </div>`).join('');
+
+  if (!isConnected) note.textContent = 'Demo menu · connect Google to load today’s row.';
+  else if (!CONFIG.menuSheetId) note.textContent = 'Add the menu Spreadsheet ID in Settings.';
+  else if (!menu && [0, 6].includes(new Date().getDay())) note.textContent = 'No school menu on weekends.';
+  else if (!menu) note.textContent = 'No menu row found for today’s weekday.';
+  else note.textContent = 'Loaded from today’s row in Google Sheets.';
+}
+
 function escapeHtml(str) {
   return (str || '').toString()
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1220,6 +1356,7 @@ function escapeHtml(str) {
 renderCalendar();
 renderTaskLanes();
 renderGroceries();
+renderMorningMenu();
 
 /* =========================================================================
    TAB SWITCHING
