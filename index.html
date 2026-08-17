@@ -181,19 +181,18 @@
   /* ================= MORNINGS ================= */
   .morning-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(300px, 1.15fr) minmax(280px, 1fr); gap: 24px; }
   .morning-clock-side, .morning-menu-side { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .morning-clock-side { padding: 10px; }
   .morning-menu-side { align-items: stretch; border-left: 1px solid var(--line); padding-left: 24px; }
-  .analog-clock { --ring-color: #9A8F7A; position: relative; width: min(52vh, 430px); max-width: 100%; aspect-ratio: 1; border-radius: 50%; border: 20px solid var(--ring-color); background: #fff; box-shadow: 0 0 0 6px color-mix(in srgb, var(--ring-color) 20%, transparent), var(--shadow); }
-  .analog-clock.ring-green { --ring-color: #5F8B63; }
-  .analog-clock.ring-orange { --ring-color: #D0842F; }
-  .analog-clock.ring-red { --ring-color: #B94F3D; }
-  .clock-number { position: absolute; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--ink-soft); transform: translate(-50%, -50%); }
+  .analog-clock { position: relative; width: min(100%, 62vh); aspect-ratio: 1; border-radius: 50%; background: conic-gradient(#5F8B63 0deg 120deg, #D0842F 120deg 210deg, #B94F3D 210deg 300deg, #9A8F7A 300deg 360deg); box-shadow: var(--shadow); }
+  .analog-clock::before { content: ''; position: absolute; inset: 22px; z-index: 0; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
+  .clock-number { position: absolute; z-index: 1; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--ink-soft); transform: translate(-50%, -50%); }
   .clock-number.n12 { left: 50%; top: 10%; } .clock-number.n3 { left: 90%; top: 50%; }
   .clock-number.n6 { left: 50%; top: 90%; } .clock-number.n9 { left: 10%; top: 50%; }
-  .clock-hand { position: absolute; left: 50%; bottom: 50%; transform-origin: 50% 100%; border-radius: 999px; transform: translateX(-50%) rotate(0deg); }
+  .clock-hand { position: absolute; z-index: 1; left: 50%; bottom: 50%; transform-origin: 50% 100%; border-radius: 999px; transform: translateX(-50%) rotate(0deg); }
   .clock-hand.hour { width: 7px; height: 27%; background: var(--ink); }
   .clock-hand.minute { width: 5px; height: 37%; background: var(--ink-soft); }
   .clock-hand.second { width: 2px; height: 40%; background: var(--red); }
-  .clock-pin { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--ink); }
+  .clock-pin { position: absolute; z-index: 2; left: 50%; top: 50%; width: 14px; height: 14px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--ink); }
   .morning-clock-label { margin-top: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--ink-soft); }
   .morning-menu-title { margin: 0 0 16px; font-family: 'Fraunces', serif; font-size: clamp(1.5rem, 3vw, 2rem); }
   .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -204,7 +203,7 @@
   @media (max-width: 680px) {
     .morning-layout { grid-template-columns: 42% 58%; gap: 12px; }
     .morning-menu-side { padding-left: 12px; }
-    .analog-clock { border-width: 12px; }
+    .analog-clock::before { inset: 14px; }
     .menu-grid { grid-template-columns: 1fr; gap: 7px; }
     .menu-card { min-height: 0; padding: 10px 12px; }
   }
@@ -591,14 +590,7 @@ function updateMorningClock(now = new Date()) {
   document.getElementById('morningMinuteHand').style.transform = `translateX(-50%) rotate(${minutes * 6}deg)`;
   document.getElementById('morningSecondHand').style.transform = `translateX(-50%) rotate(${seconds * 6}deg)`;
 
-  const clock = document.getElementById('morningClock');
-  clock.classList.remove('ring-green', 'ring-orange', 'ring-red');
-  const minute = now.getMinutes();
-  let status = 'Neutral · :50–:59';
-  if (minute < 20) { clock.classList.add('ring-green'); status = 'Green · :00–:19'; }
-  else if (minute < 35) { clock.classList.add('ring-orange'); status = 'Orange · :20–:34'; }
-  else if (minute < 50) { clock.classList.add('ring-red'); status = 'Red · :35–:49'; }
-  document.getElementById('morningClockLabel').textContent = status;
+  document.getElementById('morningClockLabel').textContent = 'Green :00–:19 · Orange :20–:34 · Red :35–:49';
 }
 
 /* =========================================================================
