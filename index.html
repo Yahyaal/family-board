@@ -411,7 +411,7 @@
     <div class="field">
       <label for="menuSheetRangeInput">Morning menu range</label>
       <input type="text" id="menuSheetRangeInput" placeholder="Mornings!A2:E200">
-      <div class="hint">Columns: Date, Main, Veggie, Fruit, Extra. Use one row per day.</div>
+      <div class="hint">Columns: Weekday, Main, Veggie, Fruit, Extra. Use Monday through Friday in the first column.</div>
     </div>
 
     <div class="field">
@@ -909,27 +909,13 @@ async function fetchGroceries() {
   renderGroceries();
 }
 
-function localDateKey(date) {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
-
-function sheetDateKey(value) {
-  const text = (value || '').toString().trim();
-  let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if (match) return `${match[1]}-${pad(Number(match[2]))}-${pad(Number(match[3]))}`;
-  match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (match) return `${match[3]}-${pad(Number(match[1]))}-${pad(Number(match[2]))}`;
-  const parsed = new Date(text);
-  return Number.isNaN(parsed.getTime()) ? '' : localDateKey(parsed);
-}
-
 async function fetchMorningMenu() {
   if (!CONFIG.menuSheetId) { liveMorningMenu = null; renderMorningMenu(); return; }
   try {
     const range = CONFIG.menuSheetRange || 'Mornings!A2:E200';
     const data = await gfetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.menuSheetId}/values/${encodeURIComponent(range)}`);
-    const todayKey = localDateKey(new Date());
-    const row = (data.values || []).find(values => sheetDateKey(values[0]) === todayKey);
+    const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const row = (data.values || []).find(values => (values[0] || '').toString().trim().toLowerCase() === weekday);
     liveMorningMenu = row ? {
       main: row[1] || '', veggie: row[2] || '', fruit: row[3] || '', extra: row[4] || ''
     } : null;
@@ -1357,7 +1343,8 @@ function renderMorningMenu() {
 
   if (!isConnected) note.textContent = 'Demo menu · connect Google to load today’s row.';
   else if (!CONFIG.menuSheetId) note.textContent = 'Add the menu Spreadsheet ID in Settings.';
-  else if (!menu) note.textContent = 'No menu row found for today.';
+  else if (!menu && [0, 6].includes(new Date().getDay())) note.textContent = 'No school menu on weekends.';
+  else if (!menu) note.textContent = 'No menu row found for today’s weekday.';
   else note.textContent = 'Loaded from today’s row in Google Sheets.';
 }
 
