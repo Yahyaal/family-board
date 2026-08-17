@@ -172,6 +172,9 @@
   .calendar-choice { display: flex; align-items: center; gap: 9px; font-size: 0.86rem; }
   .calendar-choice input { width: auto; }
   .calendar-choice .swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .ambient-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .ambient-status { margin-top: 9px; padding: 10px 12px; border-radius: 10px; background: var(--paper); font-size: 0.78rem; line-height: 1.5; }
+  .ambient-status:empty { display: none; }
 
   .panel-footnote { font-size: 0.75rem; color: var(--ink-soft); margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); flex-shrink: 0; }
   .empty-state { margin: auto; text-align: center; color: var(--ink-soft); font-size: 0.95rem; padding: 20px; }
@@ -351,6 +354,29 @@
       <div class="hint">Includes calendars shared with this Google account. The shared calendar must also appear in Google Calendar for this account.</div>
     </div>
 
+    <div class="field">
+      <label for="ambientClientIdInput">Google Photos Ambient — TV client ID</label>
+      <input type="text" id="ambientClientIdInput" placeholder="TVs and Limited Input devices client ID">
+      <div class="hint">Enable the Google Photos Ambient API, then create a separate OAuth client of type <strong>TVs and Limited Input devices</strong>.</div>
+    </div>
+
+    <div class="field">
+      <label for="ambientClientSecretInput">Google Photos Ambient — client secret</label>
+      <input type="password" id="ambientClientSecretInput" placeholder="TV client secret">
+      <div class="hint">Used only for the current page session and never saved. After a page reload, reconnect Google Photos.</div>
+    </div>
+
+    <div class="field">
+      <label for="idleMinutesInput">Start photos after</label>
+      <input type="number" id="idleMinutesInput" min="1" max="120" step="1" placeholder="5">
+      <div class="hint">Minutes without mouse, touch, or keyboard activity.</div>
+      <div class="ambient-actions">
+        <button class="btn-secondary" type="button" id="connectPhotosBtn">Connect Google Photos</button>
+        <button class="btn-secondary" type="button" id="refreshPhotosBtn">Refresh photos</button>
+      </div>
+      <div class="ambient-status" id="ambientStatus"></div>
+    </div>
+
     <div class="settings-actions">
       <button class="btn-secondary" id="cancelSettingsBtn">Cancel</button>
       <button class="btn-primary" id="saveSettingsBtn">Save &amp; Connect</button>
@@ -491,7 +517,11 @@ function openSettings() {
   document.getElementById('clientIdInput').value = CONFIG.clientId || '';
   document.getElementById('sheetIdInput').value = CONFIG.sheetId || '';
   document.getElementById('sheetRangeInput').value = CONFIG.sheetRange || 'Groceries!A2:C200';
+  document.getElementById('ambientClientIdInput').value = CONFIG.ambientClientId || '';
+  document.getElementById('ambientClientSecretInput').value = '';
+  document.getElementById('idleMinutesInput').value = CONFIG.idleMinutes || 5;
   renderCalendarPicker();
+  renderAmbientStatus();
   overlay.classList.add('active');
 }
 
@@ -522,10 +552,16 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   CONFIG.clientId = document.getElementById('clientIdInput').value.trim();
   CONFIG.sheetId = document.getElementById('sheetIdInput').value.trim();
   CONFIG.sheetRange = document.getElementById('sheetRangeInput').value.trim() || 'Groceries!A2:C200';
+  CONFIG.ambientClientId = document.getElementById('ambientClientIdInput').value.trim();
+  ambientClientSecret = document.getElementById('ambientClientSecretInput').value.trim();
+  CONFIG.idleMinutes = Math.max(1, Number(document.getElementById('idleMinutesInput').value) || 5);
+  delete CONFIG.ambientClientSecret;
+  delete CONFIG.ambientRefreshToken;
   if (liveCalendars) {
     CONFIG.calendarIds = Array.from(document.querySelectorAll('#calendarPicker input:checked')).map(input => input.value);
   }
   saveConfig(CONFIG);
+  resetIdleTimer();
   closeSettings();
   if (CONFIG.clientId) {
     setUpTokenClient();
@@ -797,6 +833,182 @@ document.getElementById('groceryAddForm').addEventListener('submit', async event
   }
 });
 
+/* ---- Google Photos Ambient: separate device OAuth flow. Google requires a
+   TVs and Limited Input devices OAuth client for ambient displays. ---- */
+let ambientAccessToken = null;
+let ambientAccessTokenExpiresAt = 0;
+let ambientPhotoUrls = [];
+let ambientClientSecret = '';
+let ambientRefreshToken = null;
+
+function saveAmbientInputs() {
+  CONFIG.ambientClientId = document.getElementById('ambientClientIdInput').value.trim();
+  ambientClientSecret = document.getElementById('ambientClientSecretInput').value.trim();
+  CONFIG.idleMinutes = Math.max(1, Number(document.getElementById('idleMinutesInput').value) || 5);
+  delete CONFIG.ambientClientSecret;
+  delete CONFIG.ambientRefreshToken;
+  saveConfig(CONFIG);
+}
+
+function setAmbientStatus(html) {
+  document.getElementById('ambientStatus').innerHTML = html;
+}
+
+function renderAmbientStatus() {
+  if (CONFIG.ambientDeviceId) {
+    const sources = (CONFIG.ambientMediaSources || []).map(s => escapeHtml(s.displayName)).join(', ');
+    const settingsLink = CONFIG.ambientSettingsUri
+      ? ` <a href="${escapeHtml(CONFIG.ambientSettingsUri)}" target="_blank" rel="noopener">Change albums</a>.`
+      : '';
+    const sessionNote = ambientRefreshToken ? 'Connected for this session' : 'Device configured; reconnect after this page reload';
+    setAmbientStatus(`${sessionNote}${sources ? `: ${sources}` : ''}.${settingsLink}`);
+  } else {
+    setAmbientStatus('Google Photos is not connected yet.');
+  }
+}
+
+async function postOAuthForm(url, values) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(values),
+  });
+  const data = await response.json().catch(() => ({}));
+  return { response, data };
+}
+
+async function ensureAmbientToken() {
+  if (ambientAccessToken && Date.now() < ambientAccessTokenExpiresAt - 60000) return ambientAccessToken;
+  if (!ambientRefreshToken) throw new Error('Google Photos is not connected for this page session.');
+  const { response, data } = await postOAuthForm('https://oauth2.googleapis.com/token', {
+    client_id: CONFIG.ambientClientId,
+    refresh_token: ambientRefreshToken,
+    grant_type: 'refresh_token',
+  });
+  if (!response.ok) throw new Error(data.error_description || data.error || 'Could not refresh Google Photos access.');
+  ambientAccessToken = data.access_token;
+  ambientAccessTokenExpiresAt = Date.now() + (data.expires_in || 3600) * 1000;
+  return ambientAccessToken;
+}
+
+async function ambientFetch(url, options = {}) {
+  const token = await ensureAmbientToken();
+  const response = await fetch(url, {
+    ...options,
+    headers: { ...(options.headers || {}), Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error(`${response.status} ${response.statusText}: ${body.slice(0, 250)}`);
+  }
+  return response.status === 204 ? null : response.json();
+}
+
+async function connectGooglePhotos() {
+  saveAmbientInputs();
+  if (!CONFIG.ambientClientId || !ambientClientSecret) {
+    setAmbientStatus('Enter the TV client ID and client secret first.');
+    return;
+  }
+  setAmbientStatus('Starting Google Photos device connection…');
+  const { response, data } = await postOAuthForm('https://oauth2.googleapis.com/device/code', {
+    client_id: CONFIG.ambientClientId,
+    scope: 'profile https://www.googleapis.com/auth/photosambient.mediaitems',
+  });
+  if (!response.ok) throw new Error(data.error_description || data.error || 'Could not start device connection.');
+
+  setAmbientStatus(`Open <a href="${escapeHtml(data.verification_url)}" target="_blank" rel="noopener">${escapeHtml(data.verification_url)}</a> and enter code <strong>${escapeHtml(data.user_code)}</strong>. Waiting for authorization…`);
+  const deadline = Date.now() + data.expires_in * 1000;
+  let intervalMs = Math.max(5, data.interval || 5) * 1000;
+  let tokenData = null;
+  while (Date.now() < deadline) {
+    await new Promise(resolve => setTimeout(resolve, intervalMs));
+    const poll = await postOAuthForm('https://oauth2.googleapis.com/token', {
+      client_id: CONFIG.ambientClientId,
+      client_secret: ambientClientSecret,
+      device_code: data.device_code,
+      grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+    });
+    if (poll.response.ok) { tokenData = poll.data; break; }
+    if (poll.data.error === 'slow_down') { intervalMs += 5000; continue; }
+    if (poll.data.error === 'authorization_pending') continue;
+    throw new Error(poll.data.error_description || poll.data.error || 'Google Photos authorization failed.');
+  }
+  if (!tokenData) throw new Error('Google Photos authorization timed out. Try Connect again.');
+
+  ambientAccessToken = tokenData.access_token;
+  ambientAccessTokenExpiresAt = Date.now() + (tokenData.expires_in || 3600) * 1000;
+  ambientRefreshToken = tokenData.refresh_token;
+  let device = null;
+  if (CONFIG.ambientDeviceId) {
+    try {
+      device = await ambientFetch(`https://photosambient.googleapis.com/v1/devices/${encodeURIComponent(CONFIG.ambientDeviceId)}`);
+    } catch (err) {
+      console.warn('Existing Ambient device was unavailable; creating a new one.', err);
+    }
+  }
+  if (!device) {
+    const requestId = crypto.randomUUID();
+    device = await ambientFetch(`https://photosambient.googleapis.com/v1/devices?requestId=${encodeURIComponent(requestId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ displayName: 'Family Board' }),
+    });
+  }
+  CONFIG.ambientDeviceId = device.id;
+  CONFIG.ambientSettingsUri = device.settingsUri;
+  CONFIG.ambientMediaSources = device.mediaSources || [];
+  saveConfig(CONFIG);
+  setAmbientStatus(`Account connected. Now <a href="${escapeHtml(device.settingsUri)}" target="_blank" rel="noopener">choose the Google Photos album(s)</a>, then click “Refresh photos.”`);
+}
+
+async function fetchAmbientPhotoBlobUrl(baseUrl) {
+  const token = await ensureAmbientToken();
+  const response = await fetch(`${baseUrl}=w1600-h1000`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!response.ok) throw new Error(`Photo download failed: ${response.status}`);
+  return URL.createObjectURL(await response.blob());
+}
+
+async function loadAmbientPhotos() {
+  if (!CONFIG.ambientDeviceId) { renderAmbientStatus(); return; }
+  setAmbientStatus('Loading selected Google Photos…');
+  const device = await ambientFetch(`https://photosambient.googleapis.com/v1/devices/${encodeURIComponent(CONFIG.ambientDeviceId)}`);
+  CONFIG.ambientSettingsUri = device.settingsUri;
+  CONFIG.ambientMediaSources = device.mediaSources || [];
+  saveConfig(CONFIG);
+  if (!device.mediaSourcesSet) {
+    setAmbientStatus(`Choose at least one album in <a href="${escapeHtml(device.settingsUri)}" target="_blank" rel="noopener">Google Photos settings</a>, then click “Refresh photos.”`);
+    return;
+  }
+  const data = await ambientFetch(`https://photosambient.googleapis.com/v1/mediaItems?deviceId=${encodeURIComponent(device.id)}&pageSize=30`);
+  const items = (data.mediaItems || []).filter(item => item.mediaFile && item.mediaFile.baseUrl).slice(0, 30);
+  const urls = [];
+  for (let i = 0; i < items.length; i += 5) {
+    const batch = await Promise.allSettled(items.slice(i, i + 5).map(item => fetchAmbientPhotoBlobUrl(item.mediaFile.baseUrl)));
+    batch.forEach(result => { if (result.status === 'fulfilled') urls.push(result.value); });
+  }
+  if (!urls.length) throw new Error('No displayable photos were returned from the selected albums.');
+  ambientPhotoUrls.forEach(url => URL.revokeObjectURL(url));
+  ambientPhotoUrls = urls;
+  buildPhotoFrame(ambientPhotoUrls);
+  photoIndex = 0;
+  renderAmbientStatus();
+}
+
+document.getElementById('connectPhotosBtn').addEventListener('click', () => {
+  connectGooglePhotos().catch(err => {
+    console.error('Google Photos connect failed', err);
+    setAmbientStatus(`Could not connect Google Photos: ${escapeHtml(err.message)}`);
+  });
+});
+document.getElementById('refreshPhotosBtn').addEventListener('click', () => {
+  saveAmbientInputs();
+  loadAmbientPhotos().catch(err => {
+    console.error('Google Photos refresh failed', err);
+    setAmbientStatus(`Could not load photos: ${escapeHtml(err.message)}`);
+  });
+});
+
 // Refresh live data periodically while connected (calendars/tasks/lists
 // change throughout the day).
 setInterval(() => { if (isConnected) fetchAllData(); }, 5 * 60 * 1000);
@@ -998,23 +1210,31 @@ const photoFrame = document.getElementById('photoFrame');
 let idleTimer = null;
 let slideTimer = null;
 let photoIndex = 0;
-const IDLE_AFTER_MS = 30000; // demo default: 30s. Set higher for real use (e.g. 5 min).
 
-MOCK_PHOTOS.forEach((src) => {
-  const img = document.createElement('img');
-  img.src = src;
-  img.alt = '';
-  photoFrame.appendChild(img);
-});
+function buildPhotoFrame(photoUrls) {
+  photoFrame.innerHTML = '';
+  photoUrls.forEach(src => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = '';
+    photoFrame.appendChild(img);
+  });
+}
+buildPhotoFrame(MOCK_PHOTOS);
 
 function showPhoto(i) {
   const imgs = photoFrame.querySelectorAll('img');
   imgs.forEach((img, idx) => img.classList.toggle('showing', idx === i));
 }
 function startSlideshow() {
+  const count = photoFrame.querySelectorAll('img').length;
+  if (!count) return;
+  photoIndex %= count;
   showPhoto(photoIndex);
   slideTimer = setInterval(() => {
-    photoIndex = (photoIndex + 1) % MOCK_PHOTOS.length;
+    const currentCount = photoFrame.querySelectorAll('img').length;
+    if (!currentCount) return;
+    photoIndex = (photoIndex + 1) % currentCount;
     showPhoto(photoIndex);
   }, 8000);
 }
@@ -1024,13 +1244,15 @@ function exitIdle() { idleEl.classList.remove('active'); stopSlideshow(); }
 function resetIdleTimer() {
   if (idleEl.classList.contains('active')) exitIdle();
   clearTimeout(idleTimer);
-  idleTimer = setTimeout(enterIdle, IDLE_AFTER_MS);
+  const idleAfterMs = Math.max(1, Number(CONFIG.idleMinutes) || 5) * 60 * 1000;
+  idleTimer = setTimeout(enterIdle, idleAfterMs);
 }
 ['mousemove', 'mousedown', 'touchstart', 'keydown'].forEach(evt =>
   document.addEventListener(evt, resetIdleTimer, { passive: true })
 );
 idleEl.addEventListener('click', exitIdle);
 resetIdleTimer();
+
 
 /* =========================================================================
    FULLSCREEN
