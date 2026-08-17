@@ -185,20 +185,25 @@
   .morning-menu-side { align-items: stretch; border-left: 1px solid var(--line); padding-left: 24px; }
   .analog-clock { position: relative; width: min(100%, 62vh); aspect-ratio: 1; border-radius: 50%; background: conic-gradient(#5F8B63 0deg 120deg, #D0842F 120deg 210deg, #B94F3D 210deg 300deg, #9A8F7A 300deg 360deg); box-shadow: var(--shadow); }
   .analog-clock::before { content: ''; position: absolute; inset: 22px; z-index: 0; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
-  .clock-number { position: absolute; z-index: 1; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--ink-soft); transform: translate(-50%, -50%); }
-  .clock-number.n12 { left: 50%; top: 10%; } .clock-number.n3 { left: 90%; top: 50%; }
-  .clock-number.n6 { left: 50%; top: 90%; } .clock-number.n9 { left: 10%; top: 50%; }
+  .clock-number { position: absolute; z-index: 1; font-family: 'IBM Plex Mono', monospace; font-size: clamp(1.1rem, 2.3vw, 1.7rem); font-weight: 700; color: var(--ink); transform: translate(-50%, -50%); }
+  .clock-number.n12 { left: 50%; top: 10%; } .clock-number.n1 { left: 70%; top: 15.4%; }
+  .clock-number.n2 { left: 84.6%; top: 30%; } .clock-number.n3 { left: 90%; top: 50%; }
+  .clock-number.n4 { left: 84.6%; top: 70%; } .clock-number.n5 { left: 70%; top: 84.6%; }
+  .clock-number.n6 { left: 50%; top: 90%; } .clock-number.n7 { left: 30%; top: 84.6%; }
+  .clock-number.n8 { left: 15.4%; top: 70%; } .clock-number.n9 { left: 10%; top: 50%; }
+  .clock-number.n10 { left: 15.4%; top: 30%; } .clock-number.n11 { left: 30%; top: 15.4%; }
   .clock-hand { position: absolute; z-index: 1; left: 50%; bottom: 50%; transform-origin: 50% 100%; border-radius: 999px; transform: translateX(-50%) rotate(0deg); }
   .clock-hand.hour { width: 7px; height: 27%; background: var(--ink); }
   .clock-hand.minute { width: 5px; height: 37%; background: var(--ink-soft); }
   .clock-hand.second { width: 2px; height: 40%; background: var(--red); }
   .clock-pin { position: absolute; z-index: 2; left: 50%; top: 50%; width: 14px; height: 14px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--ink); }
-  .morning-clock-label { margin-top: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--ink-soft); }
-  .morning-menu-title { margin: 0 0 16px; font-family: 'Fraunces', serif; font-size: clamp(1.5rem, 3vw, 2rem); }
-  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .menu-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-height: 100px; }
-  .menu-card .kind { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-soft); }
-  .menu-card .food { margin-top: 8px; font-family: 'Fraunces', serif; font-size: clamp(1.15rem, 2.4vw, 1.55rem); line-height: 1.2; }
+  .morning-menu-title { margin: 0 0 18px; font-family: 'Fraunces', serif; font-size: clamp(2rem, 4vw, 2.8rem); }
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .menu-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; min-height: 126px; }
+  .menu-card .category { display: flex; align-items: center; gap: 9px; }
+  .menu-card .emoji { font-size: 1.55rem; line-height: 1; }
+  .menu-card .kind { font-family: 'IBM Plex Mono', monospace; font-size: 0.86rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-soft); }
+  .menu-card .food { margin-top: 13px; font-family: 'Fraunces', serif; font-size: clamp(1.45rem, 3vw, 2rem); line-height: 1.15; }
   .morning-note { margin-top: 12px; font-size: 0.75rem; color: var(--ink-soft); }
   @media (max-width: 680px) {
     .morning-layout { grid-template-columns: 42% 58%; gap: 12px; }
@@ -333,14 +338,17 @@
           <div class="morning-layout">
             <div class="morning-clock-side">
               <div class="analog-clock" id="morningClock" aria-label="Current time">
-                <span class="clock-number n12">12</span><span class="clock-number n3">3</span>
-                <span class="clock-number n6">6</span><span class="clock-number n9">9</span>
+                <span class="clock-number n12">12</span><span class="clock-number n1">1</span>
+                <span class="clock-number n2">2</span><span class="clock-number n3">3</span>
+                <span class="clock-number n4">4</span><span class="clock-number n5">5</span>
+                <span class="clock-number n6">6</span><span class="clock-number n7">7</span>
+                <span class="clock-number n8">8</span><span class="clock-number n9">9</span>
+                <span class="clock-number n10">10</span><span class="clock-number n11">11</span>
                 <span class="clock-hand hour" id="morningHourHand"></span>
                 <span class="clock-hand minute" id="morningMinuteHand"></span>
                 <span class="clock-hand second" id="morningSecondHand"></span>
                 <span class="clock-pin"></span>
               </div>
-              <div class="morning-clock-label" id="morningClockLabel"></div>
             </div>
             <div class="morning-menu-side">
               <h2 class="morning-menu-title">Today’s Menu</h2>
@@ -590,7 +598,6 @@ function updateMorningClock(now = new Date()) {
   document.getElementById('morningMinuteHand').style.transform = `translateX(-50%) rotate(${minutes * 6}deg)`;
   document.getElementById('morningSecondHand').style.transform = `translateX(-50%) rotate(${seconds * 6}deg)`;
 
-  document.getElementById('morningClockLabel').textContent = 'Green :00–:19 · Orange :20–:34 · Red :35–:49';
 }
 
 /* =========================================================================
@@ -1325,11 +1332,11 @@ function renderMorningMenu() {
   const el = document.getElementById('morningMenu');
   const note = document.getElementById('morningMenuNote');
   const categories = [
-    ['Main', 'main'], ['Veggie', 'veggie'], ['Fruit', 'fruit'], ['Extra', 'extra'],
+    ['🥪', 'Main', 'main'], ['🥕', 'Veggie', 'veggie'], ['🍎', 'Fruit', 'fruit'], ['✨', 'Extra', 'extra'],
   ];
-  el.innerHTML = categories.map(([label, key]) => `
+  el.innerHTML = categories.map(([emoji, label, key]) => `
     <div class="menu-card">
-      <div class="kind">${label}</div>
+      <div class="category"><span class="emoji">${emoji}</span><span class="kind">${label}</span></div>
       <div class="food">${escapeHtml(menu && menu[key] ? menu[key] : '—')}</div>
     </div>`).join('');
 
