@@ -179,10 +179,10 @@
   .ambient-status:empty { display: none; }
 
   /* ================= MORNINGS ================= */
-  .morning-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(220px, 0.9fr) minmax(280px, 1.1fr); gap: 24px; }
+  .morning-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(300px, 1.15fr) minmax(280px, 1fr); gap: 24px; }
   .morning-clock-side, .morning-menu-side { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .morning-menu-side { align-items: stretch; border-left: 1px solid var(--line); padding-left: 24px; }
-  .analog-clock { --ring-color: #9A8F7A; position: relative; width: min(36vh, 300px); max-width: 100%; aspect-ratio: 1; border-radius: 50%; border: 14px solid var(--ring-color); background: #fff; box-shadow: 0 0 0 5px color-mix(in srgb, var(--ring-color) 20%, transparent), var(--shadow); }
+  .analog-clock { --ring-color: #9A8F7A; position: relative; width: min(52vh, 430px); max-width: 100%; aspect-ratio: 1; border-radius: 50%; border: 20px solid var(--ring-color); background: #fff; box-shadow: 0 0 0 6px color-mix(in srgb, var(--ring-color) 20%, transparent), var(--shadow); }
   .analog-clock.ring-green { --ring-color: #5F8B63; }
   .analog-clock.ring-orange { --ring-color: #D0842F; }
   .analog-clock.ring-red { --ring-color: #B94F3D; }
@@ -204,7 +204,7 @@
   @media (max-width: 680px) {
     .morning-layout { grid-template-columns: 42% 58%; gap: 12px; }
     .morning-menu-side { padding-left: 12px; }
-    .analog-clock { border-width: 9px; }
+    .analog-clock { border-width: 12px; }
     .menu-grid { grid-template-columns: 1fr; gap: 7px; }
     .menu-card { min-height: 0; padding: 10px 12px; }
   }
@@ -593,11 +593,11 @@ function updateMorningClock(now = new Date()) {
 
   const clock = document.getElementById('morningClock');
   clock.classList.remove('ring-green', 'ring-orange', 'ring-red');
-  const hour = now.getHours() + now.getMinutes() / 60;
-  let status = 'Outside morning schedule';
-  if (hour < 4) { clock.classList.add('ring-green'); status = 'Green · plenty of time'; }
-  else if (hour < 7) { clock.classList.add('ring-orange'); status = 'Orange · getting close'; }
-  else if (hour < 10) { clock.classList.add('ring-red'); status = 'Red · time to go'; }
+  const minute = now.getMinutes();
+  let status = 'Neutral · :50–:59';
+  if (minute < 20) { clock.classList.add('ring-green'); status = 'Green · :00–:19'; }
+  else if (minute < 35) { clock.classList.add('ring-orange'); status = 'Orange · :20–:34'; }
+  else if (minute < 50) { clock.classList.add('ring-red'); status = 'Red · :35–:49'; }
   document.getElementById('morningClockLabel').textContent = status;
 }
 
