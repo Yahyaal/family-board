@@ -1,0 +1,41 @@
+name: Deploy family board to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+      GROCERY_SHEET_ID: ${{ vars.GROCERY_SHEET_ID }}
+      GROCERY_SHEET_RANGE: ${{ vars.GROCERY_SHEET_RANGE }}
+      MENU_SHEET_ID: ${{ vars.MENU_SHEET_ID }}
+      MENU_SHEET_RANGE: ${{ vars.MENU_SHEET_RANGE }}
+      GOOGLE_PHOTOS_CLIENT_ID: ${{ vars.GOOGLE_PHOTOS_CLIENT_ID }}
+      PHOTO_IDLE_MINUTES: ${{ vars.PHOTO_IDLE_MINUTES }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Build configured page
+        run: node scripts/build.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
