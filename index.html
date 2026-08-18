@@ -283,12 +283,6 @@
   }
   .field input:focus { outline: 2px solid var(--dusk); outline-offset: 1px; }
   .field .hint { font-size: 0.72rem; color: var(--ink-soft); margin-top: 5px; line-height: 1.4; }
-  .setup-steps {
-    background: var(--paper); border-radius: 12px; padding: 14px 16px;
-    font-size: 0.78rem; line-height: 1.65; color: var(--ink); margin-bottom: 20px;
-  }
-  .setup-steps ol { margin: 6px 0 0; padding-left: 18px; }
-  .setup-steps code { background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font-size: 0.75rem; }
   .settings-actions { display: flex; gap: 10px; margin-top: 6px; }
   .btn-primary, .btn-secondary {
     flex: 1; padding: 12px; border-radius: 10px; border: none; cursor: pointer;
@@ -402,48 +396,10 @@
   <div class="settings-card" style="position:relative;">
     <button class="pill-btn settings-close" id="closeSettingsBtn">Close</button>
     <h3>Connect Google</h3>
-    <p class="sub">This board reads your real Google Calendar &amp; Tasks, and a Google Sheet for groceries — no separate server, it talks to Google directly from the browser.</p>
-
-    <div class="setup-steps">
-      <strong>One-time setup (you, not the kids):</strong>
-      <ol>
-        <li>Go to <code>console.cloud.google.com</code>, create/select a project.</li>
-        <li>Enable the <code>Google Calendar API</code>, <code>Google Tasks API</code>, and <code>Google Sheets API</code>.</li>
-        <li>Configure the OAuth consent screen (External, Testing mode is fine for personal use).</li>
-        <li>Create an <code>OAuth client ID</code> → Application type <code>Web application</code>.</li>
-        <li>Add the exact URL you're loading this page from (e.g. <code>http://localhost:8000</code> or your real domain) under <strong>Authorized JavaScript origins</strong>. It won't work from a plain <code>file://</code> path.</li>
-        <li>Paste the Client ID below.</li>
-      </ol>
-    </div>
+    <p class="sub">Connect the Google account whose calendars, tasks, grocery list, and morning menu should appear on this board.</p>
 
     <div class="field">
-      <label for="clientIdInput">Google OAuth Client ID</label>
-      <input type="text" id="clientIdInput" placeholder="xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com">
-      <div class="hint">From Google Cloud Console → APIs &amp; Services → Credentials.</div>
-    </div>
-
-    <div class="field">
-      <label for="sheetIdInput">Grocery Google Sheet — Spreadsheet ID</label>
-      <input type="text" id="sheetIdInput" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms">
-      <div class="hint">The long ID in the sheet's URL, between <code>/d/</code> and <code>/edit</code>.</div>
-    </div>
-
-    <div class="field">
-      <label for="sheetRangeInput">Sheet range</label>
-      <input type="text" id="sheetRangeInput" placeholder="Groceries!A2:C200">
-      <div class="hint">Columns, in order: Item, Qty, Done (TRUE/FALSE). Row 1 is a header row and is skipped.</div>
-    </div>
-
-    <div class="field">
-      <label for="menuSheetIdInput">Morning menu — Spreadsheet ID</label>
-      <input type="text" id="menuSheetIdInput" placeholder="Spreadsheet ID">
-      <div class="hint">May be the same spreadsheet as groceries or a different one.</div>
-    </div>
-
-    <div class="field">
-      <label for="menuSheetRangeInput">Morning menu range</label>
-      <input type="text" id="menuSheetRangeInput" placeholder="Mornings!A2:E200">
-      <div class="hint">Columns: Weekday, Main, Veggie, Fruit, Extra. Use Monday through Friday in the first column.</div>
+      <button class="btn-primary" type="button" id="settingsConnectGoogleBtn">Connect Google account</button>
     </div>
 
     <div class="field">
@@ -455,21 +411,8 @@
     </div>
 
     <div class="field">
-      <label for="ambientClientIdInput">Google Photos Ambient — TV client ID</label>
-      <input type="text" id="ambientClientIdInput" placeholder="TVs and Limited Input devices client ID">
-      <div class="hint">Enable the Google Photos Ambient API, then create a separate OAuth client of type <strong>TVs and Limited Input devices</strong>.</div>
-    </div>
-
-    <div class="field">
-      <label for="ambientClientSecretInput">Google Photos Ambient — client secret</label>
-      <input type="password" id="ambientClientSecretInput" placeholder="TV client secret">
-      <div class="hint">Used only for the current page session and never saved. After a page reload, reconnect Google Photos.</div>
-    </div>
-
-    <div class="field">
-      <label for="idleMinutesInput">Start photos after</label>
-      <input type="number" id="idleMinutesInput" min="1" max="120" step="1" placeholder="5">
-      <div class="hint">Minutes without mouse, touch, or keyboard activity.</div>
+      <label>Google Photos</label>
+      <div class="hint">Connect the Google Photos account used for the board’s sleep screen.</div>
       <div class="ambient-actions">
         <button class="btn-secondary" type="button" id="connectPhotosBtn">Connect Google Photos</button>
         <button class="btn-secondary" type="button" id="refreshPhotosBtn">Refresh photos</button>
@@ -479,17 +422,18 @@
 
     <div class="settings-actions">
       <button class="btn-secondary" id="cancelSettingsBtn">Cancel</button>
-      <button class="btn-primary" id="saveSettingsBtn">Save &amp; Connect</button>
+      <button class="btn-primary" id="saveSettingsBtn">Save calendar choices</button>
     </div>
   </div>
 </div>
 
 <script>
 /* =========================================================================
-   CONFIG — persisted locally in this browser (localStorage), so you only
-   fill these in once per device. Nothing here is sent anywhere but Google.
+   CONFIG — deployment values are injected by GitHub Actions. Device choices
+   such as selected calendars and Ambient device metadata stay in localStorage.
    ========================================================================= */
 const CONFIG_KEY = 'homeboard_config_v1';
+const DEPLOYED_CONFIG = /*__DEPLOYED_CONFIG__*/ {};
 
 function loadConfig() {
   try {
@@ -501,7 +445,7 @@ function loadConfig() {
 function saveConfig(cfg) {
   localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
 }
-let CONFIG = loadConfig();
+let CONFIG = { ...loadConfig(), ...DEPLOYED_CONFIG };
 
 const SCOPES = [
   'https://www.googleapis.com/auth/calendar.readonly',
@@ -699,14 +643,9 @@ setInterval(fetchWeather, 15 * 60 * 1000);
    ========================================================================= */
 const overlay = document.getElementById('settingsOverlay');
 function openSettings() {
-  document.getElementById('clientIdInput').value = CONFIG.clientId || '';
-  document.getElementById('sheetIdInput').value = CONFIG.sheetId || '';
-  document.getElementById('sheetRangeInput').value = CONFIG.sheetRange || 'Groceries!A2:C200';
-  document.getElementById('menuSheetIdInput').value = CONFIG.menuSheetId || '';
-  document.getElementById('menuSheetRangeInput').value = CONFIG.menuSheetRange || 'Mornings!A2:E200';
-  document.getElementById('ambientClientIdInput').value = CONFIG.ambientClientId || '';
-  document.getElementById('ambientClientSecretInput').value = '';
-  document.getElementById('idleMinutesInput').value = CONFIG.idleMinutes || 5;
+  document.getElementById('settingsConnectGoogleBtn').textContent = isConnected
+    ? 'Disconnect Google account'
+    : 'Connect Google account';
   renderCalendarPicker();
   renderAmbientStatus();
   overlay.classList.add('active');
@@ -745,28 +684,19 @@ function closeSettings() { overlay.classList.remove('active'); }
 document.getElementById('settingsBtn').addEventListener('click', openSettings);
 document.getElementById('closeSettingsBtn').addEventListener('click', closeSettings);
 document.getElementById('cancelSettingsBtn').addEventListener('click', closeSettings);
+document.getElementById('settingsConnectGoogleBtn').addEventListener('click', () => {
+  closeSettings();
+  document.getElementById('connectBtn').click();
+});
 
 document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-  CONFIG.clientId = document.getElementById('clientIdInput').value.trim();
-  CONFIG.sheetId = document.getElementById('sheetIdInput').value.trim();
-  CONFIG.sheetRange = document.getElementById('sheetRangeInput').value.trim() || 'Groceries!A2:C200';
-  CONFIG.menuSheetId = document.getElementById('menuSheetIdInput').value.trim();
-  CONFIG.menuSheetRange = document.getElementById('menuSheetRangeInput').value.trim() || 'Mornings!A2:E200';
-  CONFIG.ambientClientId = document.getElementById('ambientClientIdInput').value.trim();
-  ambientClientSecret = document.getElementById('ambientClientSecretInput').value.trim();
-  CONFIG.idleMinutes = Math.max(1, Number(document.getElementById('idleMinutesInput').value) || 5);
   delete CONFIG.ambientClientSecret;
   delete CONFIG.ambientRefreshToken;
   if (liveCalendars) {
     CONFIG.calendarIds = Array.from(document.querySelectorAll('#calendarPicker input:checked')).map(input => input.value);
   }
   saveConfig(CONFIG);
-  resetIdleTimer();
   closeSettings();
-  if (CONFIG.clientId) {
-    setUpTokenClient();
-    requestAccessToken(true); // interactive first time
-  }
 });
 
 /* =========================================================================
@@ -1077,15 +1007,6 @@ let ambientPhotoUrls = [];
 let ambientClientSecret = '';
 let ambientRefreshToken = null;
 
-function saveAmbientInputs() {
-  CONFIG.ambientClientId = document.getElementById('ambientClientIdInput').value.trim();
-  ambientClientSecret = document.getElementById('ambientClientSecretInput').value.trim();
-  CONFIG.idleMinutes = Math.max(1, Number(document.getElementById('idleMinutesInput').value) || 5);
-  delete CONFIG.ambientClientSecret;
-  delete CONFIG.ambientRefreshToken;
-  saveConfig(CONFIG);
-}
-
 function setAmbientStatus(html) {
   document.getElementById('ambientStatus').innerHTML = html;
 }
@@ -1141,11 +1062,12 @@ async function ambientFetch(url, options = {}) {
 }
 
 async function connectGooglePhotos() {
-  saveAmbientInputs();
-  if (!CONFIG.ambientClientId || !ambientClientSecret) {
-    setAmbientStatus('Enter the TV client ID and client secret first.');
+  if (!CONFIG.ambientClientId) {
+    setAmbientStatus('Google Photos is not configured for this deployment.');
     return;
   }
+  ambientClientSecret = (window.prompt('Enter the Google Photos TV client secret. It will be kept only for this page session.') || '').trim();
+  if (!ambientClientSecret) return;
   setAmbientStatus('Starting Google Photos device connection…');
   const { response, data } = await postOAuthForm('https://oauth2.googleapis.com/device/code', {
     client_id: CONFIG.ambientClientId,
@@ -1238,7 +1160,6 @@ document.getElementById('connectPhotosBtn').addEventListener('click', () => {
   });
 });
 document.getElementById('refreshPhotosBtn').addEventListener('click', () => {
-  saveAmbientInputs();
   loadAmbientPhotos().catch(err => {
     console.error('Google Photos refresh failed', err);
     setAmbientStatus(`Could not load photos: ${escapeHtml(err.message)}`);
