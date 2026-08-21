@@ -316,14 +316,14 @@
   <div class="content-stack">
     <section class="panel">
       <div class="tab-switch">
-        <button class="tab-btn active" data-tab="calendar">Calendar</button>
+        <button class="tab-btn" data-tab="calendar">Calendar</button>
         <button class="tab-btn" data-tab="tasks">Tasks</button>
         <button class="tab-btn" data-tab="grocery">Grocery</button>
-        <button class="tab-btn" data-tab="mornings">Mornings</button>
+        <button class="tab-btn active" data-tab="mornings">Mornings</button>
       </div>
 
       <div class="tab-panels">
-        <div class="tab-panel active" id="tab-calendar">
+        <div class="tab-panel" id="tab-calendar">
           <div class="eyebrow-tag demo" id="calendarEyebrow">Demo data</div>
           <div class="week-agenda" id="weekAgenda"></div>
           <div class="week-lanes" id="weekLanes"></div>
@@ -345,7 +345,7 @@
           <div class="panel-footnote" id="groceryFootnote">Backed by a shared Sheet — add items from your phone, they show up here.</div>
         </div>
 
-        <div class="tab-panel" id="tab-mornings">
+        <div class="tab-panel active" id="tab-mornings">
           <div class="eyebrow-tag demo" id="morningsEyebrow">Demo data</div>
           <div class="morning-layout">
             <div class="morning-clock-side">
@@ -1371,6 +1371,11 @@ renderCalendar();
 renderTaskLanes();
 renderGroceries();
 renderMorningMenu();
+
+// Periodic full reload for unattended kiosk use. Data also refreshes in place,
+// but this resets the page if the browser has been running for a long time.
+const reloadAfterMinutes = Math.max(15, Number(CONFIG.reloadMinutes) || 360);
+setTimeout(() => window.location.reload(), reloadAfterMinutes * 60 * 1000);
 
 /* =========================================================================
    TAB SWITCHING
