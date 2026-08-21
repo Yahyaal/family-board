@@ -14,6 +14,7 @@ const config = {
   menuSheetRange: process.env.MENU_SHEET_RANGE || 'Mornings!A2:E200',
   ambientClientId: process.env.GOOGLE_PHOTOS_CLIENT_ID || '',
   idleMinutes: Math.max(1, Number(process.env.PHOTO_IDLE_MINUTES) || 5),
+  reloadMinutes: Math.max(15, Number(process.env.PAGE_RELOAD_MINUTES) || 360),
 };
 
 const source = await readFile('index.html', 'utf8');
