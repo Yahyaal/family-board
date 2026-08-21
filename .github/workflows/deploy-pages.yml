@@ -28,6 +28,7 @@ jobs:
       MENU_SHEET_RANGE: ${{ vars.MENU_SHEET_RANGE }}
       GOOGLE_PHOTOS_CLIENT_ID: ${{ vars.GOOGLE_PHOTOS_CLIENT_ID }}
       PHOTO_IDLE_MINUTES: ${{ vars.PHOTO_IDLE_MINUTES }}
+      PAGE_RELOAD_MINUTES: ${{ vars.PAGE_RELOAD_MINUTES }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
