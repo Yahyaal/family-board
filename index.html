@@ -206,6 +206,13 @@
   .weather-strip-stats .rain { color: #3E6E8E; }
   .weather-strip-stats i { width: 1px; height: 13px; background: var(--line); }
 
+  .temp-curve { width: min(100%, max(530px, var(--clock-width, 620px))); flex: 0 0 auto; }
+  .temp-curve:empty { display: none; }
+  .temp-curve svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .tc-tick { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: var(--ink-soft); opacity: 0.75; }
+  .tc-now { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; fill: #9A5417; }
+  .tc-note { margin-top: -2px; text-align: center; font-size: clamp(0.7rem, 1.25vw, 0.84rem); font-weight: 600; color: var(--ink-soft); }
+
   /* ---- analog clock: live weather behind the dial, morning countdown on the rim ---- */
   .analog-clock { position: relative; flex: none; width: min(100cqw, 100cqh); aspect-ratio: 1; }
   .analog-clock svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 12px 26px rgba(33, 38, 43, 0.26)); }
@@ -509,6 +516,7 @@
                 <div class="now-divider"></div>
                 <div class="now-weather is-error" id="weatherStrip" aria-live="polite">Loading Tulsa weather…</div>
               </div>
+              <div class="temp-curve" id="tempCurve"></div>
               <div class="clock-fit">
               <div class="analog-clock" id="morningClock" data-wx="partly" aria-label="Current time">
                 <svg viewBox="0 0 400 400" aria-hidden="true">
@@ -1038,12 +1046,88 @@ function weatherBackdrop(code) {
   return 'partly';
 }
 
+/* Today's hourly temperatures as a small curve: where we are now, where the
+   peak (or trough) lands, and one line saying which way it is heading. The
+   hourly block was already being fetched and thrown away. */
+function renderTempCurve(currentTemp, offset) {
+  const el = document.getElementById('tempCurve');
+  const hourly = liveWeather && liveWeather.hourly;
+  if (!hourly || !hourly.time) { el.innerHTML = ''; return; }
+
+  const points = hourly.time
+    .map((stamp, i) => ({ time: new Date(stamp), temp: hourly.temperature_2m[i] + offset }))
+    .filter(p => Number.isFinite(p.temp) && p.time.getHours() >= 6 && p.time.getHours() <= 21);
+  if (points.length < 4) { el.innerHTML = ''; return; }
+
+  /* A narrower viewBox than the box it renders into, so the day's swing gets
+     real vertical travel instead of flattening into a straight line. */
+  const W = 640, LEFT = 24, RIGHT = 616, TOP = 10, BOTTOM = 54;
+  const temps = points.map(p => p.temp);
+  const min = Math.min(...temps), max = Math.max(...temps);
+  const span = Math.max(1, max - min);
+  const xOf = i => LEFT + (i / (points.length - 1)) * (RIGHT - LEFT);
+  const yOf = t => BOTTOM - ((t - min) / span) * (BOTTOM - TOP);
+
+  const line = points.map((p, i) => `${i ? 'L' : 'M'}${xOf(i).toFixed(1)} ${yOf(p.temp).toFixed(1)}`).join(' ');
+  const area = `${line} L${RIGHT} ${BOTTOM + 6} L${LEFT} ${BOTTOM + 6} Z`;
+
+  /* Where "now" sits along the run of hours, so the dot tracks through the day. */
+  const now = boardNow();
+  const hourPosition = (now - points[0].time) / 3600000;
+  const cursor = Math.max(0, Math.min(points.length - 1, hourPosition));
+  /* Read the temperature off the curve rather than the live sensor, so the dot
+     always sits on the line — and so a simulated hour shows that hour's temp. */
+  const floor = Math.floor(cursor);
+  const lower = points[Math.min(floor, points.length - 1)].temp;
+  const upper = points[Math.min(floor + 1, points.length - 1)].temp;
+  const onCurve = lower + (upper - lower) * (cursor - floor);
+  const nowTemp = SIM.active ? onCurve : currentTemp;
+  const nowX = xOf(cursor);
+  const nowY = yOf(SIM.active ? onCurve : Math.max(min, Math.min(max, currentTemp)));
+  const inWindow = hourPosition >= 0 && hourPosition <= points.length - 1;
+  const labelAbove = nowY - 12 > TOP;
+
+  const hourLabel = date => date.toLocaleTimeString([], { hour: 'numeric' }).replace(' ', '').toLowerCase();
+  const ticks = points.filter(p => p.time.getHours() % 3 === 0);
+
+  /* Describe only what is still to come — this morning's low is not news. */
+  const ahead = points.filter(p => p.time >= now);
+  const rest = ahead.length ? ahead : points.slice(-1);
+  const peak = rest.reduce((a, b) => (b.temp > a.temp ? b : a));
+  const trough = rest.reduce((a, b) => (b.temp < a.temp ? b : a));
+  let note;
+  if (peak.temp - nowTemp >= 3) note = `Warming up — ${Math.round(peak.temp)}° by ${hourLabel(peak.time)}`;
+  else if (nowTemp - trough.temp >= 3) note = `Cooling off — ${Math.round(trough.temp)}° by ${hourLabel(trough.time)}`;
+  else note = `Holding around ${Math.round(nowTemp)}° for the rest of the day`;
+
+  const marker = inWindow ? `
+    <line x1="${nowX.toFixed(1)}" y1="${(nowY + 4).toFixed(1)}" x2="${nowX.toFixed(1)}" y2="${BOTTOM + 6}" stroke="#C8722E" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.55"/>
+    <circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="4.8" fill="#C8722E" stroke="#FCFBF7" stroke-width="2.4"/>
+    <text class="tc-now" x="${nowX.toFixed(1)}" y="${(labelAbove ? nowY - 12 : nowY + 18).toFixed(1)}" text-anchor="middle">${Math.round(nowTemp)}°</text>` : '';
+
+  el.innerHTML = `
+    <svg viewBox="0 0 ${W} 78" role="img" aria-label="${note}">
+      <defs>
+        <linearGradient id="tcFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#C8722E" stop-opacity="0.26"/>
+          <stop offset="100%" stop-color="#C8722E" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${area}" fill="url(#tcFill)"/>
+      <path d="${line}" fill="none" stroke="#C8722E" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+      ${ticks.map(p => `<text class="tc-tick" x="${xOf(points.indexOf(p)).toFixed(1)}" y="70" text-anchor="middle">${hourLabel(p.time)}</text>`).join('')}
+      ${marker}
+    </svg>
+    <div class="tc-note">${note}</div>`;
+}
+
 function renderWeather() {
   const el = document.getElementById('weatherStrip');
   if (SIM.weather) clockEl.dataset.wx = SIM.weather;
   if (!liveWeather) {
     el.classList.add('is-error');
     el.textContent = 'Tulsa weather is temporarily unavailable.';
+    document.getElementById('tempCurve').innerHTML = '';
     return;
   }
   const { current, daily } = liveWeather;
@@ -1069,6 +1153,7 @@ function renderWeather() {
       <span class="lo">↓ ${low}°</span><i></i>
       <span class="rain">☂ ${rainChance}%</span>
     </div>`;
+  renderTempCurve(temp, fake ? fake.temp - current.temperature_2m : 0);
 }
 
 async function fetchWeather() {
