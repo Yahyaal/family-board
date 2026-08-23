@@ -1,16 +1,19 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
-const required = ['GOOGLE_CLIENT_ID', 'GROCERY_SHEET_ID', 'MENU_SHEET_ID'];
-const missing = required.filter(name => !process.env[name]);
+/* These drive the Google integration. Without them the board still builds and
+   deploys, it just runs on demo data until the variables are added — the page
+   already handles a missing client ID by sending you to Settings. */
+const expected = ['GOOGLE_CLIENT_ID', 'GROCERY_SHEET_ID', 'MENU_SHEET_ID'];
+const missing = expected.filter(name => !process.env[name]);
 if (missing.length) {
-  throw new Error(`Missing GitHub Actions repository variables: ${missing.join(', ')}`);
+  console.warn(`::warning::Building without ${missing.join(', ')}. The board will deploy with demo data only. Set these under Settings > Secrets and variables > Actions > Variables.`);
 }
 
 const config = {
-  clientId: process.env.GOOGLE_CLIENT_ID,
-  sheetId: process.env.GROCERY_SHEET_ID,
+  clientId: process.env.GOOGLE_CLIENT_ID || '',
+  sheetId: process.env.GROCERY_SHEET_ID || '',
   sheetRange: process.env.GROCERY_SHEET_RANGE || 'Groceries!A2:C200',
-  menuSheetId: process.env.MENU_SHEET_ID,
+  menuSheetId: process.env.MENU_SHEET_ID || '',
   menuSheetRange: process.env.MENU_SHEET_RANGE || 'Mornings!A2:E200',
   ambientClientId: process.env.GOOGLE_PHOTOS_CLIENT_ID || '',
   idleMinutes: Math.max(1, Number(process.env.PHOTO_IDLE_MINUTES) || 5),

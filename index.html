@@ -179,56 +179,165 @@
   .ambient-status:empty { display: none; }
 
   /* ================= MORNINGS ================= */
-  .morning-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(300px, 1.15fr) minmax(280px, 1fr); gap: 24px; }
-  .morning-clock-side, .morning-menu-side { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .morning-clock-side { padding: 10px; }
-  .morning-menu-side { align-items: stretch; justify-content: stretch; border-left: 1px solid var(--line); padding-left: 24px; gap: 16px; }
-  .analog-clock { position: relative; width: min(100%, 62vh); aspect-ratio: 1; border-radius: 50%; background: conic-gradient(#5F8B63 0deg 120deg, #D0842F 120deg 210deg, #B94F3D 210deg 300deg, #9A8F7A 300deg 360deg); box-shadow: var(--shadow); }
-  .analog-clock::before { content: ''; position: absolute; inset: 22px; z-index: 0; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
-  .clock-number { position: absolute; z-index: 1; font-family: 'IBM Plex Mono', monospace; font-size: clamp(1.1rem, 2.3vw, 1.7rem); font-weight: 700; color: var(--ink); transform: translate(-50%, -50%); }
-  .clock-number.n12 { left: 50%; top: 10%; } .clock-number.n1 { left: 70%; top: 15.4%; }
-  .clock-number.n2 { left: 84.6%; top: 30%; } .clock-number.n3 { left: 90%; top: 50%; }
-  .clock-number.n4 { left: 84.6%; top: 70%; } .clock-number.n5 { left: 70%; top: 84.6%; }
-  .clock-number.n6 { left: 50%; top: 90%; } .clock-number.n7 { left: 30%; top: 84.6%; }
-  .clock-number.n8 { left: 15.4%; top: 70%; } .clock-number.n9 { left: 10%; top: 50%; }
-  .clock-number.n10 { left: 15.4%; top: 30%; } .clock-number.n11 { left: 30%; top: 15.4%; }
-  .clock-hand { position: absolute; z-index: 1; left: 50%; bottom: 50%; transform-origin: 50% 100%; border-radius: 999px; transform: translateX(-50%) rotate(0deg); }
-  .clock-hand.hour { width: 7px; height: 27%; background: var(--ink); }
-  .clock-hand.minute { width: 5px; height: 37%; background: var(--ink-soft); }
-  .clock-hand.second { width: 2px; height: 40%; background: var(--red); }
-  .clock-pin { position: absolute; z-index: 2; left: 50%; top: 50%; width: 14px; height: 14px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--ink); }
-  .morning-right-half { min-height: 0; flex: 1 1 50%; display: flex; flex-direction: column; justify-content: center; }
-  .weather-widget { overflow: hidden; border-radius: 20px; padding: 20px 22px; color: #24313B; background: linear-gradient(145deg, #DCEBF3, #F7E9C9); box-shadow: var(--shadow); }
-  .weather-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .weather-place { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
-  .weather-updated { font-size: 0.68rem; color: #52616B; }
-  .weather-now { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 15px; margin-top: 10px; }
-  .weather-icon { font-size: clamp(3rem, 7vw, 4.8rem); line-height: 1; }
-  .weather-temp { font-family: 'Fraunces', serif; font-size: clamp(3rem, 7vw, 5rem); line-height: 0.9; }
-  .weather-condition { margin-top: 7px; font-weight: 600; }
-  .weather-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
-  .weather-detail { min-width: 0; padding: 11px 12px; border-radius: 12px; background: rgba(255,255,255,0.58); }
-  .weather-detail-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: #52616B; text-transform: uppercase; letter-spacing: 0.05em; }
-  .weather-detail-value { margin-top: 4px; font-size: clamp(0.92rem, 1.8vw, 1.15rem); font-weight: 700; }
-  .weather-error { padding: 18px; color: var(--ink-soft); text-align: center; }
-  .menu-half { border-top: 1px solid var(--line); padding-top: 14px; }
-  .morning-menu-title { margin: 0 0 12px; font-family: 'Fraunces', serif; font-size: clamp(1.7rem, 3.2vw, 2.35rem); }
-  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .menu-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; min-height: 96px; }
-  .menu-card .category { display: flex; align-items: center; gap: 9px; }
-  .menu-card .emoji { font-size: 1.55rem; line-height: 1; }
-  .menu-card .kind { font-family: 'IBM Plex Mono', monospace; font-size: 0.86rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-soft); }
-  .menu-card .food { margin-top: 9px; font-family: 'Fraunces', serif; font-size: clamp(1.3rem, 2.5vw, 1.75rem); line-height: 1.15; }
-  .morning-note { margin-top: 12px; font-size: 0.75rem; color: var(--ink-soft); }
+  .morning-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(280px, 1fr) minmax(330px, 1.02fr); gap: 22px; }
+  .morning-clock-side { min-width: 0; min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 2px 10px; }
+  /* The dial is the largest square that fits the leftover column, so it grows
+     with the screen instead of being pinned to a viewport fraction. */
+  .clock-fit { flex: 1 1 auto; min-height: 0; width: 100%; container-type: size; display: flex; align-items: center; justify-content: center; }
+  .morning-side-panel { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 16px; border-left: 1px solid var(--line); padding-left: 22px; }
+
+  /* ---- compact weather strip: the numbers the clock backdrop can't spell out ---- */
+  .weather-strip {
+    width: min(100%, max(460px, var(--clock-width, 560px))); flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; padding: 7px 16px 7px 14px; border-radius: 100px;
+    background: var(--paper-panel); border: 1px solid var(--line); box-shadow: var(--shadow);
+  }
+  .weather-strip-now { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .weather-strip-now > div { min-width: 0; } /* lets the condition ellipsis instead of overlapping */
+  .weather-strip-icon { font-size: clamp(1.5rem, 3vw, 2.05rem); line-height: 1; flex-shrink: 0; }
+  .weather-strip-temp { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+  .weather-strip-temp b { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.3rem, 2.6vw, 1.8rem); line-height: 1; }
+  .weather-strip-cond { font-size: clamp(0.72rem, 1.4vw, 0.86rem); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .weather-strip-place { white-space: nowrap; font-family: 'IBM Plex Mono', monospace; font-size: 0.64rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-soft); margin-top: 3px; }
+  .weather-strip-stats {
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding: 6px 12px; border-radius: 100px;
+    background: var(--paper); font-family: 'IBM Plex Mono', monospace; font-weight: 500;
+    font-size: clamp(0.68rem, 1.3vw, 0.8rem);
+  }
+  .weather-strip-stats .hi { color: var(--red); }
+  .weather-strip-stats .lo { color: var(--dusk); }
+  .weather-strip-stats .rain { color: #3E6E8E; }
+  .weather-strip-stats i { width: 1px; height: 13px; background: var(--line); }
+  .weather-strip.is-error { justify-content: center; font-size: 0.8rem; color: var(--ink-soft); }
+
+  /* ---- analog clock: live weather behind the dial, morning countdown on the rim ---- */
+  .analog-clock { position: relative; flex: none; width: min(100cqw, 100cqh); aspect-ratio: 1; }
+  .analog-clock svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 12px 26px rgba(33, 38, 43, 0.26)); }
+  .clock-band { fill: none; stroke-width: 13; }
+  .clock-num { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 23px; fill: var(--ink); stroke: rgba(255, 255, 255, 0.85); stroke-width: 5px; paint-order: stroke fill; }
+  .clock-num.n12 { font-size: 26px; }
+  .clock-hand { stroke-linecap: round; transform-box: view-box; transform-origin: 200px 200px; }
+  .clock-hand.hour { stroke: var(--ink); stroke-width: 7; }
+  .clock-hand.minute { stroke: var(--ink-soft); stroke-width: 5; }
+  .clock-hand.second { stroke: var(--red); stroke-width: 2; }
+
+  /* Only the layer matching the current conditions is drawn; the rest stay parked
+     in the DOM so switching conditions never restarts the other animations. */
+  .wx-layer { display: none; }
+  .analog-clock[data-wx="sunny"] .wx-sunny,
+  .analog-clock[data-wx="partly"] .wx-partly,
+  .analog-clock[data-wx="cloudy"] .wx-cloudy,
+  .analog-clock[data-wx="rainy"] .wx-rainy,
+  .analog-clock[data-wx="snowy"] .wx-snowy { display: block; }
+  .wx-sun-rays { transform-box: view-box; transform-origin: 200px 158px; animation: wxSunSpin 48s linear infinite; }
+  .wx-sun-glow { transform-box: view-box; transform-origin: 200px 158px; animation: wxSunPulse 6s ease-in-out infinite; }
+  .wx-sun-glow.off-centre { transform-origin: 258px 142px; }
+  .wx-drift-a { transform-box: view-box; animation: wxDriftA 26s ease-in-out infinite; }
+  .wx-drift-b { transform-box: view-box; animation: wxDriftB 34s ease-in-out infinite; }
+  .wx-drop { transform-box: view-box; animation: wxRain 1.15s linear infinite; }
+  .wx-flake { transform-box: view-box; animation: wxSnow 7s linear infinite; }
+  @keyframes wxSunSpin { to { transform: rotate(360deg); } }
+  @keyframes wxSunPulse { 0%, 100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.07); } }
+  @keyframes wxDriftA { 0%, 100% { transform: translateX(-16px); } 50% { transform: translateX(16px); } }
+  @keyframes wxDriftB { 0%, 100% { transform: translateX(14px); } 50% { transform: translateX(-14px); } }
+  @keyframes wxRain { 0% { transform: translate(0, -20px); opacity: 0; } 15% { opacity: 0.8; } 80% { opacity: 0.8; } 100% { transform: translate(-26px, 200px); opacity: 0; } }
+  @keyframes wxSnow { 0% { transform: translate(0, -20px); opacity: 0; } 15% { opacity: 0.9; } 75% { opacity: 0.9; } 100% { transform: translate(22px, 210px); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .wx-sun-rays, .wx-sun-glow, .wx-drift-a, .wx-drift-b, .wx-drop, .wx-flake { animation: none; }
+  }
+
+  /* Lunch reads as a row of chips under the dial — the emoji is the category,
+     so the words are only ever the food itself. */
+  .menu-block { flex: 0 0 auto; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .menu-title { margin: 0; font-family: 'Fraunces', serif; font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 1.1; }
+  .menu-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  /* Each category carries a colour as well as an emoji, so the four slots are
+     tellable apart from across the kitchen. */
+  .menu-chip { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 16px 7px 12px; border-radius: 100px; background: #fff; border: 2px solid var(--cat); }
+  .menu-chip .emoji { font-size: 1.15rem; line-height: 1; flex-shrink: 0; }
+  .menu-chip .food { font-family: 'Fraunces', serif; font-size: clamp(0.92rem, 1.55vw, 1.2rem); line-height: 1.15; }
+  .menu-chip.is-empty { border-style: dashed; opacity: 0.5; }
+  .morning-note { font-size: 0.68rem; color: var(--ink-soft); text-align: center; }
+
+  /* ---- right column: checklists over after-school ---- */
+  .side-title { margin: 0 0 10px; font-family: 'Fraunces', serif; font-size: clamp(1.1rem, 1.9vw, 1.5rem); display: flex; align-items: baseline; gap: 9px; flex-shrink: 0; }
+  .side-title-note { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); background: var(--paper); padding: 3px 8px; border-radius: 100px; }
+
+  .checklist-block { flex: 0 0 auto; }
+  .checklist-reset {
+    margin-left: auto; padding: 5px 11px; border-radius: 100px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.63rem;
+  }
+  .checklist-reset:hover { background: #fff; color: var(--ink); }
+  /* Kids stack full width so the five tiles stay big enough to hit with a thumb. */
+  .kid-grid { display: flex; flex-direction: column; gap: 10px; }
+  .kid-card { min-width: 0; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 12px 13px 13px; }
+  .kid-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .kid-avatar { width: clamp(30px, 2.6vw, 38px); height: clamp(30px, 2.6vw, 38px); flex-shrink: 0; }
+  .kid-name { font-family: 'Fraunces', serif; font-size: clamp(1rem, 1.7vw, 1.35rem); line-height: 1.1; }
+  .kid-count { margin-left: auto; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: clamp(0.66rem, 1.1vw, 0.8rem); color: var(--ink-soft); }
+  .kid-card.is-complete .kid-count { color: var(--kid-color); font-weight: 600; }
+  .kid-bar { height: 7px; margin: 9px 0 10px; border-radius: 100px; background: var(--paper); overflow: hidden; }
+  .kid-bar span { display: block; height: 100%; border-radius: 100px; background: var(--kid-color); transition: width 0.35s ease; }
+  .kid-tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .kid-tile {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    min-width: 0; padding: 11px 4px 9px; border-radius: 14px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  }
+  .kid-tile .emoji { font-size: clamp(1.3rem, 2.2vw, 1.8rem); line-height: 1; }
+  .kid-tile .label { max-width: 100%; font-size: clamp(0.62rem, 1.05vw, 0.8rem); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kid-tile:active { transform: scale(0.96); }
+  .kid-tile.is-done { background: var(--kid-color); border-color: var(--kid-color); color: #fff; }
+
+  .after-school { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .as-list { list-style: none; margin: 0; padding: 0; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+  .as-item { display: flex; align-items: flex-start; gap: 11px; min-width: 0; padding: 10px 12px; border-radius: 14px; background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--as-color, var(--dusk)); }
+  .as-icon {
+    flex-shrink: 0; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+    border-radius: 12px; font-size: 1.35rem; line-height: 1;
+    background: var(--paper); background: color-mix(in srgb, var(--as-color) 16%, #FFFFFF);
+  }
+  .as-body { flex: 1; min-width: 0; }
+  .as-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .as-title { min-width: 0; font-family: 'Fraunces', serif; font-size: clamp(0.95rem, 1.6vw, 1.2rem); line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .as-who { flex-shrink: 0; padding: 2px 9px; border-radius: 100px; background: var(--as-color); color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.07em; text-transform: uppercase; }
+  .as-meta { display: flex; flex-wrap: wrap; gap: 4px 13px; margin-top: 4px; font-size: 0.72rem; color: var(--ink-soft); }
+  .as-meta span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .as-note { margin-top: 4px; font-size: 0.71rem; color: #96601C; }
+  .as-empty { padding: 16px; border-radius: 12px; background: var(--paper); color: var(--ink-soft); font-size: 0.82rem; text-align: center; }
+  /* Short panels (a 768px-tall screen) can't fit both blocks at full size, so
+     the checklist gives its slack to the after-school list. */
+  @media (max-height: 830px) {
+    .morning-side-panel { gap: 11px; }
+    .side-title { margin-bottom: 7px; }
+    .kid-card { padding: 8px 9px 9px; border-radius: 14px; }
+    .kid-avatar { width: 28px; height: 28px; }
+    .kid-bar { height: 5px; margin: 6px 0 7px; }
+    .kid-tiles { gap: 6px; }
+    .kid-tile { padding: 7px 3px 6px; gap: 4px; border-radius: 11px; }
+    .kid-tile .emoji { font-size: 1.2rem; }
+    .as-item { padding: 7px 10px; }
+    .as-icon { width: 34px; height: 34px; font-size: 1.1rem; border-radius: 10px; }
+    .as-meta, .as-note { font-size: 0.68rem; }
+  }
   @media (max-width: 680px) {
     .morning-layout { grid-template-columns: 42% 58%; gap: 12px; }
-    .morning-menu-side { padding-left: 12px; }
-    .weather-widget { padding: 12px 14px; }
-    .weather-details { gap: 6px; margin-top: 10px; }
-    .weather-detail { padding: 8px; }
-    .analog-clock::before { inset: 14px; }
-    .menu-grid { grid-template-columns: 1fr; gap: 7px; }
-    .menu-card { min-height: 0; padding: 10px 12px; }
+    .morning-side-panel { padding-left: 12px; gap: 10px; }
+    .morning-clock-side { gap: 7px; padding: 2px; }
+    .weather-strip { width: 100%; padding: 5px 10px; gap: 8px; }
+    .weather-strip-stats { gap: 6px; padding: 4px 8px; }
+    .menu-row { gap: 6px; }
+    .menu-chip { padding: 5px 11px 5px 8px; gap: 6px; }
+    .kid-grid { gap: 7px; }
+    .kid-card { padding: 8px 8px 9px; }
+    .kid-tiles { gap: 5px; }
+    .kid-tile { padding: 7px 2px 6px; gap: 4px; border-radius: 11px; }
+    .as-item { padding: 7px 9px; gap: 8px; }
+    .as-icon { width: 32px; height: 32px; font-size: 1.05rem; border-radius: 10px; }
   }
 
   .panel-footnote { font-size: 0.75rem; color: var(--ink-soft); margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); flex-shrink: 0; }
@@ -291,6 +400,45 @@
   .btn-primary { background: var(--ink); color: #fff; }
   .btn-secondary { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
   .settings-close { position: absolute; top: 14px; right: 16px; }
+  /* ================= TEST PANEL (temporary) =================
+     Delete this block, the #testPanel markup, and the TEST PANEL script
+     section to remove the whole thing. Nothing else depends on it. */
+  #testToggle {
+    position: fixed; right: 14px; bottom: 14px; z-index: 90;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; font-weight: 500;
+    padding: 9px 14px; border-radius: 100px; cursor: pointer;
+    border: 1px dashed #B07C2E; background: #FDF3DC; color: #6D4E14;
+    box-shadow: var(--shadow); opacity: 0.75;
+  }
+  #testToggle:hover, #testToggle.is-on { opacity: 1; }
+  #testToggle.is-simulating { border-style: solid; background: #F5DCC0; opacity: 1; }
+  #testPanel {
+    position: fixed; right: 14px; bottom: 58px; z-index: 90; width: 264px; display: none;
+    background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 15px;
+    box-shadow: 0 24px 50px -18px rgba(0,0,0,0.35);
+  }
+  #testPanel.active { display: block; }
+  #testPanel h4 { margin: 0 0 4px; font-family: 'Fraunces', serif; font-size: 1rem; }
+  #testPanel .test-sub { margin: 0 0 12px; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.45; }
+  .test-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .test-row label { flex: 0 0 58px; font-size: 0.72rem; font-weight: 600; }
+  .test-row input, .test-row select {
+    flex: 1; min-width: 0; padding: 7px 9px; border-radius: 9px; border: 1px solid var(--line);
+    background: var(--paper); font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--ink);
+  }
+  .test-presets { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0 11px; }
+  .test-presets button {
+    flex: 1 1 auto; padding: 6px 4px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem;
+  }
+  .test-presets button:hover { background: #fff; color: var(--ink); }
+  .test-actions { display: flex; gap: 7px; }
+  .test-actions button { flex: 1; padding: 9px; border-radius: 9px; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.78rem; }
+  #testApply { background: var(--ink); color: #fff; }
+  #testReset { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+  #testNote { margin-top: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 0.64rem; color: var(--ink-soft); line-height: 1.5; }
+
 </style>
 </head>
 <body>
@@ -349,29 +497,117 @@
           <div class="eyebrow-tag demo" id="morningsEyebrow">Demo data</div>
           <div class="morning-layout">
             <div class="morning-clock-side">
-              <div class="analog-clock" id="morningClock" aria-label="Current time">
-                <span class="clock-number n12">12</span><span class="clock-number n1">1</span>
-                <span class="clock-number n2">2</span><span class="clock-number n3">3</span>
-                <span class="clock-number n4">4</span><span class="clock-number n5">5</span>
-                <span class="clock-number n6">6</span><span class="clock-number n7">7</span>
-                <span class="clock-number n8">8</span><span class="clock-number n9">9</span>
-                <span class="clock-number n10">10</span><span class="clock-number n11">11</span>
-                <span class="clock-hand hour" id="morningHourHand"></span>
-                <span class="clock-hand minute" id="morningMinuteHand"></span>
-                <span class="clock-hand second" id="morningSecondHand"></span>
-                <span class="clock-pin"></span>
+              <div class="weather-strip is-error" id="weatherStrip" aria-live="polite">Loading Tulsa weather…</div>
+              <div class="clock-fit">
+              <div class="analog-clock" id="morningClock" data-wx="partly" aria-label="Current time">
+                <svg viewBox="0 0 400 400" aria-hidden="true">
+                  <defs>
+                    <clipPath id="clockFaceClip"><circle cx="200" cy="200" r="182"/></clipPath>
+                    <linearGradient id="skySunny" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#8FC0E8"/><stop offset="58%" stop-color="#D5E8F4"/><stop offset="100%" stop-color="#F6F3E6"/>
+                    </linearGradient>
+                    <linearGradient id="skyPartly" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#A2CBE6"/><stop offset="58%" stop-color="#DCEBF3"/><stop offset="100%" stop-color="#F7F2E7"/>
+                    </linearGradient>
+                    <linearGradient id="skyCloudy" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#B4BFC5"/><stop offset="58%" stop-color="#D6DCDD"/><stop offset="100%" stop-color="#EFF0EC"/>
+                    </linearGradient>
+                    <linearGradient id="skyRainy" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#8C9FAE"/><stop offset="58%" stop-color="#B6C4CC"/><stop offset="100%" stop-color="#DCE3E5"/>
+                    </linearGradient>
+                    <linearGradient id="skySnowy" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#AEC1D2"/><stop offset="58%" stop-color="#DAE5EE"/><stop offset="100%" stop-color="#F4F6F7"/>
+                    </linearGradient>
+                    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stop-color="#F5D98A" stop-opacity="0.95"/>
+                      <stop offset="45%" stop-color="#E8B54A" stop-opacity="0.55"/>
+                      <stop offset="100%" stop-color="#E8B54A" stop-opacity="0"/>
+                    </radialGradient>
+                    <!-- one cloud silhouette, reused at different sizes and tints -->
+                    <g id="wxCloud">
+                      <ellipse cx="-30" cy="6" rx="26" ry="20"/>
+                      <ellipse cx="2" cy="-10" rx="34" ry="27"/>
+                      <ellipse cx="34" cy="4" rx="25" ry="20"/>
+                      <rect x="-54" y="4" width="110" height="22" rx="11"/>
+                    </g>
+                  </defs>
+
+                  <!-- WEATHER BACKDROP, clipped to the dial -->
+                  <g clip-path="url(#clockFaceClip)">
+                    <g class="wx-layer wx-sunny">
+                      <rect x="18" y="18" width="364" height="364" fill="url(#skySunny)"/>
+                      <circle class="wx-sun-glow" cx="200" cy="158" r="96" fill="url(#sunGlow)"/>
+                      <g class="wx-sun-rays">
+                        <g id="sunnyRays" stroke="#EFC969" stroke-width="4" stroke-linecap="round" opacity="0.85"></g>
+                      </g>
+                      <circle cx="200" cy="158" r="34" fill="#E8B54A"/>
+                    </g>
+
+                    <g class="wx-layer wx-partly">
+                      <rect x="18" y="18" width="364" height="364" fill="url(#skyPartly)"/>
+                      <circle class="wx-sun-glow off-centre" cx="258" cy="142" r="78" fill="url(#sunGlow)"/>
+                      <circle cx="258" cy="142" r="27" fill="#E8B54A"/>
+                      <g class="wx-drift-a"><use href="#wxCloud" transform="translate(178 176) scale(1.25)" fill="#FFFFFF" opacity="0.94"/></g>
+                    </g>
+
+                    <g class="wx-layer wx-cloudy">
+                      <rect x="18" y="18" width="364" height="364" fill="url(#skyCloudy)"/>
+                      <g class="wx-drift-b"><use href="#wxCloud" transform="translate(148 128) scale(1.25)" fill="#AEBAC1" opacity="0.9"/></g>
+                      <g class="wx-drift-a"><use href="#wxCloud" transform="translate(244 186) scale(1.55)" fill="#FBFCFB" opacity="0.95"/></g>
+                    </g>
+
+                    <g class="wx-layer wx-rainy">
+                      <rect x="18" y="18" width="364" height="364" fill="url(#skyRainy)"/>
+                      <g class="wx-drift-a">
+                        <use href="#wxCloud" transform="translate(160 120) scale(1.2)" fill="#77889A" opacity="0.9"/>
+                        <use href="#wxCloud" transform="translate(232 150) scale(1.4)" fill="#5A6B7B" opacity="0.95"/>
+                      </g>
+                      <g id="rainDrops" stroke="#DCE9F2" stroke-width="2.5" stroke-linecap="round"></g>
+                    </g>
+
+                    <g class="wx-layer wx-snowy">
+                      <rect x="18" y="18" width="364" height="364" fill="url(#skySnowy)"/>
+                      <g class="wx-drift-a"><use href="#wxCloud" transform="translate(198 130) scale(1.4)" fill="#F6FAFD" opacity="0.95"/></g>
+                      <g id="snowFlakes" fill="#FFFFFF"></g>
+                    </g>
+                  </g>
+                  <circle cx="200" cy="200" r="182" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+
+                  <!-- MORNING COUNTDOWN RING: fills at the start time, drains minute by minute -->
+                  <g transform="rotate(-90 200 200)">
+                    <circle cx="200" cy="200" r="189.5" fill="none" stroke="#9A8F7A" stroke-width="13" opacity="0.5"/>
+                    <circle class="clock-band" id="bandGreen"  cx="200" cy="200" r="189.5" stroke="#5F8B63"/>
+                    <circle class="clock-band" id="bandOrange" cx="200" cy="200" r="189.5" stroke="#D0842F"/>
+                    <circle class="clock-band" id="bandRed"    cx="200" cy="200" r="189.5" stroke="#B94F3D"/>
+                  </g>
+                  <line id="departureTick" stroke="#8E3A2A" stroke-width="3" stroke-linecap="round"/>
+
+                  <g id="clockNumbers"></g>
+
+                  <line class="clock-hand hour"   id="morningHourHand"   x1="200" y1="216" x2="200" y2="118"/>
+                  <line class="clock-hand minute" id="morningMinuteHand" x1="200" y1="220" x2="200" y2="70"/>
+                  <line class="clock-hand second" id="morningSecondHand" x1="200" y1="228" x2="200" y2="55"/>
+                  <circle cx="200" cy="200" r="7" fill="#21262B"/>
+                  <circle cx="200" cy="200" r="2.5" fill="#FFFFFF"/>
+                </svg>
+              </div>
+              </div>
+              <div class="menu-block">
+                <h2 class="menu-title">Today’s Lunch</h2>
+                <div class="menu-row" id="morningMenu"></div>
+                <div class="morning-note" id="morningMenuNote"></div>
               </div>
             </div>
-            <div class="morning-menu-side">
-              <div class="morning-right-half">
-                <div class="weather-widget" id="weatherWidget" aria-live="polite">
-                  <div class="weather-error">Loading Tulsa weather…</div>
-                </div>
+            <div class="morning-side-panel">
+              <div class="checklist-block">
+                <h2 class="side-title">Morning Checklist <span class="side-title-note">Tap when done</span>
+                  <button type="button" class="checklist-reset" id="checklistReset">↺ Reset today</button>
+                </h2>
+                <div class="kid-grid" id="kidChecklists"></div>
               </div>
-              <div class="morning-right-half menu-half">
-                <h2 class="morning-menu-title">Today’s Menu</h2>
-                <div class="menu-grid" id="morningMenu"></div>
-                <div class="morning-note" id="morningMenuNote"></div>
+              <div class="after-school">
+                <h2 class="side-title">After School <span class="side-title-note" id="afterSchoolDay">Today</span></h2>
+                <ul class="as-list" id="afterSchoolList"></ul>
               </div>
             </div>
           </div>
@@ -389,6 +625,40 @@
     <div class="idle-date" id="idleDate">&nbsp;</div>
   </div>
   <div class="idle-tap-hint">Tap anywhere to wake</div>
+</div>
+
+<!-- ================= TEST PANEL (temporary) =================
+     A dev tool for checking the mornings screen at other days, times, and
+     forecasts. Delete this block, the #testPanel CSS block, and the TEST PANEL
+     script section to remove it. -->
+<button id="testToggle" title="Test the board at another day, time, or forecast">🧪 Test</button>
+<div id="testPanel">
+  <h4>Test controls</h4>
+  <p class="test-sub">Pretends it is another moment. Nothing is written to Google — only this screen changes.</p>
+  <div class="test-row"><label for="testDate">Date</label><input type="date" id="testDate"></div>
+  <div class="test-row"><label for="testTime">Time</label><input type="time" id="testTime" step="60"></div>
+  <div class="test-row"><label for="testWeather">Weather</label>
+    <select id="testWeather">
+      <option value="">Live forecast</option>
+      <option value="sunny">Sunny</option>
+      <option value="partly">Partly cloudy</option>
+      <option value="cloudy">Cloudy</option>
+      <option value="rainy">Rainy</option>
+      <option value="snowy">Snowy</option>
+    </select>
+  </div>
+  <div class="test-presets">
+    <button type="button" data-jump="-15">Before start</button>
+    <button type="button" data-jump="12">Green</button>
+    <button type="button" data-jump="27">Orange</button>
+    <button type="button" data-jump="44">Red</button>
+    <button type="button" data-jump="60">Missed it</button>
+  </div>
+  <div class="test-actions">
+    <button type="button" id="testApply">Apply</button>
+    <button type="button" id="testReset">Back to live</button>
+  </div>
+  <div id="testNote">Using live time and forecast.</div>
 </div>
 
 <!-- ================= SETTINGS / CONNECT MODAL ================= -->
@@ -420,9 +690,15 @@
       <div class="ambient-status" id="ambientStatus"></div>
     </div>
 
+    <div class="field">
+      <label for="morningStartInput">Morning countdown starts at</label>
+      <input type="time" id="morningStartInput" step="60">
+      <div class="hint">The ring around the clock fills at this time and drains as the morning goes: green for 20 minutes, orange for 15, red for the last 15, and the red tick on the rim is leave-for-school time.</div>
+    </div>
+
     <div class="settings-actions">
       <button class="btn-secondary" id="cancelSettingsBtn">Cancel</button>
-      <button class="btn-primary" id="saveSettingsBtn">Save calendar choices</button>
+      <button class="btn-primary" id="saveSettingsBtn">Save settings</button>
     </div>
   </div>
 </div>
@@ -465,7 +741,7 @@ function daysFromToday(offset, hour, minute) {
   return d;
 }
 
-const PERSON_COLORS = { Kendall: '#C68A2E', Jake: '#5B6C8A', Emma: '#6E8B6E', Household: '#9A8F7A' };
+const PERSON_COLORS = { Kendall: '#C68A2E', Jake: '#5B6C8A', Emma: '#6E8B6E', Household: '#9A8F7A', Sami: '#5B6C8A', Rami: '#6E8B6E' };
 function colorForIndex(i) {
   const palette = ['#C68A2E', '#5B6C8A', '#6E8B6E', '#9A8F7A', '#B5533C', '#7A6C9E'];
   return palette[i % palette.length];
@@ -473,8 +749,10 @@ function colorForIndex(i) {
 
 const DEMO_EVENTS = [
   { title: "Team standup", who: "Kendall", start: daysFromToday(0, 9, 0), color: PERSON_COLORS.Kendall },
-  { title: "Dentist appointment", who: "Jake", start: daysFromToday(0, 14, 30), color: PERSON_COLORS.Jake },
-  { title: "Soccer practice", who: "Emma", start: daysFromToday(0, 16, 0), color: PERSON_COLORS.Emma },
+  { title: "Dentist appointment", who: "Jake", start: daysFromToday(0, 14, 30), color: PERSON_COLORS.Jake, location: "Tulsa Family Dental" },
+  { title: "Soccer practice — Sami", who: "Sami", start: daysFromToday(0, 15, 30), color: PERSON_COLORS.Sami, location: "Community Park Field 4", note: "Bring shin guards & water bottle" },
+  { title: "Piano lesson — Rami", who: "Rami", start: daysFromToday(0, 16, 15), color: PERSON_COLORS.Rami, location: "Ms. Rachel's Music Studio", note: "Bring purple songbook" },
+  { title: "Family taco night", who: "Household", start: daysFromToday(0, 18, 30), color: PERSON_COLORS.Household, location: "Kitchen island", note: "Rami helps grate cheese" },
   { title: "Grocery pickup", who: "Household", start: daysFromToday(1, 10, 0), color: PERSON_COLORS.Household },
   { title: "1:1 with manager", who: "Kendall", start: daysFromToday(1, 13, 0), color: PERSON_COLORS.Kendall },
   { title: "Piano lesson", who: "Emma", start: daysFromToday(2, 17, 0), color: PERSON_COLORS.Emma },
@@ -505,8 +783,14 @@ const DEMO_GROCERIES = [
   { label: "Coffee", qty: "1 bag", done: false },
 ];
 
+/* Keyed by weekday, mirroring the Mornings sheet's layout — school lunch is a
+   different row every day, so the demo has to vary too. */
 const DEMO_MORNING_MENU = {
-  main: 'Turkey sandwich', veggie: 'Cucumber slices', fruit: 'Apple', extra: 'Pretzels'
+  monday:    { main: 'Turkey sandwich', veggie: 'Cucumber slices', fruit: 'Apple slices', extra: 'Pretzels' },
+  tuesday:   { main: 'Cheese quesadilla', veggie: 'Bell pepper strips', fruit: 'Grapes', extra: 'Yogurt tube' },
+  wednesday: { main: 'Chicken wrap', veggie: 'Baby carrots', fruit: 'Clementine', extra: 'Granola bar' },
+  thursday:  { main: 'Pasta salad', veggie: 'Snap peas', fruit: 'Strawberries', extra: 'Cheese stick' },
+  friday:    { main: 'Pizza slice', veggie: 'Side salad', fruit: 'Watermelon', extra: 'Cookie' },
 };
 
 const MOCK_PHOTOS = [
@@ -530,6 +814,14 @@ let tokenClient = null;
 let isConnected = false;
 
 /* =========================================================================
+   TIME SOURCE — every morning-screen read of "now" goes through boardNow(),
+   so the test panel can pretend it is another day, hour, or forecast.
+   With the panel off this is just new Date().
+   ========================================================================= */
+const SIM = { active: false, offsetMs: 0, weather: null };
+function boardNow() { return SIM.active ? new Date(Date.now() + SIM.offsetMs) : new Date(); }
+
+/* =========================================================================
    CLOCK + AMBIENT WASH
    ========================================================================= */
 const washEl = document.getElementById('wash');
@@ -543,7 +835,7 @@ function washForHour(h) {
 function pad(n) { return n.toString().padStart(2, '0'); }
 
 function tick() {
-  const now = new Date();
+  const now = boardNow();
   const h24 = now.getHours();
   const h12 = ((h24 + 11) % 12) + 1;
   const ampm = h24 >= 12 ? 'PM' : 'AM';
@@ -556,22 +848,133 @@ function tick() {
   document.getElementById('idleDate').textContent = dateStr;
   washEl.style.background = washForHour(h24);
   updateMorningClock(now);
-}
-tick();
-setInterval(tick, 1000);
 
-function updateMorningClock(now = new Date()) {
-  const seconds = now.getSeconds();
-  const minutes = now.getMinutes() + seconds / 60;
-  const hours = (now.getHours() % 12) + minutes / 60;
-  document.getElementById('morningHourHand').style.transform = `translateX(-50%) rotate(${hours * 30}deg)`;
-  document.getElementById('morningMinuteHand').style.transform = `translateX(-50%) rotate(${minutes * 6}deg)`;
-  document.getElementById('morningSecondHand').style.transform = `translateX(-50%) rotate(${seconds * 6}deg)`;
-
+  if (dayKey(now) !== checklist.day) {
+    checklist = loadChecklist();
+    renderChecklists();
+    renderAfterSchool();
+    renderMorningMenu();
+  }
 }
 
 /* =========================================================================
-   TULSA WEATHER — keyless Open-Meteo forecast, refreshed every 15 minutes
+   MORNING CLOCK — analog dial with a live weather backdrop and a countdown
+   ring on the rim. The ring is anchored to the morning start time: it sits
+   full overnight, drains minute by minute from the start time, and is empty
+   once the leave-for-school marker passes.
+   ========================================================================= */
+const clockEl = document.getElementById('morningClock');
+const BAND_RADIUS = 189.5;
+const BAND_LENGTH = 2 * Math.PI * BAND_RADIUS;
+/* Offsets in minutes from the morning start time. */
+const MORNING_ZONES = { greenEnd: 20, orangeEnd: 35, leaveAt: 50 };
+const DEFAULT_MORNING_START = '07:00';
+
+function morningStart() {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(CONFIG.morningStart || DEFAULT_MORNING_START);
+  if (!match) return { hour: 7, minute: 0 };
+  const hour = Math.min(23, Math.max(0, Number(match[1])));
+  const minute = Math.min(59, Math.max(0, Number(match[2])));
+  return { hour, minute };
+}
+
+function buildClockFace() {
+  const numbers = document.getElementById('clockNumbers');
+  for (let n = 1; n <= 12; n++) {
+    const angle = (n / 12) * 2 * Math.PI - Math.PI / 2;
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('class', n === 12 ? 'clock-num n12' : 'clock-num');
+    text.setAttribute('x', (200 + 152 * Math.cos(angle)).toFixed(1));
+    text.setAttribute('y', (200 + 152 * Math.sin(angle)).toFixed(1));
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'central');
+    text.textContent = n;
+    numbers.appendChild(text);
+  }
+
+  const rays = document.getElementById('sunnyRays');
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * 2 * Math.PI;
+    const ray = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    ray.setAttribute('x1', (200 + 44 * Math.cos(angle)).toFixed(1));
+    ray.setAttribute('y1', (158 + 44 * Math.sin(angle)).toFixed(1));
+    ray.setAttribute('x2', (200 + 66 * Math.cos(angle)).toFixed(1));
+    ray.setAttribute('y2', (158 + 66 * Math.sin(angle)).toFixed(1));
+    rays.appendChild(ray);
+  }
+
+  const drops = document.getElementById('rainDrops');
+  [104, 132, 160, 188, 216, 244, 272, 300, 146, 230].forEach((x, i) => {
+    const drop = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    drop.setAttribute('class', 'wx-drop');
+    drop.setAttribute('x1', x); drop.setAttribute('y1', 176);
+    drop.setAttribute('x2', x - 7); drop.setAttribute('y2', 196);
+    drop.style.animationDelay = `${(i * 0.13).toFixed(2)}s`;
+    drop.style.animationDuration = `${(1.0 + (i % 4) * 0.09).toFixed(2)}s`;
+    drops.appendChild(drop);
+  });
+
+  const flakes = document.getElementById('snowFlakes');
+  [110, 145, 180, 215, 250, 285, 128, 232].forEach((x, i) => {
+    const flake = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    flake.setAttribute('class', 'wx-flake');
+    flake.setAttribute('cx', x); flake.setAttribute('cy', 186);
+    flake.setAttribute('r', (3.4 + (i % 3) * 1.1).toFixed(1));
+    flake.style.animationDelay = `${(i * 0.8).toFixed(2)}s`;
+    flake.style.animationDuration = `${(6 + (i % 3)).toFixed(1)}s`;
+    flakes.appendChild(flake);
+  });
+}
+
+/* Draws one arc of the rim ring between two minute-offsets from the start time. */
+function setBand(el, fromMinute, toMinute) {
+  const span = Math.max(0, toMinute - fromMinute);
+  if (span < 0.02) { el.style.visibility = 'hidden'; return; }
+  const length = (span / 60) * BAND_LENGTH;
+  el.style.visibility = 'visible';
+  el.setAttribute('stroke-dasharray', `${length.toFixed(2)} ${(BAND_LENGTH - length).toFixed(2)}`);
+  el.setAttribute('stroke-dashoffset', (-(fromMinute / 60) * BAND_LENGTH).toFixed(2));
+}
+
+function updateMorningClock(now = boardNow()) {
+  const seconds = now.getSeconds();
+  const minutes = now.getMinutes() + seconds / 60;
+  const hours = (now.getHours() % 12) + minutes / 60;
+  document.getElementById('morningHourHand').style.transform = `rotate(${hours * 30}deg)`;
+  document.getElementById('morningMinuteHand').style.transform = `rotate(${minutes * 6}deg)`;
+  document.getElementById('morningSecondHand').style.transform = `rotate(${seconds * 6}deg)`;
+
+  /* The dial reads minutes-past-the-hour, so every zone edge is expressed as a
+     minute position: the start minute plus its offset. Positions past 60 simply
+     wrap around the dial, which the dash offset handles on its own. */
+  const start = morningStart();
+  const startPosition = start.minute;
+  const elapsed = (now.getHours() * 60 + minutes) - (start.hour * 60 + start.minute);
+  const eaten = startPosition + Math.min(MORNING_ZONES.leaveAt, Math.max(0, elapsed));
+  setBand(document.getElementById('bandGreen'), Math.max(eaten, startPosition), startPosition + MORNING_ZONES.greenEnd);
+  setBand(document.getElementById('bandOrange'), Math.max(eaten, startPosition + MORNING_ZONES.greenEnd), startPosition + MORNING_ZONES.orangeEnd);
+  setBand(document.getElementById('bandRed'), Math.max(eaten, startPosition + MORNING_ZONES.orangeEnd), startPosition + MORNING_ZONES.leaveAt);
+
+  const leaveAngle = (((startPosition + MORNING_ZONES.leaveAt) / 60) * 360 - 90) * (Math.PI / 180);
+  const tick = document.getElementById('departureTick');
+  tick.setAttribute('x1', (200 + 174 * Math.cos(leaveAngle)).toFixed(1));
+  tick.setAttribute('y1', (200 + 174 * Math.sin(leaveAngle)).toFixed(1));
+  tick.setAttribute('x2', (200 + 199 * Math.cos(leaveAngle)).toFixed(1));
+  tick.setAttribute('y2', (200 + 199 * Math.sin(leaveAngle)).toFixed(1));
+}
+
+buildClockFace();
+/* Keep the weather strip exactly as wide as the dial it sits above. */
+if (window.ResizeObserver) {
+  const side = document.querySelector('.morning-clock-side');
+  new ResizeObserver(entries => {
+    side.style.setProperty('--clock-width', `${Math.round(entries[0].contentRect.width)}px`);
+  }).observe(clockEl);
+}
+
+/* =========================================================================
+   TULSA WEATHER — keyless Open-Meteo forecast, refreshed every 15 minutes.
+   Drives both the strip above the clock and the backdrop inside the dial.
    ========================================================================= */
 const WEATHER_URL = 'https://api.open-meteo.com/v1/forecast?latitude=36.1540&longitude=-95.9928&current=temperature_2m,weather_code&hourly=temperature_2m,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=America%2FChicago&forecast_days=1';
 
@@ -587,40 +990,56 @@ function weatherDescription(code) {
   return ['🌡️', 'Current weather'];
 }
 
+/* Collapses Open-Meteo's weather codes onto the five backdrops the dial draws. */
+/* Stand-in forecasts for the test panel, so simulating snow doesn't leave a
+   93° reading next to a snowflake. */
+const SIM_WEATHER = {
+  sunny: { code: 0, temp: 88, high: 96, low: 71, rain: 0 },
+  partly: { code: 2, temp: 76, high: 83, low: 64, rain: 10 },
+  cloudy: { code: 3, temp: 66, high: 70, low: 58, rain: 25 },
+  rainy: { code: 61, temp: 58, high: 62, low: 52, rain: 85 },
+  snowy: { code: 73, temp: 29, high: 34, low: 22, rain: 90 },
+};
+
+function weatherBackdrop(code) {
+  if (code === 0) return 'sunny';
+  if ([1, 2].includes(code)) return 'partly';
+  if ([3, 45, 48].includes(code)) return 'cloudy';
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return 'snowy';
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code)) return 'rainy';
+  return 'partly';
+}
+
 function renderWeather() {
-  const el = document.getElementById('weatherWidget');
+  const el = document.getElementById('weatherStrip');
+  if (SIM.weather) clockEl.dataset.wx = SIM.weather;
   if (!liveWeather) {
-    el.innerHTML = '<div class="weather-error">Tulsa weather is temporarily unavailable.</div>';
+    el.classList.add('is-error');
+    el.textContent = 'Tulsa weather is temporarily unavailable.';
     return;
   }
-  const { current, hourly, daily } = liveWeather;
-  const currentTemp = Math.round(current.temperature_2m);
-  const nowMs = new Date(current.time).getTime();
-  const futureTemps = hourly.time
-    .map((time, i) => ({ time: new Date(time).getTime(), temp: hourly.temperature_2m[i] }))
-    .filter(point => point.time > nowMs && point.time <= nowMs + 6 * 60 * 60 * 1000)
-    .map(point => point.temp)
-    .filter(Number.isFinite);
-  const laterTemp = futureTemps.length ? futureTemps[futureTemps.length - 1] : currentTemp;
-  const difference = laterTemp - currentTemp;
-  const trend = difference >= 3
-    ? `↗ Warmer later · high ${Math.round(daily.temperature_2m_max[0])}°`
-    : difference <= -3
-      ? `↘ Cooler later · low ${Math.round(daily.temperature_2m_min[0])}°`
-      : `→ Staying about the same`;
-  const rainChance = Math.round(daily.precipitation_probability_max[0] || 0);
-  const rainMessage = rainChance >= 50 ? `☔ Likely · ${rainChance}%` : rainChance >= 20 ? `🌦️ Possible · ${rainChance}%` : `🌂 Unlikely · ${rainChance}%`;
-  const [icon, condition] = weatherDescription(current.weather_code);
-  const updated = new Date(current.time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const { current, daily } = liveWeather;
+  const fake = SIM.weather ? SIM_WEATHER[SIM.weather] : null;
+  const code = fake ? fake.code : current.weather_code;
+  const temp = Math.round(fake ? fake.temp : current.temperature_2m);
+  const high = Math.round(fake ? fake.high : daily.temperature_2m_max[0]);
+  const low = Math.round(fake ? fake.low : daily.temperature_2m_min[0]);
+  const rainChance = Math.round((fake ? fake.rain : daily.precipitation_probability_max[0]) || 0);
+  const [icon, condition] = weatherDescription(code);
+  clockEl.dataset.wx = weatherBackdrop(code);
+  el.classList.remove('is-error');
   el.innerHTML = `
-    <div class="weather-heading"><span class="weather-place">Tulsa weather</span><span class="weather-updated">Updated ${updated}</span></div>
-    <div class="weather-now">
-      <div class="weather-icon" aria-hidden="true">${icon}</div>
-      <div><div class="weather-temp">${currentTemp}°</div><div class="weather-condition">${condition}</div></div>
+    <div class="weather-strip-now">
+      <span class="weather-strip-icon" aria-hidden="true">${icon}</span>
+      <div>
+        <div class="weather-strip-temp"><b>${temp}°</b><span class="weather-strip-cond">${condition}</span></div>
+        <div class="weather-strip-place">Tulsa weather</div>
+      </div>
     </div>
-    <div class="weather-details">
-      <div class="weather-detail"><div class="weather-detail-label">Temperature</div><div class="weather-detail-value">${trend}</div></div>
-      <div class="weather-detail"><div class="weather-detail-label">Rain today</div><div class="weather-detail-value">${rainMessage}</div></div>
+    <div class="weather-strip-stats">
+      <span class="hi">↑ ${high}°</span><i></i>
+      <span class="lo">↓ ${low}°</span><i></i>
+      <span class="rain">☂ ${rainChance}%</span>
     </div>`;
 }
 
@@ -648,6 +1067,7 @@ function openSettings() {
     : 'Connect Google account';
   renderCalendarPicker();
   renderAmbientStatus();
+  document.getElementById('morningStartInput').value = CONFIG.morningStart || DEFAULT_MORNING_START;
   overlay.classList.add('active');
 }
 
@@ -695,7 +1115,9 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   if (liveCalendars) {
     CONFIG.calendarIds = Array.from(document.querySelectorAll('#calendarPicker input:checked')).map(input => input.value);
   }
+  CONFIG.morningStart = document.getElementById('morningStartInput').value || DEFAULT_MORNING_START;
   saveConfig(CONFIG);
+  updateMorningClock();
   closeSettings();
 });
 
@@ -842,6 +1264,8 @@ async function fetchCalendar() {
           who: cal.summary,
           start: new Date(ev.start.dateTime || ev.start.date),
           color: cal.backgroundColor || '#5B6C8A',
+          location: ev.location || '',
+          note: (ev.description || '').split('\n')[0].trim(), // first line reads as the reminder
         }));
     }));
 
@@ -937,7 +1361,7 @@ async function fetchMorningMenu() {
   try {
     const range = CONFIG.menuSheetRange || 'Mornings!A2:E200';
     const data = await gfetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.menuSheetId}/values/${encodeURIComponent(range)}`);
-    const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const weekday = boardNow().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const row = (data.values || []).find(values => (values[0] || '').toString().trim().toLowerCase() === weekday);
     liveMorningMenu = row ? {
       main: row[1] || '', veggie: row[2] || '', fruit: row[3] || '', extra: row[4] || ''
@@ -1180,12 +1604,17 @@ function checkSVG() {
 function currentEvents() { return isConnected && liveEvents ? liveEvents : DEMO_EVENTS; }
 function currentTasks() { return isConnected && liveTasks ? liveTasks : DEMO_TASKS; }
 function currentGroceries() { return isConnected && liveGroceries ? liveGroceries : DEMO_GROCERIES; }
-function currentMorningMenu() { return isConnected ? liveMorningMenu : DEMO_MORNING_MENU; }
+function currentMorningMenu() {
+  if (isConnected) return liveMorningMenu;
+  const weekday = boardNow().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  return DEMO_MORNING_MENU[weekday] || null; // no demo row on weekends, same as the sheet
+}
 
 function renderCalendar() {
   const events = currentEvents();
   renderWeekAgendaList(events);
   renderWeekLanes(events);
+  renderAfterSchool(); // the mornings tab reads the same events
 }
 
 function renderWeekAgendaList(events) {
@@ -1347,19 +1776,204 @@ function renderMorningMenu() {
   const el = document.getElementById('morningMenu');
   const note = document.getElementById('morningMenuNote');
   const categories = [
-    ['🥪', 'Main', 'main'], ['🥕', 'Veggie', 'veggie'], ['🍎', 'Fruit', 'fruit'], ['✨', 'Extra', 'extra'],
+    ['🥪', 'main', '#C68A2E'], ['🥕', 'veggie', '#6E8B6E'],
+    ['🍎', 'fruit', '#B5533C'], ['✨', 'extra', '#5B6C8A'],
   ];
-  el.innerHTML = categories.map(([emoji, label, key]) => `
-    <div class="menu-card">
-      <div class="category"><span class="emoji">${emoji}</span><span class="kind">${label}</span></div>
-      <div class="food">${escapeHtml(menu && menu[key] ? menu[key] : '—')}</div>
-    </div>`).join('');
+  el.innerHTML = categories.map(([emoji, key, color]) => {
+    const food = menu && menu[key] ? menu[key] : '';
+    return `<div class="menu-chip${food ? '' : ' is-empty'}" style="--cat:${color}" title="${key}">
+      <span class="emoji" aria-hidden="true">${emoji}</span><span class="food">${escapeHtml(food || '—')}</span>
+    </div>`;
+  }).join('');
 
   if (!isConnected) note.textContent = 'Demo menu · connect Google to load today’s row.';
   else if (!CONFIG.menuSheetId) note.textContent = 'Add the menu Spreadsheet ID in Settings.';
-  else if (!menu && [0, 6].includes(new Date().getDay())) note.textContent = 'No school menu on weekends.';
+  else if (!menu && [0, 6].includes(boardNow().getDay())) note.textContent = 'No school menu on weekends.';
   else if (!menu) note.textContent = 'No menu row found for today’s weekday.';
   else note.textContent = 'Loaded from today’s row in Google Sheets.';
+}
+
+/* =========================================================================
+   RENDER: MORNING CHECKLISTS
+   Two kids, five jobs each, ticked off on the touchscreen. Progress lives in
+   localStorage under today's date, so it clears itself overnight and needs
+   no backend.
+   ========================================================================= */
+const CHECKLIST_KEY = 'homeboard_checklist_v1';
+
+/* Flat SVG portraits — drawn inline so the board stays a single file. */
+function kidAvatar(kid) {
+  const skin = '#EFC9A6', hair = '#6B4A2F', line = '#8A5A3B';
+  const glasses = kid.glasses ? `
+    <g fill="none" stroke="#333A3F" stroke-width="1.7">
+      <circle cx="26.4" cy="28.4" r="5.2" fill="#FFFFFF" fill-opacity="0.35"/>
+      <circle cx="38" cy="28.4" r="5.2" fill="#FFFFFF" fill-opacity="0.35"/>
+      <path d="M31.6 28.4h1.2"/>
+      <path d="M21.2 27.6l-2.6-1"/><path d="M43.2 27.6l2.6-1"/>
+    </g>` : '';
+  /* Long hair is a rounded slab behind the face; short hair is just the
+     crescent left over when the face circle sits low on the hair circle. */
+  const longHair = kid.longHair
+    ? `<rect x="16" y="22" width="32" height="27" rx="11" fill="${hair}"/>`
+    : '';
+  return `
+    <svg class="kid-avatar" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="32" fill="${kid.color}" fill-opacity="0.16"/>
+      <path d="M32 41c-9 0-16.5 5.4-18.6 12.9A32 32 0 0 0 32 64a32 32 0 0 0 18.6-10.1C48.5 46.4 41 41 32 41z" fill="${kid.color}"/>
+      ${longHair}
+      <circle cx="32" cy="${kid.longHair ? 25.2 : 25.8}" r="${kid.longHair ? 15.2 : 14.6}" fill="${hair}"/>
+      <circle cx="32" cy="${kid.longHair ? 29 : 28.4}" r="13.6" fill="${skin}"/>
+      <circle cx="26.4" cy="28.4" r="1.8" fill="#3B2C22"/>
+      <circle cx="38" cy="28.4" r="1.8" fill="#3B2C22"/>
+      ${glasses}
+      <path d="M27.6 34.6q4.6 3.8 9.2 0" fill="none" stroke="${line}" stroke-width="2" stroke-linecap="round"/>
+    </svg>`;
+}
+
+const KIDS = [
+  { id: 'sami', name: 'Sami', color: '#5B6C8A', glasses: true, longHair: false },
+  { id: 'rami', name: 'Rami', color: '#6E8B6E', glasses: false, longHair: true },
+];
+
+const MORNING_TASKS = [
+  { id: 'dressed', emoji: '👕', label: 'Dressed' },
+  { id: 'breakfast', emoji: '🥣', label: 'Breakfast' },
+  { id: 'lunch', emoji: '🥪', label: 'Lunch made' },
+  { id: 'shoes', emoji: '👟', label: 'Shoes' },
+  { id: 'backpack', emoji: '🎒', label: 'Backpack' },
+];
+
+function dayKey(d = boardNow()) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+
+function loadChecklist() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(CHECKLIST_KEY)) || {}; } catch (e) { saved = {}; }
+  return saved.day === dayKey() ? { day: saved.day, done: saved.done || {} } : { day: dayKey(), done: {} };
+}
+let checklist = loadChecklist();
+function saveChecklist() {
+  try { localStorage.setItem(CHECKLIST_KEY, JSON.stringify(checklist)); } catch (e) { /* private mode */ }
+}
+
+function renderChecklists() {
+  document.getElementById('kidChecklists').innerHTML = KIDS.map(kid => {
+    const doneCount = MORNING_TASKS.filter(task => checklist.done[`${kid.id}.${task.id}`]).length;
+    const complete = doneCount === MORNING_TASKS.length;
+    return `
+      <div class="kid-card${complete ? ' is-complete' : ''}" style="--kid-color:${kid.color}">
+        <div class="kid-head">
+          ${kidAvatar(kid)}
+          <span class="kid-name">${kid.name}</span>
+          <span class="kid-count">${complete ? 'All done 🎉' : `${doneCount} of ${MORNING_TASKS.length} done`}</span>
+        </div>
+        <div class="kid-bar"><span style="width:${(doneCount / MORNING_TASKS.length) * 100}%"></span></div>
+        <div class="kid-tiles">
+          ${MORNING_TASKS.map(task => {
+            const isDone = !!checklist.done[`${kid.id}.${task.id}`];
+            return `<button type="button" class="kid-tile${isDone ? ' is-done' : ''}"
+              data-toggle="${kid.id}.${task.id}" aria-pressed="${isDone}" aria-label="${kid.name}: ${task.label}">
+              <span class="emoji" aria-hidden="true">${task.emoji}</span><span class="label">${task.label}</span>
+            </button>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+document.getElementById('kidChecklists').addEventListener('click', event => {
+  const tile = event.target.closest('[data-toggle]');
+  if (!tile) return;
+  checklist.done[tile.dataset.toggle] = !checklist.done[tile.dataset.toggle];
+  saveChecklist();
+  renderChecklists();
+});
+
+document.getElementById('checklistReset').addEventListener('click', () => {
+  checklist = { day: dayKey(), done: {} };
+  saveChecklist();
+  renderChecklists();
+});
+
+/* =========================================================================
+   RENDER: AFTER SCHOOL
+   Today's calendar events from 2 PM onward. Everything on the card is derived
+   from the event itself, so nothing new has to be maintained by hand:
+     icon  — a leading emoji in the event title wins; otherwise it is guessed
+             from keywords in the title and location, falling back to a pin.
+     who   — a kid's name anywhere in the title wins (it also colours the card);
+             otherwise it's the calendar the event came from.
+     where — the event's Location field.
+     note  — the first line of the event's Description.
+   ========================================================================= */
+const AFTER_SCHOOL_FROM_HOUR = 14;
+
+/* First match wins, so put the specific patterns above the generic ones. */
+const ACTIVITY_ICONS = [
+  [/soccer|football/i, '⚽'], [/basketball/i, '🏀'], [/baseball|tee.?ball|softball/i, '⚾'],
+  [/tennis/i, '🎾'], [/swim|pool/i, '🏊'], [/karate|taekwondo|judo|jiu.?jitsu/i, '🥋'],
+  [/gymnastic|tumbl/i, '🤸'], [/dance|ballet/i, '🩰'], [/piano|violin|guitar|music|band|orchestra/i, '🎹'],
+  [/art|paint|draw|pottery/i, '🎨'], [/chess/i, '♟️'], [/scout|camp/i, '🏕️'],
+  [/parent.?teacher|conference|open house|school|pta/i, '🏫'], [/library|read/i, '📚'], [/homework|tutor|study|class|lesson/i, '✏️'],
+  [/dentist|orthodont/i, '🦷'], [/doctor|clinic|checkup|appointment|therapy/i, '🩺'],
+  [/haircut|barber/i, '💇'], [/masjid|mosque|quran|church|sunday school|temple/i, '🕌'],
+  [/birthday|party/i, '🎉'], [/playdate|park|playground/i, '🛝'],
+  [/pick.?up|drop.?off|carpool|bus/i, '🚗'], [/grocer|shop|store|errand/i, '🛒'],
+  [/dinner|lunch|taco|pizza|cook|bake/i, '🍽️'],
+  [/game|match|tournament|meet\b/i, '🏆'], [/practice|training|rehearsal/i, '🏃'],
+];
+
+/* An emoji typed at the front of the event title is an explicit override. */
+const LEADING_EMOJI = /^\s*(\p{Extended_Pictographic}\uFE0F?)\s*/u;
+
+function activityIcon(ev) {
+  const explicit = LEADING_EMOJI.exec(ev.title);
+  if (explicit) return explicit[1];
+  const haystack = `${ev.title} ${ev.location || ''}`;
+  const match = ACTIVITY_ICONS.find(([pattern]) => pattern.test(haystack));
+  return match ? match[1] : '📌';
+}
+
+function activityWho(ev) {
+  const named = KIDS.find(kid => new RegExp(`\\b${kid.name}\\b`, 'i').test(ev.title));
+  return named ? { label: named.name, color: named.color } : { label: ev.who, color: ev.color };
+}
+
+function renderAfterSchool() {
+  const el = document.getElementById('afterSchoolList');
+  const today = boardNow();
+  document.getElementById('afterSchoolDay').textContent =
+    today.toLocaleDateString(undefined, { weekday: 'long' });
+  const items = currentEvents()
+    .filter(ev => ev.start.toDateString() === today.toDateString() && ev.start.getHours() >= AFTER_SCHOOL_FROM_HOUR)
+    .sort((a, b) => a.start - b.start);
+
+  if (!items.length) {
+    el.innerHTML = '<li class="as-empty">Nothing on the calendar after school today.</li>';
+    return;
+  }
+  el.innerHTML = items.map(ev => {
+    const who = activityWho(ev);
+    /* Drop the override emoji and any "— Sami" tail already shown as the badge. */
+    const title = ev.title
+      .replace(LEADING_EMOJI, '')
+      .replace(new RegExp(`\\s*[—–-]\\s*${who.label}\\s*$`, 'i'), '')
+      .trim();
+    return `
+    <li class="as-item" style="--as-color:${who.color}">
+      <span class="as-icon" aria-hidden="true">${activityIcon(ev)}</span>
+      <div class="as-body">
+        <div class="as-line">
+          <span class="as-title">${escapeHtml(title || ev.title)}</span>
+          <span class="as-who">${escapeHtml(who.label)}</span>
+        </div>
+        <div class="as-meta">
+          <span>🕐 ${ev.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+          ${ev.location ? `<span>📍 ${escapeHtml(ev.location)}</span>` : ''}
+        </div>
+        ${ev.note ? `<div class="as-note">🔔 ${escapeHtml(ev.note)}</div>` : ''}
+      </div>
+    </li>`;
+  }).join('');
 }
 
 function escapeHtml(str) {
@@ -1371,6 +1985,84 @@ renderCalendar();
 renderTaskLanes();
 renderGroceries();
 renderMorningMenu();
+renderChecklists();
+renderAfterSchool();
+tick(); // starts last: it reads the checklist day, defined above
+setInterval(tick, 1000);
+
+/* =========================================================================
+   TEST PANEL (temporary)
+   Drives SIM, then re-renders everything that reads boardNow(). Delete this
+   whole section plus its CSS and markup to remove the feature.
+   ========================================================================= */
+(function setUpTestPanel() {
+  const panel = document.getElementById('testPanel');
+  const toggle = document.getElementById('testToggle');
+  const dateInput = document.getElementById('testDate');
+  const timeInput = document.getElementById('testTime');
+  const weatherInput = document.getElementById('testWeather');
+  const note = document.getElementById('testNote');
+
+  function fillFromBoard() {
+    const at = boardNow();
+    dateInput.value = dayKey(at);
+    timeInput.value = `${pad(at.getHours())}:${pad(at.getMinutes())}`;
+    weatherInput.value = SIM.weather || '';
+  }
+
+  function refreshEverything() {
+    tick();                 // header clock, date line, ambient wash, dial + ring
+    renderWeather();        // strip + weather backdrop
+    if (isConnected) fetchMorningMenu(); else renderMorningMenu(); // lunch is a per-weekday row
+    checklist = loadChecklist();
+    renderChecklists();
+    renderAfterSchool();
+    toggle.classList.toggle('is-simulating', SIM.active || !!SIM.weather);
+    note.textContent = SIM.active || SIM.weather
+      ? `Simulating ${boardNow().toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}${SIM.weather ? ` · ${SIM.weather}` : ''}. Time still runs forward.`
+      : 'Using live time and forecast.';
+  }
+
+  function applyFromInputs() {
+    const [y, m, d] = (dateInput.value || dayKey()).split('-').map(Number);
+    const [hh, mm] = (timeInput.value || '07:00').split(':').map(Number);
+    const target = new Date(y, m - 1, d, hh, mm, 0, 0);
+    SIM.offsetMs = target.getTime() - Date.now();
+    SIM.active = true;
+    SIM.weather = weatherInput.value || null;
+    refreshEverything();
+  }
+
+  toggle.addEventListener('click', () => {
+    const opening = !panel.classList.contains('active');
+    if (opening) fillFromBoard();
+    panel.classList.toggle('active', opening);
+    toggle.classList.toggle('is-on', opening);
+  });
+
+  document.getElementById('testApply').addEventListener('click', applyFromInputs);
+  document.getElementById('testReset').addEventListener('click', () => {
+    SIM.active = false; SIM.offsetMs = 0; SIM.weather = null;
+    fillFromBoard();
+    refreshEverything();
+  });
+  weatherInput.addEventListener('change', () => { SIM.weather = weatherInput.value || null; refreshEverything(); });
+
+  /* Presets jump to N minutes past the configured morning start time. */
+  panel.querySelectorAll('[data-jump]').forEach(button => {
+    button.addEventListener('click', () => {
+      const start = morningStart();
+      const at = new Date(boardNow());
+      at.setHours(start.hour, start.minute + Number(button.dataset.jump), 0, 0);
+      dateInput.value = dayKey(at);
+      timeInput.value = `${pad(at.getHours())}:${pad(at.getMinutes())}`;
+      applyFromInputs();
+    });
+  });
+
+  fillFromBoard();
+})();
+
 
 // Periodic full reload for unattended kiosk use. Data also refreshes in place,
 // but this resets the page if the browser has been running for a long time.
