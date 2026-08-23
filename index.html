@@ -209,9 +209,11 @@
   .temp-curve { width: min(100%, max(530px, var(--clock-width, 620px))); flex: 0 0 auto; }
   .temp-curve:empty { display: none; }
   .temp-curve svg { display: block; width: 100%; height: auto; overflow: visible; }
-  .tc-tick { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: var(--ink-soft); opacity: 0.75; }
-  .tc-now { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; fill: #9A5417; }
-  .tc-note { margin-top: -2px; text-align: center; font-size: clamp(0.7rem, 1.25vw, 0.84rem); font-weight: 600; color: var(--ink-soft); }
+  .tc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 0 4px 2px; }
+  .tc-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.61rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-soft); }
+  .tc-note { font-size: clamp(0.68rem, 1.2vw, 0.82rem); font-weight: 600; color: var(--ink); }
+  .tc-tick { font-family: 'IBM Plex Mono', monospace; font-size: 13px; fill: var(--ink-soft); opacity: 0.8; }
+  .tc-val { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; fill: var(--ink); }
 
   /* ---- analog clock: live weather behind the dial, morning countdown on the rim ---- */
   .analog-clock { position: relative; flex: none; width: min(100cqw, 100cqh); aspect-ratio: 1; }
@@ -1046,79 +1048,91 @@ function weatherBackdrop(code) {
   return 'partly';
 }
 
-/* Today's hourly temperatures as a small curve: where we are now, where the
-   peak (or trough) lands, and one line saying which way it is heading. The
-   hourly block was already being fetched and thrown away. */
+/* Blend across a fixed absolute scale, so 90° is the same colour every day. */
+const TEMP_SCALE = [[40, [91, 143, 201]], [62, [102, 168, 140]], [78, [217, 162, 60]], [92, [201, 85, 60]], [104, [168, 58, 44]]];
+
+function tempColor(t) {
+  const stops = TEMP_SCALE;
+  if (t <= stops[0][0]) return `rgb(${stops[0][1].join(',')})`;
+  for (let i = 1; i < stops.length; i++) {
+    if (t > stops[i][0]) continue;
+    const [t0, c0] = stops[i - 1], [t1, c1] = stops[i];
+    const k = (t - t0) / (t1 - t0);
+    return `rgb(${c0.map((c, j) => Math.round(c + (c1[j] - c) * k)).join(',')})`;
+  }
+  return `rgb(${stops[stops.length - 1][1].join(',')})`;
+}
+
+/* Today's temperatures as a labelled curve: six sampled hours, each with its
+   own reading, plus a marker for right now. The hourly block was already
+   being fetched and thrown away. */
 function renderTempCurve(currentTemp, offset) {
   const el = document.getElementById('tempCurve');
   const hourly = liveWeather && liveWeather.hourly;
   if (!hourly || !hourly.time) { el.innerHTML = ''; return; }
 
-  const points = hourly.time
-    .map((stamp, i) => ({ time: new Date(stamp), temp: hourly.temperature_2m[i] + offset }))
-    .filter(p => Number.isFinite(p.temp) && p.time.getHours() >= 6 && p.time.getHours() <= 21);
+  const byHour = new Map();
+  hourly.time.forEach((stamp, i) => {
+    const at = new Date(stamp);
+    const temp = hourly.temperature_2m[i] + offset;
+    if (Number.isFinite(temp)) byHour.set(at.getHours(), { time: at, temp });
+  });
+  const points = [6, 9, 12, 15, 18, 21].map(h => byHour.get(h)).filter(Boolean);
   if (points.length < 4) { el.innerHTML = ''; return; }
 
-  /* A narrower viewBox than the box it renders into, so the day's swing gets
-     real vertical travel instead of flattening into a straight line. */
-  const W = 640, LEFT = 24, RIGHT = 616, TOP = 10, BOTTOM = 54;
+  const W = 620, LEFT = 34, RIGHT = 586, TOP = 32, BOTTOM = 72;
   const temps = points.map(p => p.temp);
   const min = Math.min(...temps), max = Math.max(...temps);
   const span = Math.max(1, max - min);
   const xOf = i => LEFT + (i / (points.length - 1)) * (RIGHT - LEFT);
   const yOf = t => BOTTOM - ((t - min) / span) * (BOTTOM - TOP);
 
+  const hourLabel = date => date.toLocaleTimeString([], { hour: 'numeric' }).replace(/\s*(AM|PM)/i, (_, m) => m[0].toLowerCase());
   const line = points.map((p, i) => `${i ? 'L' : 'M'}${xOf(i).toFixed(1)} ${yOf(p.temp).toFixed(1)}`).join(' ');
-  const area = `${line} L${RIGHT} ${BOTTOM + 6} L${LEFT} ${BOTTOM + 6} Z`;
 
-  /* Where "now" sits along the run of hours, so the dot tracks through the day. */
+  /* Slide "now" along the sampled hours so the marker lands in the right gap. */
   const now = boardNow();
-  const hourPosition = (now - points[0].time) / 3600000;
-  const cursor = Math.max(0, Math.min(points.length - 1, hourPosition));
-  /* Read the temperature off the curve rather than the live sensor, so the dot
-     always sits on the line — and so a simulated hour shows that hour's temp. */
+  const nowHours = now.getHours() + now.getMinutes() / 60;
+  let cursor = 0;
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i].time.getHours(), b = points[i + 1].time.getHours();
+    if (nowHours >= a && nowHours <= b) { cursor = i + (nowHours - a) / (b - a); break; }
+    if (nowHours > b) cursor = i + 1;
+  }
+  const inWindow = nowHours >= points[0].time.getHours() && nowHours <= points[points.length - 1].time.getHours();
   const floor = Math.floor(cursor);
   const lower = points[Math.min(floor, points.length - 1)].temp;
   const upper = points[Math.min(floor + 1, points.length - 1)].temp;
   const onCurve = lower + (upper - lower) * (cursor - floor);
   const nowTemp = SIM.active ? onCurve : currentTemp;
-  const nowX = xOf(cursor);
-  const nowY = yOf(SIM.active ? onCurve : Math.max(min, Math.min(max, currentTemp)));
-  const inWindow = hourPosition >= 0 && hourPosition <= points.length - 1;
-  const labelAbove = nowY - 12 > TOP;
+  const nowX = xOf(cursor), nowY = yOf(inWindow ? onCurve : nowTemp);
 
-  const hourLabel = date => date.toLocaleTimeString([], { hour: 'numeric' }).replace(' ', '').toLowerCase();
-  const ticks = points.filter(p => p.time.getHours() % 3 === 0);
-
-  /* Describe only what is still to come — this morning's low is not news. */
-  const ahead = points.filter(p => p.time >= now);
+  /* Compare by time of day: the forecast rows are always dated today, so an
+     absolute comparison collapses the moment the test panel moves the date. */
+  const ahead = points.filter(p => p.time.getHours() >= nowHours);
   const rest = ahead.length ? ahead : points.slice(-1);
   const peak = rest.reduce((a, b) => (b.temp > a.temp ? b : a));
   const trough = rest.reduce((a, b) => (b.temp < a.temp ? b : a));
   let note;
   if (peak.temp - nowTemp >= 3) note = `Warming up — ${Math.round(peak.temp)}° by ${hourLabel(peak.time)}`;
   else if (nowTemp - trough.temp >= 3) note = `Cooling off — ${Math.round(trough.temp)}° by ${hourLabel(trough.time)}`;
-  else note = `Holding around ${Math.round(nowTemp)}° for the rest of the day`;
+  else note = `Holding around ${Math.round(nowTemp)}° the rest of the day`;
 
-  const marker = inWindow ? `
-    <line x1="${nowX.toFixed(1)}" y1="${(nowY + 4).toFixed(1)}" x2="${nowX.toFixed(1)}" y2="${BOTTOM + 6}" stroke="#C8722E" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.55"/>
-    <circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="4.8" fill="#C8722E" stroke="#FCFBF7" stroke-width="2.4"/>
-    <text class="tc-now" x="${nowX.toFixed(1)}" y="${(labelAbove ? nowY - 12 : nowY + 18).toFixed(1)}" text-anchor="middle">${Math.round(nowTemp)}°</text>` : '';
+  const gradient = points.map((p, i) =>
+    `<stop offset="${((i / (points.length - 1)) * 100).toFixed(1)}%" stop-color="${tempColor(p.temp)}"/>`).join('');
 
   el.innerHTML = `
-    <svg viewBox="0 0 ${W} 78" role="img" aria-label="${note}">
-      <defs>
-        <linearGradient id="tcFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#C8722E" stop-opacity="0.26"/>
-          <stop offset="100%" stop-color="#C8722E" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <path d="${area}" fill="url(#tcFill)"/>
-      <path d="${line}" fill="none" stroke="#C8722E" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-      ${ticks.map(p => `<text class="tc-tick" x="${xOf(points.indexOf(p)).toFixed(1)}" y="70" text-anchor="middle">${hourLabel(p.time)}</text>`).join('')}
-      ${marker}
-    </svg>
-    <div class="tc-note">${note}</div>`;
+    <div class="tc-head"><span class="tc-title">Daytime temp trend</span><span class="tc-note">${note}</span></div>
+    <svg viewBox="0 0 ${W} 90" role="img" aria-label="${note}">
+      <defs><linearGradient id="tcLine" x1="0" y1="0" x2="1" y2="0">${gradient}</linearGradient></defs>
+      <path d="${line}" fill="none" stroke="url(#tcLine)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+      ${points.map((p, i) => `
+        <circle cx="${xOf(i).toFixed(1)}" cy="${yOf(p.temp).toFixed(1)}" r="4.2" fill="#FCFBF7" stroke="${tempColor(p.temp)}" stroke-width="2.6"/>
+        <text class="tc-val" x="${xOf(i).toFixed(1)}" y="${(yOf(p.temp) - 11).toFixed(1)}" text-anchor="middle">${Math.round(p.temp)}°</text>
+        <text class="tc-tick" x="${xOf(i).toFixed(1)}" y="86" text-anchor="middle">${hourLabel(p.time)}</text>`).join('')}
+      ${inWindow ? `<circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="7" fill="none" stroke="#2F7D5B" stroke-width="2.4"/>
+        <circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="3" fill="#2F7D5B"/>` : ''}
+    </svg>`;
 }
 
 function renderWeather() {
@@ -1942,51 +1956,77 @@ function renderMorningMenu() {
    ========================================================================= */
 const CHECKLIST_KEY = 'homeboard_checklist_v1';
 
-/* Flat SVG portraits — drawn inline so the board stays a single file. */
+/* Anime-leaning portraits, drawn inline so the board stays a single file.
+   The two boys are told apart by hair silhouette first, glasses second, so
+   they still read at the 46px the card actually renders them at. */
 function kidAvatar(kid) {
-  const skin = '#F2CBA5', hair = '#5C3B24', mouth = '#B4654A';
+  const skin = '#F6D5B8', shade = '#E8B48C', brow = '#6B4A33', hair = '#4A3324';
+  const eye = (cx) => `
+    <ellipse cx="${cx}" cy="31.5" rx="4.1" ry="5.2" fill="#FFFFFF"/>
+    <ellipse cx="${cx}" cy="32.2" rx="3.5" ry="4.5" fill="#4A3A2C"/>
+    <ellipse cx="${cx}" cy="33" rx="2" ry="2.6" fill="#241A12"/>
+    <circle cx="${cx - 1.3}" cy="29.6" r="1.5" fill="#FFFFFF"/>
+    <circle cx="${cx + 1.5}" cy="34.6" r="0.8" fill="#FFFFFF" fill-opacity="0.85"/>
+    <path d="M${cx - 4.4} 28.6q4.4-3.2 8.8 0" fill="none" stroke="#241A12" stroke-width="1.9" stroke-linecap="round"/>`;
   const glasses = kid.glasses ? `
-    <g fill="none" stroke="#3A4249" stroke-width="1.6">
-      <rect x="19.6" y="25.2" width="11.6" height="10" rx="5"/>
-      <rect x="32.8" y="25.2" width="11.6" height="10" rx="5"/>
-      <path d="M31.2 30.2h1.6"/><path d="M19.6 29.4l-3.2-1"/><path d="M44.4 29.4l3.2-1"/>
+    <g fill="none" stroke="#3A4249" stroke-width="1.5" opacity="0.95">
+      <rect x="18.6" y="26.8" width="11" height="9.6" rx="4.4"/>
+      <rect x="34.4" y="26.8" width="11" height="9.6" rx="4.4"/>
+      <path d="M29.6 31.4h4.8"/><path d="M18.6 30.2l-3.4-1.4"/><path d="M45.4 30.2l3.4-1.4"/>
     </g>` : '';
-  /* Long hair is a slab behind the face; both get a fringe over the forehead. */
-  const backHair = kid.longHair
-    ? `<path d="M15 30c0-11 7.6-19 17-19s17 8 17 19v17a4 4 0 0 1-8 0V32H23v15a4 4 0 0 1-8 0z" fill="${hair}"/>`
-    : '';
-  const fringe = kid.longHair
-    ? `<path d="M16 30c0-10 7-17 16-17s16 7 16 17c-1.5-4-4-6.5-7-7.5-2.5 3-6 4.5-10.5 4.5-3 0-6-.5-9-2-3 1.5-5 3-5.5 5z" fill="${hair}"/>`
-    : `<path d="M16.5 30c0-9.5 6.9-16.5 15.5-16.5S47.5 20.5 47.5 30c-1.2-4.4-3.6-7-7.4-8.2-2.6 2.6-6.2 3.9-10.6 3.9-3.4 0-6.4-.7-8.8-2.2-2.4 1.4-3.8 3.6-4.2 6.5z" fill="${hair}"/>`;
+  /* Longer hair is a shaggy mass behind the face with sharp uneven tips —
+     the spikiness is what keeps it reading as a boy rather than a bob. */
+  const backHair = kid.longHair ? `
+    <path d="M14 30C14 15 21.5 7 32 7s18 8 18 23c0 4-.3 7.6-.9 10.8l-2.4-5-1.6 7.6-2.6-6.4-1.5 4V31H21.5v11.6l-1.5-4.6-2.6 7.6-1.6-8.4-2.5 5.6C14.3 38.6 14 34.6 14 30z" fill="${hair}"/>` : '';
+  const frontHair = kid.longHair
+    ? `<path d="M16.8 31.4C16.4 17 23.4 8.2 32 8.2s15.6 8.8 15.2 23.2l-2.6-9.8-2.4 5.6-3.4-8.6-3.6 7-3-9.2-4 8-3.2-8.4-4 8z" fill="${hair}"/>`
+    : `<path d="M17.8 31C17.4 18 24 9 32 9s14.6 9 14.2 22l-2.6-8.6-2.6 5.6-3.2-8.4-3.8 6.4-2.4-8.8-4.2 7.2-2.8-7.6-3.4 7z" fill="${hair}"/>
+       <path d="M32 9c4.6 0 8.4 3 10.8 7.6-2.6-2-6-3.2-10-3.2-3.4 0-6.6.9-9 2.6C26.2 11.7 29 9 32 9z" fill="${brow}" opacity="0.55"/>`;
   return `
     <svg class="kid-avatar" viewBox="0 0 64 64" aria-hidden="true">
       <circle cx="32" cy="32" r="32" fill="${kid.color}" fill-opacity="0.15"/>
-      <path d="M32 43c-10 0-18.2 5.9-20.2 13.9A32 32 0 0 0 32 64a32 32 0 0 0 20.2-7.1C50.2 48.9 42 43 32 43z" fill="${kid.color}"/>
-      <path d="M27 44.2 32 50l5-5.8" fill="none" stroke="#FFFFFF" stroke-opacity="0.5" stroke-width="2" stroke-linecap="round"/>
+      <path d="M32 45c-10.5 0-19 6-21 14.2A32 32 0 0 0 32 64a32 32 0 0 0 21-4.8C51 51 42.5 45 32 45z" fill="${kid.color}"/>
+      <path d="M26.5 46.4 32 53l5.5-6.6" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2.1" stroke-linecap="round"/>
       ${backHair}
-      <circle cx="16.8" cy="31.5" r="3.6" fill="${skin}"/><circle cx="47.2" cy="31.5" r="3.6" fill="${skin}"/>
-      <path d="M32 12c-8.6 0-15.5 6.6-15.5 15.5v6C16.5 41.4 23.4 47 32 47s15.5-5.6 15.5-13.5v-6C47.5 18.6 40.6 12 32 12z" fill="${skin}"/>
-      ${fringe}
-      <circle cx="20.5" cy="36.5" r="3.1" fill="#E88A8A" fill-opacity="0.45"/>
-      <circle cx="43.5" cy="36.5" r="3.1" fill="#E88A8A" fill-opacity="0.45"/>
-      <circle cx="25.4" cy="30.2" r="3.3" fill="#2F2620"/><circle cx="26.5" cy="29" r="1.25" fill="#FFFFFF"/>
-      <circle cx="38.6" cy="30.2" r="3.3" fill="#2F2620"/><circle cx="39.7" cy="29" r="1.25" fill="#FFFFFF"/>
-      ${glasses}
-      <path d="M28.4 37.6q3.6 3.4 7.2 0" fill="none" stroke="${mouth}" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="17.6" cy="33" r="3.1" fill="${shade}"/><circle cx="46.4" cy="33" r="3.1" fill="${shade}"/>
+      <path d="M17 30.2c0-10.8 6.4-17.4 15-17.4s15 6.6 15 17.4c0 8.4-5.6 15-15 17.2-9.4-2.2-15-8.8-15-17.2z" fill="${skin}"/>
+      <path d="M21.8 25.4q3.6-1.6 6.8-.2" fill="none" stroke="${brow}" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M42.2 25.4q-3.6-1.6-6.8-.2" fill="none" stroke="${brow}" stroke-width="1.4" stroke-linecap="round"/>
+      ${eye(24.6)}${eye(39.4)}
+      <path d="M31.4 37.4h1.6" stroke="${shade}" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M29.2 41q2.8 3 5.6 0" fill="none" stroke="#B8674F" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="21.8" cy="38.4" rx="2.7" ry="1.6" fill="#EE9A93" fill-opacity="0.35"/>
+      <ellipse cx="42.2" cy="38.4" rx="2.7" ry="1.6" fill="#EE9A93" fill-opacity="0.35"/>
+      ${glasses}${frontHair}
     </svg>`;
 }
 
-const KIDS = [
-  { id: 'sami', name: 'Sami', color: '#5B6C8A', glasses: true, longHair: false },
-  { id: 'rami', name: 'Rami', color: '#6E8B6E', glasses: false, longHair: true },
-];
-
-const MORNING_TASKS = [
+/* Each boy has his own list: the shared five plus the one that is his. */
+const SHARED_TASKS = [
   { id: 'dressed', emoji: '👕', label: 'Dressed' },
   { id: 'breakfast', emoji: '🥣', label: 'Breakfast' },
   { id: 'lunch', emoji: '🥪', label: 'Lunch made' },
   { id: 'shoes', emoji: '👟', label: 'Shoes' },
   { id: 'backpack', emoji: '🎒', label: 'Backpack' },
+];
+
+const KIDS = [
+  {
+    id: 'sami', name: 'Sami', color: '#5B6C8A', glasses: true, longHair: false,
+    /* OIT is taken with food, so it sits right after breakfast. */
+    tasks: [
+      SHARED_TASKS[0], SHARED_TASKS[1],
+      { id: 'oit', emoji: '💊', label: 'OIT' },
+      SHARED_TASKS[2], SHARED_TASKS[3], SHARED_TASKS[4],
+    ],
+  },
+  {
+    id: 'rami', name: 'Rami', color: '#6E8B6E', glasses: false, longHair: true,
+    tasks: [
+      { id: 'potty', emoji: '🚽', label: 'Potty' },
+      ...SHARED_TASKS,
+    ],
+  },
 ];
 
 function dayKey(d = boardNow()) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
@@ -2003,18 +2043,18 @@ function saveChecklist() {
 
 function renderChecklists() {
   document.getElementById('kidChecklists').innerHTML = KIDS.map(kid => {
-    const doneCount = MORNING_TASKS.filter(task => checklist.done[`${kid.id}.${task.id}`]).length;
-    const complete = doneCount === MORNING_TASKS.length;
+    const doneCount = kid.tasks.filter(task => checklist.done[`${kid.id}.${task.id}`]).length;
+    const complete = doneCount === kid.tasks.length;
     return `
       <div class="kid-card${complete ? ' is-complete' : ''}" style="--kid-color:${kid.color}">
         <div class="kid-head">
           ${kidAvatar(kid)}
           <span class="kid-name">${kid.name}</span>
-          <span class="kid-count">${complete ? 'All done 🎉' : `${doneCount} of ${MORNING_TASKS.length} done`}</span>
+          <span class="kid-count">${complete ? 'All done 🎉' : `${doneCount} of ${kid.tasks.length} done`}</span>
         </div>
-        <div class="kid-bar"><span style="width:${(doneCount / MORNING_TASKS.length) * 100}%"></span></div>
-        <div class="kid-tiles">
-          ${MORNING_TASKS.map(task => {
+        <div class="kid-bar"><span style="width:${(doneCount / kid.tasks.length) * 100}%"></span></div>
+        <div class="kid-tiles" style="grid-template-columns:repeat(${kid.tasks.length}, 1fr)">
+          ${kid.tasks.map(task => {
             const isDone = !!checklist.done[`${kid.id}.${task.id}`];
             return `<button type="button" class="kid-tile${isDone ? ' is-done' : ''}"
               data-toggle="${kid.id}.${task.id}" aria-pressed="${isDone}" aria-label="${kid.name}: ${task.label}">
