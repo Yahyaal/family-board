@@ -405,6 +405,41 @@
   }
   .btn-primary { background: var(--ink); color: #fff; }
   .btn-secondary { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+  #avatarOverlay {
+    position: fixed; inset: 0; z-index: 110; padding: 24px;
+    background: rgba(20, 22, 20, 0.45); display: none; align-items: center; justify-content: center;
+  }
+  #avatarOverlay.active { display: flex; }
+  .avatar-card { max-width: 680px; }
+  .avatar-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .avatar-tab {
+    padding: 7px 15px; border-radius: 100px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 600;
+  }
+  .avatar-tab.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .avatar-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 10px;
+    max-height: 44vh; overflow-y: auto; padding: 2px;
+  }
+  .avatar-grid.is-busy { opacity: 0.5; pointer-events: none; }
+  .avatar-opt {
+    display: flex; align-items: center; justify-content: center; padding: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; border-radius: 14px;
+  }
+  .avatar-opt img { width: 58px; height: 58px; display: block; }
+  .avatar-opt:hover { border-color: var(--dusk); }
+  .avatar-opt.is-current { border-color: var(--sage); background: #EAF1E9; }
+  .avatar-error { grid-column: 1 / -1; padding: 10px; border-radius: 10px; background: #F6E4E0; color: var(--red); font-size: 0.78rem; }
+
+  .kid-face { position: relative; flex-shrink: 0; display: inline-flex; }
+  .kid-edit {
+    position: absolute; right: -3px; bottom: -3px; width: 21px; height: 21px; padding: 0;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; border-radius: 50%; font-size: 0.62rem; line-height: 1;
+  }
+  .kid-edit:hover { background: var(--paper); border-color: #c7cdc4; }
+
   .pill-btn {
     font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em;
     border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
@@ -658,14 +693,6 @@
   <p class="test-sub">Pretends it is another moment. Nothing is written to Google — only this screen changes.</p>
   <div class="test-row"><label for="testDate">Date</label><input type="date" id="testDate"></div>
   <div class="test-row"><label for="testTime">Time</label><input type="time" id="testTime" step="60"></div>
-  <div class="test-row"><label for="testAvatar">Avatars</label>
-    <select id="testAvatar">
-      <option value="anime">Anime</option>
-      <option value="animal">Animal</option>
-      <option value="pixel">Pixel</option>
-      <option value="monogram">Monogram</option>
-    </select>
-  </div>
   <div class="test-row"><label for="testWeather">Weather</label>
     <select id="testWeather">
       <option value="">Live forecast</option>
@@ -688,6 +715,20 @@
     <button type="button" id="testReset">Back to live</button>
   </div>
   <div id="testNote">Using live time and forecast.</div>
+</div>
+
+<!-- ================= AVATAR PICKER ================= -->
+<div id="avatarOverlay">
+  <div class="settings-card avatar-card" style="position:relative;">
+    <button class="pill-btn settings-close" id="closeAvatarBtn">Close</button>
+    <h3 id="avatarTitle">Choose an avatar</h3>
+    <p class="sub">Tap one to use it. It is saved on this screen and kept for offline use.</p>
+    <div class="avatar-tabs" id="avatarTabs"></div>
+    <div class="avatar-grid" id="avatarGrid"></div>
+    <div class="settings-actions">
+      <button class="btn-secondary" id="avatarResetBtn">Use the built-in one</button>
+    </div>
+  </div>
 </div>
 
 <!-- ================= SETTINGS / CONNECT MODAL ================= -->
@@ -2041,6 +2082,13 @@ AVATAR_STYLES.monogram = drawn64(AVATAR_STYLES.monogram);
 const AVATAR_STYLE_NAMES = { anime: 'Anime', animal: 'Animal', pixel: 'Pixel', monogram: 'Monogram' };
 
 function kidAvatar(kid) {
+  const picked = typeof customAvatars !== 'undefined' && customAvatars[kid.id];
+  if (picked) {
+    const [, , width, height] = picked.viewBox.split(/\s+/).map(Number);
+    return `<svg class="kid-avatar" viewBox="${picked.viewBox}" aria-hidden="true">
+      <circle cx="${width / 2}" cy="${height / 2}" r="${Math.min(width, height) / 2}" fill="${kid.color}" fill-opacity=".15"/>
+      ${picked.inner}</svg>`;
+  }
   const style = AVATAR_STYLES[CONFIG.avatarStyle] ? CONFIG.avatarStyle : 'anime';
   return AVATAR_STYLES[style](kid);
 }
@@ -2093,7 +2141,8 @@ function renderChecklists() {
     return `
       <div class="kid-card${complete ? ' is-complete' : ''}" style="--kid-color:${kid.color}">
         <div class="kid-head">
-          ${kidAvatar(kid)}
+          <span class="kid-face">${kidAvatar(kid)}<button type="button" class="kid-edit" data-edit="${kid.id}"
+            title="Change ${kid.name}'s avatar" aria-label="Change ${kid.name}'s avatar">✏️</button></span>
           <span class="kid-name">${kid.name}</span>
           <span class="kid-count">${complete ? 'All done 🎉' : `${doneCount} of ${kid.tasks.length} done`}</span>
         </div>
@@ -2112,6 +2161,8 @@ function renderChecklists() {
 }
 
 document.getElementById('kidChecklists').addEventListener('click', event => {
+  const edit = event.target.closest('[data-edit]');
+  if (edit) { openAvatarPicker(edit.dataset.edit); return; }
   const tile = event.target.closest('[data-toggle]');
   if (!tile) return;
   checklist.done[tile.dataset.toggle] = !checklist.done[tile.dataset.toggle];
@@ -2123,6 +2174,158 @@ document.getElementById('checklistReset').addEventListener('click', () => {
   checklist = { day: dayKey(), done: {} };
   saveChecklist();
   renderChecklists();
+});
+
+/* =========================================================================
+   AVATAR PICKER
+   Thumbnails come from two freely licensed sets over their CDNs; the chosen
+   one is fetched once and cached in localStorage, so the board keeps drawing
+   it with no network afterwards.
+     Microsoft Fluent Emoji — MIT — github.com/microsoft/fluentui-emoji
+     DiceBear              — see AVATAR_ART above for per-style licences
+   ========================================================================= */
+const AVATAR_KEY = 'homeboard_avatars_v1';
+
+const FLUENT_ANIMALS = [
+  ['Fox', 'fox'], ['Lion', 'lion'], ['Bear', 'bear'], ['Panda', 'panda'], ['Tiger face', 'tiger_face'],
+  ['Dog face', 'dog_face'], ['Cat face', 'cat_face'], ['Wolf', 'wolf'], ['Koala', 'koala'],
+  ['Monkey face', 'monkey_face'], ['Penguin', 'penguin'], ['Frog', 'frog'], ['Rabbit face', 'rabbit_face'],
+  ['Hamster', 'hamster'], ['Unicorn', 'unicorn'], ['Dragon face', 'dragon_face'], ['Owl', 'owl'],
+  ['Pig face', 'pig_face'], ['Cow face', 'cow_face'], ['Chicken', 'chicken'], ['Turtle', 'turtle'],
+  ['Whale', 'whale'], ['Octopus', 'octopus'], ['Mouse face', 'mouse_face'], ['Hedgehog', 'hedgehog'],
+  ['Otter', 'otter'], ['Sloth', 'sloth'], ['Raccoon', 'raccoon'], ['Dolphin', 'dolphin'],
+];
+
+const ADVENTURER_HAIR = [
+  'short01','short02','short03','short04','short05','short06','short07','short08','short09','short10',
+  'short11','short12','short13','short14','short15','short16','short17','short18','short19',
+  'long11','long17','long20','long21','long22','long25',
+];
+const ADVENTURER_COLORS = ['0e0e0e', '3b2717', '6a4e35', 'ac6651', 'cb6820'];
+
+function adventurerUrl(hair, colorIndex, withGlasses) {
+  const params = new URLSearchParams({
+    seed: 'board', backgroundColor: 'transparent', hair,
+    hairColor: ADVENTURER_COLORS[colorIndex % ADVENTURER_COLORS.length],
+    skinColor: 'f2d3b1', eyes: 'variant12', eyebrows: 'variant07', mouth: 'variant19',
+    earringsProbability: '0', featuresProbability: '0',
+    glassesProbability: withGlasses ? '100' : '0',
+  });
+  if (withGlasses) params.set('glasses', 'variant05');
+  return `https://api.dicebear.com/9.x/adventurer/svg?${params}`;
+}
+
+function dicebearUrl(style, seed) {
+  return `https://api.dicebear.com/9.x/${style}/svg?seed=${encodeURIComponent(seed)}&backgroundColor=transparent`;
+}
+
+const AVATAR_CATALOG = {
+  Animals: FLUENT_ANIMALS.map(([dir, file]) => ({
+    label: dir,
+    url: `https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/${encodeURIComponent(dir)}/Color/${file}_color.svg`,
+  })),
+  Anime: ADVENTURER_HAIR.flatMap((hair, i) => [
+    { label: hair, url: adventurerUrl(hair, i, false) },
+    { label: `${hair} + glasses`, url: adventurerUrl(hair, i, true) },
+  ]),
+  Pixel: Array.from({ length: 24 }, (_, i) => ({ label: `Pixel ${i + 1}`, url: dicebearUrl('pixel-art', `pixel-${i}`) })),
+  Robots: Array.from({ length: 24 }, (_, i) => ({ label: `Bot ${i + 1}`, url: dicebearUrl('bottts', `bot-${i}`) })),
+};
+
+function loadAvatars() {
+  try { return JSON.parse(localStorage.getItem(AVATAR_KEY)) || {}; } catch (e) { return {}; }
+}
+let customAvatars = loadAvatars();
+function saveAvatars() {
+  try { localStorage.setItem(AVATAR_KEY, JSON.stringify(customAvatars)); } catch (e) { /* private mode */ }
+}
+
+/* Prefix every internal id and the references to it, so two portraits with the
+   same source (or Fluent's shared filter names) can share one page. */
+function adoptSvg(text, token) {
+  const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+  const svg = doc.querySelector('svg');
+  if (!svg || doc.querySelector('parsererror')) return null;
+  const viewBox = svg.getAttribute('viewBox') ||
+    `0 0 ${svg.getAttribute('width') || 64} ${svg.getAttribute('height') || 64}`;
+  svg.querySelectorAll('[id]').forEach(el => {
+    const from = el.id, to = token + from;
+    el.id = to;
+    svg.querySelectorAll('*').forEach(node => {
+      Array.from(node.attributes).forEach(attr => {
+        if (attr.value === `url(#${from})`) node.setAttribute(attr.name, `url(#${to})`);
+        else if (attr.value === `#${from}` && /href$/i.test(attr.name)) node.setAttribute(attr.name, `#${to}`);
+      });
+    });
+  });
+  svg.querySelectorAll('metadata').forEach(node => node.remove());
+  return { viewBox, inner: svg.innerHTML };
+}
+
+const avatarOverlay = document.getElementById('avatarOverlay');
+let pickingFor = null;
+let openCategory = 'Animals';
+
+function openAvatarPicker(kidId) {
+  pickingFor = kidId;
+  const kid = KIDS.find(k => k.id === kidId);
+  document.getElementById('avatarTitle').textContent = `Choose an avatar for ${kid.name}`;
+  document.getElementById('avatarTabs').innerHTML = Object.keys(AVATAR_CATALOG)
+    .map(name => `<button type="button" class="avatar-tab${name === openCategory ? ' active' : ''}" data-cat="${name}">${name}</button>`)
+    .join('');
+  renderAvatarGrid();
+  avatarOverlay.classList.add('active');
+}
+
+function renderAvatarGrid() {
+  const current = customAvatars[pickingFor];
+  document.getElementById('avatarGrid').innerHTML = AVATAR_CATALOG[openCategory].map(option => `
+    <button type="button" class="avatar-opt${current && current.url === option.url ? ' is-current' : ''}"
+      data-url="${escapeHtml(option.url)}" title="${escapeHtml(option.label)}">
+      <img src="${escapeHtml(option.url)}" alt="${escapeHtml(option.label)}" loading="lazy">
+    </button>`).join('');
+}
+
+async function chooseAvatar(url) {
+  const grid = document.getElementById('avatarGrid');
+  grid.classList.add('is-busy');
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(response.status);
+    const adopted = adoptSvg(await response.text(), `${pickingFor}_`);
+    if (!adopted) throw new Error('unreadable svg');
+    customAvatars[pickingFor] = { url, viewBox: adopted.viewBox, inner: adopted.inner };
+    saveAvatars();
+    renderChecklists();
+    avatarOverlay.classList.remove('active');
+  } catch (err) {
+    console.error('Avatar fetch failed', err);
+    grid.insertAdjacentHTML('afterbegin', '<div class="avatar-error">Could not load that one — check the connection and try again.</div>');
+  } finally {
+    grid.classList.remove('is-busy');
+  }
+}
+
+document.getElementById('avatarTabs').addEventListener('click', event => {
+  const tab = event.target.closest('[data-cat]');
+  if (!tab) return;
+  openCategory = tab.dataset.cat;
+  document.querySelectorAll('.avatar-tab').forEach(el => el.classList.toggle('active', el === tab));
+  renderAvatarGrid();
+});
+document.getElementById('avatarGrid').addEventListener('click', event => {
+  const option = event.target.closest('[data-url]');
+  if (option) chooseAvatar(option.dataset.url);
+});
+document.getElementById('closeAvatarBtn').addEventListener('click', () => avatarOverlay.classList.remove('active'));
+avatarOverlay.addEventListener('click', event => {
+  if (event.target === avatarOverlay) avatarOverlay.classList.remove('active');
+});
+document.getElementById('avatarResetBtn').addEventListener('click', () => {
+  delete customAvatars[pickingFor];
+  saveAvatars();
+  renderChecklists();
+  avatarOverlay.classList.remove('active');
 });
 
 /* =========================================================================
@@ -2232,7 +2435,6 @@ setInterval(tick, 1000);
   const dateInput = document.getElementById('testDate');
   const timeInput = document.getElementById('testTime');
   const weatherInput = document.getElementById('testWeather');
-  const avatarInput = document.getElementById('testAvatar');
   const note = document.getElementById('testNote');
 
   function fillFromBoard() {
@@ -2240,7 +2442,6 @@ setInterval(tick, 1000);
     dateInput.value = dayKey(at);
     timeInput.value = `${pad(at.getHours())}:${pad(at.getMinutes())}`;
     weatherInput.value = SIM.weather || '';
-    avatarInput.value = AVATAR_STYLES[CONFIG.avatarStyle] ? CONFIG.avatarStyle : 'anime';
   }
 
   function refreshEverything() {
@@ -2280,11 +2481,6 @@ setInterval(tick, 1000);
     refreshEverything();
   });
   weatherInput.addEventListener('change', () => { SIM.weather = weatherInput.value || null; refreshEverything(); });
-  avatarInput.addEventListener('change', () => {
-    CONFIG.avatarStyle = avatarInput.value;
-    saveConfig(CONFIG);
-    renderChecklists();
-  });
 
   /* Presets jump to N minutes past the configured morning start time. */
   panel.querySelectorAll('[data-jump]').forEach(button => {
