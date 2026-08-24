@@ -405,6 +405,32 @@
   }
   .btn-primary { background: var(--ink); color: #fff; }
   .btn-secondary { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+  /* ---- completion confetti ---- */
+  #confetti { position: fixed; inset: 0; z-index: 200; display: none; overflow: hidden; pointer-events: none; }
+  #confetti.active { display: block; }
+  .confetti-piece {
+    position: absolute; top: -6vh; display: block; opacity: 0;
+    animation-name: confettiFall; animation-timing-function: linear; animation-fill-mode: forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+    8% { opacity: 1; }
+    100% { transform: translate3d(var(--drift), 112vh, 0) rotate(var(--spin)); opacity: 1; }
+  }
+  .confetti-banner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .confetti-banner span {
+    font-family: 'Fraunces', serif; font-size: clamp(1.8rem, 5.5vw, 4rem); color: var(--ink);
+    background: rgba(255, 255, 255, 0.94); padding: 18px 40px; border-radius: 100px;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.4); text-align: center;
+    animation: bannerPop 0.5s cubic-bezier(0.2, 1.3, 0.4, 1) both, bannerOut 0.6s ease 3.3s forwards;
+  }
+  @keyframes bannerPop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  @keyframes bannerOut { to { transform: scale(0.92); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .confetti-piece { display: none; }
+    .confetti-banner span { animation: none; }
+  }
+
   #avatarOverlay {
     position: fixed; inset: 0; z-index: 110; padding: 24px;
     background: rgba(20, 22, 20, 0.45); display: none; align-items: center; justify-content: center;
@@ -432,13 +458,14 @@
   .avatar-opt.is-current { border-color: var(--sage); background: #EAF1E9; }
   .avatar-error { grid-column: 1 / -1; padding: 10px; border-radius: 10px; background: #F6E4E0; color: var(--red); font-size: 0.78rem; }
 
-  .kid-face { position: relative; flex-shrink: 0; display: inline-flex; }
-  .kid-edit {
-    position: absolute; right: -3px; bottom: -3px; width: 21px; height: 21px; padding: 0;
-    display: flex; align-items: center; justify-content: center; cursor: pointer;
-    border: 1px solid var(--line); background: #fff; border-radius: 50%; font-size: 0.62rem; line-height: 1;
+  .kid-face {
+    flex-shrink: 0; display: inline-flex; padding: 0; border: none; background: none;
+    border-radius: 50%; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
   }
-  .kid-edit:hover { background: var(--paper); border-color: #c7cdc4; }
+  .kid-face:hover { box-shadow: 0 0 0 3px var(--dusk-soft); }
+  .kid-face:active { transform: scale(0.94); }
+  .kid-face:focus-visible { outline: 2px solid var(--dusk); outline-offset: 3px; }
 
   .pill-btn {
     font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em;
@@ -717,6 +744,8 @@
   <div id="testNote">Using live time and forecast.</div>
 </div>
 
+<div id="confetti" aria-hidden="true"></div>
+
 <!-- ================= AVATAR PICKER ================= -->
 <div id="avatarOverlay">
   <div class="settings-card avatar-card" style="position:relative;">
@@ -828,7 +857,7 @@ function daysFromToday(offset, hour, minute) {
   return d;
 }
 
-const PERSON_COLORS = { Kendall: '#C68A2E', Jake: '#5B6C8A', Emma: '#6E8B6E', Household: '#9A8F7A', Sami: '#5B6C8A', Rami: '#6E8B6E' };
+const PERSON_COLORS = { Kendall: '#C68A2E', Jake: '#5B6C8A', Emma: '#6E8B6E', Household: '#9A8F7A', Sami: '#5B6C8A', Rami: '#B5533C' };
 function colorForIndex(i) {
   const palette = ['#C68A2E', '#5B6C8A', '#6E8B6E', '#9A8F7A', '#B5533C', '#7A6C9E'];
   return palette[i % palette.length];
@@ -2113,7 +2142,7 @@ const KIDS = [
     ],
   },
   {
-    id: 'rami', name: 'Rami', color: '#6E8B6E', glasses: false, curly: true,
+    id: 'rami', name: 'Rami', color: '#B5533C', glasses: false, curly: true,
     tasks: [
       SHARED_TASKS[0], SHARED_TASKS[1],
       { id: 'potty', emoji: '🚽', label: 'Potty' },
@@ -2141,8 +2170,8 @@ function renderChecklists() {
     return `
       <div class="kid-card${complete ? ' is-complete' : ''}" style="--kid-color:${kid.color}">
         <div class="kid-head">
-          <span class="kid-face">${kidAvatar(kid)}<button type="button" class="kid-edit" data-edit="${kid.id}"
-            title="Change ${kid.name}'s avatar" aria-label="Change ${kid.name}'s avatar">✏️</button></span>
+          <button type="button" class="kid-face" data-edit="${kid.id}"
+            title="Tap ${kid.name}'s picture to change it" aria-label="Change ${kid.name}'s avatar">${kidAvatar(kid)}</button>
           <span class="kid-name">${kid.name}</span>
           <span class="kid-count">${complete ? 'All done 🎉' : `${doneCount} of ${kid.tasks.length} done`}</span>
         </div>
@@ -2165,10 +2194,48 @@ document.getElementById('kidChecklists').addEventListener('click', event => {
   if (edit) { openAvatarPicker(edit.dataset.edit); return; }
   const tile = event.target.closest('[data-toggle]');
   if (!tile) return;
+  const kid = KIDS.find(k => k.id === tile.dataset.toggle.split('.')[0]);
+  const wasDone = isKidDone(kid);
   checklist.done[tile.dataset.toggle] = !checklist.done[tile.dataset.toggle];
   saveChecklist();
   renderChecklists();
+  if (!wasDone && isKidDone(kid)) celebrate(kid);
 });
+
+function isKidDone(kid) {
+  return kid.tasks.every(task => checklist.done[`${kid.id}.${task.id}`]);
+}
+
+/* Full-screen confetti for the moment the last box gets ticked. Pieces are
+   plain elements on their own layer so nothing else on the board reflows. */
+let confettiTimer = null;
+function celebrate(kid) {
+  const layer = document.getElementById('confetti');
+  const everyone = KIDS.every(isKidDone);
+  const palette = [kid.color, '#C68A2E', '#6E8B6E', '#B5533C', '#5B6C8A', '#D0842F', '#7A6C9E'];
+  let html = '';
+  for (let i = 0; i < 110; i++) {
+    const round = Math.random() < 0.3;
+    html += `<i class="confetti-piece" style="
+      left:${(Math.random() * 100).toFixed(1)}vw;
+      width:${(6 + Math.random() * 7).toFixed(0)}px;
+      height:${(10 + Math.random() * 9).toFixed(0)}px;
+      background:${palette[i % palette.length]};
+      border-radius:${round ? '50%' : '2px'};
+      animation-delay:${(Math.random() * 0.6).toFixed(2)}s;
+      animation-duration:${(2.2 + Math.random() * 1.5).toFixed(2)}s;
+      --drift:${(Math.random() * 260 - 130).toFixed(0)}px;
+      --spin:${(Math.random() * 900 - 450).toFixed(0)}deg;"></i>`;
+  }
+  html += `<div class="confetti-banner"><span>${everyone ? 'Everyone is ready! 🎉' : `${kid.name} is ready! 🎉`}</span></div>`;
+  layer.innerHTML = html;
+  layer.classList.add('active');
+  clearTimeout(confettiTimer);
+  confettiTimer = setTimeout(() => {
+    layer.classList.remove('active');
+    layer.innerHTML = '';
+  }, 4400);
+}
 
 document.getElementById('checklistReset').addEventListener('click', () => {
   checklist = { day: dayKey(), done: {} };
