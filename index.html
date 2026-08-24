@@ -857,7 +857,7 @@ function daysFromToday(offset, hour, minute) {
   return d;
 }
 
-const PERSON_COLORS = { Kendall: '#C68A2E', Jake: '#5B6C8A', Emma: '#6E8B6E', Household: '#9A8F7A', Sami: '#5B6C8A', Rami: '#6E8B6E' };
+const PERSON_COLORS = { Kendall: '#C68A2E', Jake: '#5B6C8A', Emma: '#6E8B6E', Household: '#9A8F7A', Sami: '#5B6C8A', Rami: '#B5533C' };
 function colorForIndex(i) {
   const palette = ['#C68A2E', '#5B6C8A', '#6E8B6E', '#9A8F7A', '#B5533C', '#7A6C9E'];
   return palette[i % palette.length];
@@ -2142,7 +2142,7 @@ const KIDS = [
     ],
   },
   {
-    id: 'rami', name: 'Rami', color: '#6E8B6E', glasses: false, curly: true,
+    id: 'rami', name: 'Rami', color: '#B5533C', glasses: false, curly: true,
     tasks: [
       SHARED_TASKS[0], SHARED_TASKS[1],
       { id: 'potty', emoji: '🚽', label: 'Potty' },
