@@ -1351,22 +1351,74 @@ function setUpTokenClient() {
   }, 40); // ~10s of retrying for the script to load
 }
 
+/* Access tokens last about an hour and Google Identity Services hands out no
+   refresh token to a browser client, so the board has to ask for a new one
+   before the old expires — otherwise every call starts failing and the screen
+   quietly goes stale. A blip in that renewal must not drop us to demo data
+   either, so silent failures back off and try again. */
+let tokenRenewTimer = null;
+let silentRetries = 0;
+let pendingInteractive = false;
+let tokenWaiters = [];
+
+function settleTokenWaiters(ok) {
+  const waiters = tokenWaiters;
+  tokenWaiters = [];
+  waiters.forEach(resolve => resolve(ok));
+}
+
 function handleTokenResponse(resp) {
   if (resp.error) {
-    // Silent attempts fail quietly (e.g. no existing Google session in this
-    // browser yet). Interactive attempts that fail just leave you disconnected.
-    setConnected(false);
+    settleTokenWaiters(false);
+    if (pendingInteractive) { setConnected(false); return; }
+    if (!accessToken) setConnected(false); // nothing to fall back on yet
+    if (silentRetries < 4) scheduleSilentRetry();
     return;
   }
+  const firstToken = !accessToken;
+  silentRetries = 0;
   accessToken = resp.access_token;
+  scheduleTokenRenewal(Number(resp.expires_in) || 3600);
   setConnected(true);
-  fetchAllData();
+  settleTokenWaiters(true);
+  if (firstToken) fetchAllData(); // a renewal lets the caller retry instead
+}
+
+function scheduleTokenRenewal(lifetimeSeconds) {
+  clearTimeout(tokenRenewTimer);
+  // Five minutes early, so a slow network never leaves a gap.
+  tokenRenewTimer = setTimeout(() => requestAccessToken(false), Math.max(30, lifetimeSeconds - 300) * 1000);
+}
+
+function scheduleSilentRetry() {
+  clearTimeout(tokenRenewTimer);
+  const backoff = [30, 120, 300, 900][Math.min(silentRetries, 3)];
+  silentRetries += 1;
+  tokenRenewTimer = setTimeout(() => requestAccessToken(false), backoff * 1000);
 }
 
 function requestAccessToken(interactive) {
   if (!tokenClient) return;
+  pendingInteractive = interactive;
   tokenClient.requestAccessToken({ prompt: interactive ? 'consent' : '' });
 }
+
+/* Resolves once the next silent grant lands, so a 401 can wait for it. */
+function renewTokenSilently() {
+  if (!tokenClient) return Promise.resolve(false);
+  return new Promise(resolve => {
+    tokenWaiters.push(resolve);
+    setTimeout(() => resolve(false), 10000); // first settle wins
+    if (tokenWaiters.length === 1) requestAccessToken(false);
+  });
+}
+
+/* A kiosk that slept through the expiry should recover on its own. */
+function renewIfStale() {
+  if (isConnected && accessToken && document.visibilityState === 'visible') requestAccessToken(false);
+}
+document.addEventListener('visibilitychange', renewIfStale);
+window.addEventListener('online', renewIfStale);
 
 function setConnected(connected) {
   isConnected = connected;
@@ -1390,6 +1442,8 @@ document.getElementById('connectBtn').addEventListener('click', () => {
       google.accounts.oauth2.revoke(accessToken, () => {});
     }
     accessToken = null;
+    clearTimeout(tokenRenewTimer);
+    silentRetries = 0;
     liveEvents = liveCalendars = liveTasks = liveGroceries = liveMorningMenu = null;
     setConnected(false);
     renderCalendar();
@@ -1442,7 +1496,7 @@ function sheetPrefixFor(spreadsheetId, configuredRange) {
   return configuredRange.includes('!') ? `${configuredRange.split('!')[0]}!` : '';
 }
 
-async function gfetch(url, options) {
+async function gfetch(url, options, isRetry) {
   const res = await fetch(url, {
     ...options,
     headers: {
@@ -1450,6 +1504,9 @@ async function gfetch(url, options) {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+  if ((res.status === 401 || res.status === 403) && !isRetry) {
+    if (await renewTokenSilently()) return gfetch(url, options, true);
+  }
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new Error(`${res.status} ${res.statusText}: ${body.slice(0, 200)}`);
