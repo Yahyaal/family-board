@@ -1400,7 +1400,11 @@ function scheduleSilentRetry() {
 function requestAccessToken(interactive) {
   if (!tokenClient) return;
   pendingInteractive = interactive;
-  tokenClient.requestAccessToken({ prompt: interactive ? 'consent' : '' });
+  /* '' shows the consent screen only when consent is actually missing, so a
+     reconnect after the first grant is silent — 'consent' would force Google's
+     unverified-app warning every single time. 'none' guarantees a background
+     renewal never opens a window on a wall-mounted screen. */
+  tokenClient.requestAccessToken({ prompt: interactive ? '' : 'none' });
 }
 
 /* Resolves once the next silent grant lands, so a 401 can wait for it. */
