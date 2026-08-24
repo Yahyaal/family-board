@@ -37,37 +37,11 @@
   #app { position: relative; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
   #wash { position: absolute; inset: 0; z-index: 0; pointer-events: none; transition: background 3s ease; }
 
-  /* ---------- TOP BAR ---------- */
-  header {
-    position: relative; z-index: 2;
-    display: flex; align-items: flex-start; justify-content: space-between;
-    padding: 26px 26px 14px; flex-shrink: 0; gap: 12px;
-  }
-  .clock { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.9rem); letter-spacing: -0.01em; line-height: 1; }
-  .clock span.ampm { font-size: 0.4em; font-family: 'IBM Plex Mono', monospace; font-weight: 500; color: var(--ink-soft); margin-left: 6px; }
-  .date-line { font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: var(--ink-soft); margin-top: 5px; letter-spacing: 0.02em; }
-
-  .top-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; flex-shrink: 0; }
-  .top-actions-row { display: flex; gap: 8px; }
-  .pill-btn {
-    font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em;
-    border: 1px solid var(--line); background: var(--paper-panel); color: var(--ink-soft);
-    padding: 8px 14px; border-radius: 100px; cursor: pointer; white-space: nowrap;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .pill-btn:hover { background: #fff; color: var(--ink); border-color: #c7cdc4; }
-  .pill-btn:focus-visible { outline: 2px solid var(--dusk); outline-offset: 2px; }
-  .pill-btn.is-connected { border-color: var(--sage); color: #3f5a3f; background: #EAF1E9; }
-  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-soft); flex-shrink: 0; }
-  .pill-btn.is-connected .status-dot { background: var(--sage); }
-  .sync-note { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; color: var(--ink-soft); text-align: right; }
-
   /* ---------- SHELL ---------- */
   .content-stack {
     position: relative; z-index: 2; flex: 1;
     display: flex; flex-direction: column;
-    padding: 0 22px 22px; min-height: 0;
+    padding: 20px 22px 22px; min-height: 0;
   }
 
   section.panel {
@@ -75,7 +49,22 @@
     padding: 18px 22px 18px; display: flex; flex-direction: column; min-height: 0; flex: 1;
   }
 
-  .tab-switch { display: flex; gap: 8px; background: var(--paper); border-radius: 100px; padding: 5px; margin-bottom: 16px; flex-shrink: 0; }
+  .tab-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-shrink: 0; }
+  .tab-switch { flex: 1; min-width: 0; display: flex; gap: 8px; background: var(--paper); border-radius: 100px; padding: 5px; }
+  .tab-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .icon-btn {
+    position: relative; width: 46px; height: 46px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    border-radius: 15px; cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .icon-btn svg { width: 22px; height: 22px; }
+  .icon-btn:hover { background: #fff; color: var(--ink); border-color: #c7cdc4; }
+  .icon-btn:focus-visible { outline: 2px solid var(--dusk); outline-offset: 2px; }
+  .icon-btn .dot { position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--ink-soft); border: 2px solid var(--paper); }
+  .icon-btn.is-connected { background: #EAF1E9; border-color: var(--sage); color: #3f5a3f; }
+  .icon-btn.is-connected .dot { background: var(--sage); border-color: #EAF1E9; }
   .tab-btn {
     flex: 1; border: none; background: transparent; color: var(--ink-soft);
     font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.95rem;
@@ -179,56 +168,182 @@
   .ambient-status:empty { display: none; }
 
   /* ================= MORNINGS ================= */
-  .morning-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(300px, 1.15fr) minmax(280px, 1fr); gap: 24px; }
-  .morning-clock-side, .morning-menu-side { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .morning-clock-side { padding: 10px; }
-  .morning-menu-side { align-items: stretch; justify-content: stretch; border-left: 1px solid var(--line); padding-left: 24px; gap: 16px; }
-  .analog-clock { position: relative; width: min(100%, 62vh); aspect-ratio: 1; border-radius: 50%; background: conic-gradient(#5F8B63 0deg 120deg, #D0842F 120deg 210deg, #B94F3D 210deg 300deg, #9A8F7A 300deg 360deg); box-shadow: var(--shadow); }
-  .analog-clock::before { content: ''; position: absolute; inset: 22px; z-index: 0; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
-  .clock-number { position: absolute; z-index: 1; font-family: 'IBM Plex Mono', monospace; font-size: clamp(1.1rem, 2.3vw, 1.7rem); font-weight: 700; color: var(--ink); transform: translate(-50%, -50%); }
-  .clock-number.n12 { left: 50%; top: 10%; } .clock-number.n1 { left: 70%; top: 15.4%; }
-  .clock-number.n2 { left: 84.6%; top: 30%; } .clock-number.n3 { left: 90%; top: 50%; }
-  .clock-number.n4 { left: 84.6%; top: 70%; } .clock-number.n5 { left: 70%; top: 84.6%; }
-  .clock-number.n6 { left: 50%; top: 90%; } .clock-number.n7 { left: 30%; top: 84.6%; }
-  .clock-number.n8 { left: 15.4%; top: 70%; } .clock-number.n9 { left: 10%; top: 50%; }
-  .clock-number.n10 { left: 15.4%; top: 30%; } .clock-number.n11 { left: 30%; top: 15.4%; }
-  .clock-hand { position: absolute; z-index: 1; left: 50%; bottom: 50%; transform-origin: 50% 100%; border-radius: 999px; transform: translateX(-50%) rotate(0deg); }
-  .clock-hand.hour { width: 7px; height: 27%; background: var(--ink); }
-  .clock-hand.minute { width: 5px; height: 37%; background: var(--ink-soft); }
-  .clock-hand.second { width: 2px; height: 40%; background: var(--red); }
-  .clock-pin { position: absolute; z-index: 2; left: 50%; top: 50%; width: 14px; height: 14px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--ink); }
-  .morning-right-half { min-height: 0; flex: 1 1 50%; display: flex; flex-direction: column; justify-content: center; }
-  .weather-widget { overflow: hidden; border-radius: 20px; padding: 20px 22px; color: #24313B; background: linear-gradient(145deg, #DCEBF3, #F7E9C9); box-shadow: var(--shadow); }
-  .weather-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .weather-place { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
-  .weather-updated { font-size: 0.68rem; color: #52616B; }
-  .weather-now { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 15px; margin-top: 10px; }
-  .weather-icon { font-size: clamp(3rem, 7vw, 4.8rem); line-height: 1; }
-  .weather-temp { font-family: 'Fraunces', serif; font-size: clamp(3rem, 7vw, 5rem); line-height: 0.9; }
-  .weather-condition { margin-top: 7px; font-weight: 600; }
-  .weather-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
-  .weather-detail { min-width: 0; padding: 11px 12px; border-radius: 12px; background: rgba(255,255,255,0.58); }
-  .weather-detail-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: #52616B; text-transform: uppercase; letter-spacing: 0.05em; }
-  .weather-detail-value { margin-top: 4px; font-size: clamp(0.92rem, 1.8vw, 1.15rem); font-weight: 700; }
-  .weather-error { padding: 18px; color: var(--ink-soft); text-align: center; }
-  .menu-half { border-top: 1px solid var(--line); padding-top: 14px; }
-  .morning-menu-title { margin: 0 0 12px; font-family: 'Fraunces', serif; font-size: clamp(1.7rem, 3.2vw, 2.35rem); }
-  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .menu-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; min-height: 96px; }
-  .menu-card .category { display: flex; align-items: center; gap: 9px; }
-  .menu-card .emoji { font-size: 1.55rem; line-height: 1; }
-  .menu-card .kind { font-family: 'IBM Plex Mono', monospace; font-size: 0.86rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-soft); }
-  .menu-card .food { margin-top: 9px; font-family: 'Fraunces', serif; font-size: clamp(1.3rem, 2.5vw, 1.75rem); line-height: 1.15; }
-  .morning-note { margin-top: 12px; font-size: 0.75rem; color: var(--ink-soft); }
+  .morning-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(280px, 1fr) minmax(330px, 1.02fr); gap: 22px; }
+  .morning-clock-side { min-width: 0; min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 2px 10px; }
+  /* The dial is the largest square that fits the leftover column, so it grows
+     with the screen instead of being pinned to a viewport fraction. */
+  .clock-fit { flex: 1 1 auto; min-height: 0; width: 100%; container-type: size; display: flex; align-items: center; justify-content: center; }
+  .morning-side-panel { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 16px; border-left: 1px solid var(--line); padding-left: 22px; }
+
+  /* ---- compact weather strip: the numbers the clock backdrop can't spell out ---- */
+  .now-strip {
+    width: min(100%, max(530px, var(--clock-width, 620px))); flex: 0 0 auto;
+    display: flex; align-items: center; gap: 15px;
+    padding: 9px 18px 9px 17px; border-radius: 100px;
+    background: var(--paper-panel); border: 1px solid var(--line); box-shadow: var(--shadow);
+  }
+  .now-time { flex-shrink: 0; }
+  .now-clock { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.5rem, 2.9vw, 2.15rem); line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
+  .now-clock .ampm { margin-left: 5px; font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 0.4em; color: var(--ink-soft); }
+  .now-date { margin-top: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.02em; color: var(--ink-soft); white-space: nowrap; }
+  .now-divider { flex-shrink: 0; width: 1px; align-self: stretch; margin: 2px 0; background: var(--line); }
+  .now-weather { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .now-weather.is-error { justify-content: center; font-size: 0.78rem; color: var(--ink-soft); }
+  .weather-strip-now { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .weather-strip-now > div { min-width: 0; } /* lets the condition ellipsis instead of overlapping */
+  .weather-strip-icon { font-size: clamp(1.5rem, 3vw, 2.05rem); line-height: 1; flex-shrink: 0; }
+  .weather-strip-temp { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+  .weather-strip-temp b { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.3rem, 2.6vw, 1.8rem); line-height: 1; }
+  .weather-strip-cond { font-size: clamp(0.72rem, 1.4vw, 0.86rem); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .weather-strip-place { white-space: nowrap; font-family: 'IBM Plex Mono', monospace; font-size: 0.64rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-soft); margin-top: 3px; }
+  .weather-strip-stats {
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding: 6px 12px; border-radius: 100px;
+    background: var(--paper); font-family: 'IBM Plex Mono', monospace; font-weight: 500;
+    font-size: clamp(0.68rem, 1.3vw, 0.8rem);
+  }
+  .weather-strip-stats .hi { color: var(--red); }
+  .weather-strip-stats .lo { color: var(--dusk); }
+  .weather-strip-stats .rain { color: #3E6E8E; }
+  .weather-strip-stats i { width: 1px; height: 13px; background: var(--line); }
+
+  .temp-curve { width: min(100%, max(530px, var(--clock-width, 620px))); flex: 0 0 auto; }
+  .temp-curve:empty { display: none; }
+  .temp-curve svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .tc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 0 4px 2px; }
+  .tc-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.61rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-soft); }
+  .tc-note { font-size: clamp(0.68rem, 1.2vw, 0.82rem); font-weight: 600; color: var(--ink); }
+  .tc-tick { font-family: 'IBM Plex Mono', monospace; font-size: 13px; fill: var(--ink-soft); opacity: 0.8; }
+  .tc-val { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; fill: var(--ink); }
+
+  /* ---- analog clock: live weather behind the dial, morning countdown on the rim ---- */
+  .analog-clock { position: relative; flex: none; width: min(100cqw, 100cqh); aspect-ratio: 1; }
+  .analog-clock svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 12px 26px rgba(33, 38, 43, 0.26)); }
+  .clock-band { fill: none; stroke-width: 13; }
+  .clock-num { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 23px; fill: var(--ink); stroke: rgba(255, 255, 255, 0.85); stroke-width: 5px; paint-order: stroke fill; }
+  .clock-num.n12 { font-size: 26px; }
+  .clock-hand { stroke-linecap: round; transform-box: view-box; transform-origin: 200px 200px; }
+  .clock-hand.hour { stroke: var(--ink); stroke-width: 7; }
+  .clock-hand.minute { stroke: var(--ink-soft); stroke-width: 5; }
+  .clock-hand.second { stroke: var(--red); stroke-width: 2; }
+
+  /* Only the layer matching the current conditions is drawn; the rest stay parked
+     in the DOM so switching conditions never restarts the other animations. */
+  .wx-layer { display: none; }
+  .analog-clock[data-wx="sunny"] .wx-sunny,
+  .analog-clock[data-wx="partly"] .wx-partly,
+  .analog-clock[data-wx="cloudy"] .wx-cloudy,
+  .analog-clock[data-wx="rainy"] .wx-rainy,
+  .analog-clock[data-wx="snowy"] .wx-snowy { display: block; }
+  .wx-sun-rays { transform-box: view-box; transform-origin: 200px 158px; animation: wxSunSpin 48s linear infinite; }
+  .wx-sun-glow { transform-box: view-box; transform-origin: 200px 158px; animation: wxSunPulse 6s ease-in-out infinite; }
+  .wx-sun-glow.off-centre { transform-origin: 258px 142px; }
+  .wx-drift-a { transform-box: view-box; animation: wxDriftA 26s ease-in-out infinite; }
+  .wx-drift-b { transform-box: view-box; animation: wxDriftB 34s ease-in-out infinite; }
+  .wx-drop { transform-box: view-box; animation: wxRain 1.15s linear infinite; }
+  .wx-flake { transform-box: view-box; animation: wxSnow 7s linear infinite; }
+  @keyframes wxSunSpin { to { transform: rotate(360deg); } }
+  @keyframes wxSunPulse { 0%, 100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.07); } }
+  @keyframes wxDriftA { 0%, 100% { transform: translateX(-16px); } 50% { transform: translateX(16px); } }
+  @keyframes wxDriftB { 0%, 100% { transform: translateX(14px); } 50% { transform: translateX(-14px); } }
+  @keyframes wxRain { 0% { transform: translate(0, -20px); opacity: 0; } 15% { opacity: 0.8; } 80% { opacity: 0.8; } 100% { transform: translate(-26px, 200px); opacity: 0; } }
+  @keyframes wxSnow { 0% { transform: translate(0, -20px); opacity: 0; } 15% { opacity: 0.9; } 75% { opacity: 0.9; } 100% { transform: translate(22px, 210px); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .wx-sun-rays, .wx-sun-glow, .wx-drift-a, .wx-drift-b, .wx-drop, .wx-flake { animation: none; }
+  }
+
+  /* Lunch reads as a row of chips under the dial — the emoji is the category,
+     so the words are only ever the food itself. */
+  .menu-block { flex: 0 0 auto; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .menu-title { margin: 0; font-family: 'Fraunces', serif; font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 1.1; }
+  .menu-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  /* Each category carries a colour as well as an emoji, so the four slots are
+     tellable apart from across the kitchen. */
+  .menu-chip { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 16px 7px 12px; border-radius: 100px; background: #fff; border: 2px solid var(--cat); }
+  .menu-chip .emoji { font-size: 1.15rem; line-height: 1; flex-shrink: 0; }
+  .menu-chip .food { font-family: 'Fraunces', serif; font-size: clamp(0.92rem, 1.55vw, 1.2rem); line-height: 1.15; }
+  .menu-chip.is-empty { border-style: dashed; opacity: 0.5; }
+  .morning-note { font-size: 0.68rem; color: var(--ink-soft); text-align: center; }
+
+  /* ---- right column: checklists over after-school ---- */
+  .side-title { margin: 0 0 10px; font-family: 'Fraunces', serif; font-size: clamp(1.1rem, 1.9vw, 1.5rem); display: flex; align-items: baseline; gap: 9px; flex-shrink: 0; }
+  .side-title-note { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); background: var(--paper); padding: 3px 8px; border-radius: 100px; }
+
+  .checklist-block { flex: 0 0 auto; }
+  .checklist-reset {
+    margin-left: auto; padding: 5px 11px; border-radius: 100px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.63rem;
+  }
+  .checklist-reset:hover { background: #fff; color: var(--ink); }
+  /* Kids stack full width so the five tiles stay big enough to hit with a thumb. */
+  .kid-grid { display: flex; flex-direction: column; gap: 10px; }
+  .kid-card { min-width: 0; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 12px 13px 13px; }
+  .kid-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .kid-avatar { width: clamp(34px, 3vw, 46px); height: clamp(34px, 3vw, 46px); flex-shrink: 0; }
+  .kid-name { font-family: 'Fraunces', serif; font-size: clamp(1rem, 1.7vw, 1.35rem); line-height: 1.1; }
+  .kid-count { margin-left: auto; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: clamp(0.66rem, 1.1vw, 0.8rem); color: var(--ink-soft); }
+  .kid-card.is-complete .kid-count { color: var(--kid-color); font-weight: 600; }
+  .kid-bar { height: 7px; margin: 9px 0 10px; border-radius: 100px; background: var(--paper); overflow: hidden; }
+  .kid-bar span { display: block; height: 100%; border-radius: 100px; background: var(--kid-color); transition: width 0.35s ease; }
+  .kid-tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .kid-tile {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    min-width: 0; padding: 11px 4px 9px; border-radius: 14px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  }
+  .kid-tile .emoji { font-size: clamp(1.3rem, 2.2vw, 1.8rem); line-height: 1; }
+  .kid-tile .label { max-width: 100%; font-size: clamp(0.62rem, 1.05vw, 0.8rem); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kid-tile:active { transform: scale(0.96); }
+  .kid-tile.is-done { background: var(--kid-color); border-color: var(--kid-color); color: #fff; }
+
+  .after-school { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .as-list { list-style: none; margin: 0; padding: 0; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+  .as-item { display: flex; align-items: flex-start; gap: 11px; min-width: 0; padding: 10px 12px; border-radius: 14px; background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--as-color, var(--dusk)); }
+  .as-icon {
+    flex-shrink: 0; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+    border-radius: 12px; font-size: 1.35rem; line-height: 1;
+    background: var(--paper); background: color-mix(in srgb, var(--as-color) 16%, #FFFFFF);
+  }
+  .as-body { flex: 1; min-width: 0; }
+  .as-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .as-title { min-width: 0; font-family: 'Fraunces', serif; font-size: clamp(0.95rem, 1.6vw, 1.2rem); line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .as-who { flex-shrink: 0; padding: 2px 9px; border-radius: 100px; background: var(--as-color); color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.07em; text-transform: uppercase; }
+  .as-meta { display: flex; flex-wrap: wrap; gap: 4px 13px; margin-top: 4px; font-size: 0.72rem; color: var(--ink-soft); }
+  .as-meta span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .as-note { margin-top: 4px; font-size: 0.71rem; color: #96601C; }
+  .as-empty { padding: 16px; border-radius: 12px; background: var(--paper); color: var(--ink-soft); font-size: 0.82rem; text-align: center; }
+  /* Short panels (a 768px-tall screen) can't fit both blocks at full size, so
+     the checklist gives its slack to the after-school list. */
+  @media (max-height: 830px) {
+    .morning-side-panel { gap: 11px; }
+    .side-title { margin-bottom: 7px; }
+    .kid-card { padding: 8px 9px 9px; border-radius: 14px; }
+    .kid-avatar { width: 32px; height: 32px; }
+    .kid-bar { height: 5px; margin: 6px 0 7px; }
+    .kid-tiles { gap: 6px; }
+    .kid-tile { padding: 7px 3px 6px; gap: 4px; border-radius: 11px; }
+    .kid-tile .emoji { font-size: 1.2rem; }
+    .as-item { padding: 7px 10px; }
+    .as-icon { width: 34px; height: 34px; font-size: 1.1rem; border-radius: 10px; }
+    .as-meta, .as-note { font-size: 0.68rem; }
+  }
   @media (max-width: 680px) {
     .morning-layout { grid-template-columns: 42% 58%; gap: 12px; }
-    .morning-menu-side { padding-left: 12px; }
-    .weather-widget { padding: 12px 14px; }
-    .weather-details { gap: 6px; margin-top: 10px; }
-    .weather-detail { padding: 8px; }
-    .analog-clock::before { inset: 14px; }
-    .menu-grid { grid-template-columns: 1fr; gap: 7px; }
-    .menu-card { min-height: 0; padding: 10px 12px; }
+    .morning-side-panel { padding-left: 12px; gap: 10px; }
+    .morning-clock-side { gap: 7px; padding: 2px; }
+    .now-strip { width: 100%; padding: 5px 12px; gap: 9px; }
+    .now-clock { font-size: 1.35rem; }
+    .weather-strip-stats { gap: 6px; padding: 4px 8px; }
+    .menu-row { gap: 6px; }
+    .menu-chip { padding: 5px 11px 5px 8px; gap: 6px; }
+    .kid-grid { gap: 7px; }
+    .kid-card { padding: 8px 8px 9px; }
+    .kid-tiles { gap: 5px; }
+    .kid-tile { padding: 7px 2px 6px; gap: 4px; border-radius: 11px; }
+    .as-item { padding: 7px 9px; gap: 8px; }
+    .as-icon { width: 32px; height: 32px; font-size: 1.05rem; border-radius: 10px; }
   }
 
   .panel-footnote { font-size: 0.75rem; color: var(--ink-soft); margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); flex-shrink: 0; }
@@ -290,7 +405,89 @@
   }
   .btn-primary { background: var(--ink); color: #fff; }
   .btn-secondary { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+  #avatarOverlay {
+    position: fixed; inset: 0; z-index: 110; padding: 24px;
+    background: rgba(20, 22, 20, 0.45); display: none; align-items: center; justify-content: center;
+  }
+  #avatarOverlay.active { display: flex; }
+  .avatar-card { max-width: 680px; }
+  .avatar-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .avatar-tab {
+    padding: 7px 15px; border-radius: 100px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 600;
+  }
+  .avatar-tab.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .avatar-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 10px;
+    max-height: 44vh; overflow-y: auto; padding: 2px;
+  }
+  .avatar-grid.is-busy { opacity: 0.5; pointer-events: none; }
+  .avatar-opt {
+    display: flex; align-items: center; justify-content: center; padding: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; border-radius: 14px;
+  }
+  .avatar-opt img { width: 58px; height: 58px; display: block; }
+  .avatar-opt:hover { border-color: var(--dusk); }
+  .avatar-opt.is-current { border-color: var(--sage); background: #EAF1E9; }
+  .avatar-error { grid-column: 1 / -1; padding: 10px; border-radius: 10px; background: #F6E4E0; color: var(--red); font-size: 0.78rem; }
+
+  .kid-face { position: relative; flex-shrink: 0; display: inline-flex; }
+  .kid-edit {
+    position: absolute; right: -3px; bottom: -3px; width: 21px; height: 21px; padding: 0;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; border-radius: 50%; font-size: 0.62rem; line-height: 1;
+  }
+  .kid-edit:hover { background: var(--paper); border-color: #c7cdc4; }
+
+  .pill-btn {
+    font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    padding: 8px 14px; border-radius: 100px; cursor: pointer; white-space: nowrap;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .pill-btn:hover { background: #fff; color: var(--ink); border-color: #c7cdc4; }
+  .pill-btn:focus-visible { outline: 2px solid var(--dusk); outline-offset: 2px; }
   .settings-close { position: absolute; top: 14px; right: 16px; }
+  /* ================= TEST PANEL (temporary) =================
+     Delete this block, the #testPanel markup, and the TEST PANEL script
+     section to remove the whole thing. Nothing else depends on it. */
+  #testToggle {
+    position: fixed; right: 14px; bottom: 14px; z-index: 90;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; font-weight: 500;
+    padding: 9px 14px; border-radius: 100px; cursor: pointer;
+    border: 1px dashed #B07C2E; background: #FDF3DC; color: #6D4E14;
+    box-shadow: var(--shadow); opacity: 0.75;
+  }
+  #testToggle:hover, #testToggle.is-on { opacity: 1; }
+  #testToggle.is-simulating { border-style: solid; background: #F5DCC0; opacity: 1; }
+  #testPanel {
+    position: fixed; right: 14px; bottom: 58px; z-index: 90; width: 264px; display: none;
+    background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 15px;
+    box-shadow: 0 24px 50px -18px rgba(0,0,0,0.35);
+  }
+  #testPanel.active { display: block; }
+  #testPanel h4 { margin: 0 0 4px; font-family: 'Fraunces', serif; font-size: 1rem; }
+  #testPanel .test-sub { margin: 0 0 12px; font-size: 0.68rem; color: var(--ink-soft); line-height: 1.45; }
+  .test-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .test-row label { flex: 0 0 58px; font-size: 0.72rem; font-weight: 600; }
+  .test-row input, .test-row select {
+    flex: 1; min-width: 0; padding: 7px 9px; border-radius: 9px; border: 1px solid var(--line);
+    background: var(--paper); font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--ink);
+  }
+  .test-presets { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0 11px; }
+  .test-presets button {
+    flex: 1 1 auto; padding: 6px 4px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem;
+  }
+  .test-presets button:hover { background: #fff; color: var(--ink); }
+  .test-actions { display: flex; gap: 7px; }
+  .test-actions button { flex: 1; padding: 9px; border-radius: 9px; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.78rem; }
+  #testApply { background: var(--ink); color: #fff; }
+  #testReset { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+  #testNote { margin-top: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 0.64rem; color: var(--ink-soft); line-height: 1.5; }
+
 </style>
 </head>
 <body>
@@ -298,28 +495,27 @@
 <div id="app">
   <div id="wash"></div>
 
-  <header>
-    <div>
-      <div class="clock" id="clock">--:--<span class="ampm" id="ampm">AM</span></div>
-      <div class="date-line" id="dateline">Loading&hellip;</div>
-    </div>
-    <div class="top-actions">
-      <div class="top-actions-row">
-        <button class="pill-btn" id="settingsBtn">⚙ Settings</button>
-        <button class="pill-btn" id="connectBtn"><span class="status-dot"></span><span id="connectBtnLabel">Connect Google</span></button>
-        <button class="pill-btn" id="fullscreenBtn">Full screen</button>
-      </div>
-      <div class="sync-note" id="syncNote">Showing demo data</div>
-    </div>
-  </header>
-
   <div class="content-stack">
     <section class="panel">
-      <div class="tab-switch">
-        <button class="tab-btn" data-tab="calendar">Calendar</button>
-        <button class="tab-btn" data-tab="tasks">Tasks</button>
-        <button class="tab-btn" data-tab="grocery">Grocery</button>
-        <button class="tab-btn active" data-tab="mornings">Mornings</button>
+      <div class="tab-row">
+        <div class="tab-switch">
+          <button class="tab-btn" data-tab="calendar">Calendar</button>
+          <button class="tab-btn" data-tab="tasks">Tasks</button>
+          <button class="tab-btn" data-tab="grocery">Grocery</button>
+          <button class="tab-btn active" data-tab="mornings">Mornings</button>
+        </div>
+        <div class="tab-actions">
+          <button class="icon-btn" id="connectBtn" title="Connect Google" aria-label="Connect Google">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <span class="dot"></span>
+          </button>
+          <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.9 14.6a1.7 1.7 0 0 0 .34 1.87l.06.06a2.05 2.05 0 1 1-2.9 2.9l-.06-.07a1.7 1.7 0 0 0-2.89 1.21v.18a2.05 2.05 0 0 1-4.1 0v-.1a1.7 1.7 0 0 0-2.95-1.13l-.06.06a2.05 2.05 0 1 1-2.9-2.9l.07-.06a1.7 1.7 0 0 0-1.21-2.89h-.18a2.05 2.05 0 0 1 0-4.1h.1a1.7 1.7 0 0 0 1.13-2.95l-.06-.06a2.05 2.05 0 1 1 2.9-2.9l.06.07a1.7 1.7 0 0 0 2.89-1.21v-.18a2.05 2.05 0 0 1 4.1 0v.1a1.7 1.7 0 0 0 2.95 1.13l.06-.06a2.05 2.05 0 1 1 2.9 2.9l-.07.06a1.7 1.7 0 0 0 1.21 2.89h.18a2.05 2.05 0 0 1 0 4.1h-.1a1.7 1.7 0 0 0-1.57 1.04z"/></svg>
+          </button>
+          <button class="icon-btn" id="fullscreenBtn" title="Full screen" aria-label="Full screen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5.5A2.5 2.5 0 0 0 3 5.5V8m18 0V5.5A2.5 2.5 0 0 0 18.5 3H16M16 21h2.5a2.5 2.5 0 0 0 2.5-2.5V16M3 16v2.5A2.5 2.5 0 0 0 5.5 21H8"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="tab-panels">
@@ -349,29 +545,125 @@
           <div class="eyebrow-tag demo" id="morningsEyebrow">Demo data</div>
           <div class="morning-layout">
             <div class="morning-clock-side">
-              <div class="analog-clock" id="morningClock" aria-label="Current time">
-                <span class="clock-number n12">12</span><span class="clock-number n1">1</span>
-                <span class="clock-number n2">2</span><span class="clock-number n3">3</span>
-                <span class="clock-number n4">4</span><span class="clock-number n5">5</span>
-                <span class="clock-number n6">6</span><span class="clock-number n7">7</span>
-                <span class="clock-number n8">8</span><span class="clock-number n9">9</span>
-                <span class="clock-number n10">10</span><span class="clock-number n11">11</span>
-                <span class="clock-hand hour" id="morningHourHand"></span>
-                <span class="clock-hand minute" id="morningMinuteHand"></span>
-                <span class="clock-hand second" id="morningSecondHand"></span>
-                <span class="clock-pin"></span>
+              <div class="now-strip">
+                <div class="now-time">
+                  <div class="now-clock" id="clock">--:--<span class="ampm" id="ampm">AM</span></div>
+                  <div class="now-date" id="dateline">Loading&hellip;</div>
+                </div>
+                <div class="now-divider"></div>
+                <div class="now-weather is-error" id="weatherStrip" aria-live="polite">Loading Tulsa weather…</div>
+              </div>
+              <div class="temp-curve" id="tempCurve"></div>
+              <div class="clock-fit">
+              <div class="analog-clock" id="morningClock" data-wx="partly" aria-label="Current time">
+                <svg viewBox="0 0 400 400" aria-hidden="true">
+                  <defs>
+                    <clipPath id="clockFaceClip"><circle cx="200" cy="200" r="182"/></clipPath>
+                    <linearGradient id="skySunny" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#8FC0E8"/><stop offset="58%" stop-color="#D5E8F4"/><stop offset="100%" stop-color="#F6F3E6"/>
+                    </linearGradient>
+                    <linearGradient id="skyPartly" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#A2CBE6"/><stop offset="58%" stop-color="#DCEBF3"/><stop offset="100%" stop-color="#F7F2E7"/>
+                    </linearGradient>
+                    <linearGradient id="skyCloudy" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#B4BFC5"/><stop offset="58%" stop-color="#D6DCDD"/><stop offset="100%" stop-color="#EFF0EC"/>
+                    </linearGradient>
+                    <linearGradient id="skyRainy" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#8C9FAE"/><stop offset="58%" stop-color="#B6C4CC"/><stop offset="100%" stop-color="#DCE3E5"/>
+                    </linearGradient>
+                    <linearGradient id="skySnowy" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#AEC1D2"/><stop offset="58%" stop-color="#DAE5EE"/><stop offset="100%" stop-color="#F4F6F7"/>
+                    </linearGradient>
+                    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stop-color="#F5D98A" stop-opacity="0.95"/>
+                      <stop offset="45%" stop-color="#E8B54A" stop-opacity="0.55"/>
+                      <stop offset="100%" stop-color="#E8B54A" stop-opacity="0"/>
+                    </radialGradient>
+                    <!-- one cloud silhouette, reused at different sizes and tints -->
+                    <g id="wxCloud">
+                      <ellipse cx="-30" cy="6" rx="26" ry="20"/>
+                      <ellipse cx="2" cy="-10" rx="34" ry="27"/>
+                      <ellipse cx="34" cy="4" rx="25" ry="20"/>
+                      <rect x="-54" y="4" width="110" height="22" rx="11"/>
+                    </g>
+                  </defs>
+
+                  <!-- WEATHER BACKDROP, clipped to the dial -->
+                  <g clip-path="url(#clockFaceClip)">
+                    <g class="wx-layer wx-sunny">
+                      <rect x="18" y="18" width="364" height="364" fill="url(#skySunny)"/>
+                      <circle class="wx-sun-glow" cx="200" cy="158" r="96" fill="url(#sunGlow)"/>
+                      <g class="wx-sun-rays">
+                        <g id="sunnyRays" stroke="#EFC969" stroke-width="4" stroke-linecap="round" opacity="0.85"></g>
+                      </g>
+                      <circle cx="200" cy="158" r="34" fill="#E8B54A"/>
+                    </g>
+
+                    <g class="wx-layer wx-partly">
+                      <rect x="18" y="18" width="364" height="364" fill="url(#skyPartly)"/>
+                      <circle class="wx-sun-glow off-centre" cx="258" cy="142" r="78" fill="url(#sunGlow)"/>
+                      <circle cx="258" cy="142" r="27" fill="#E8B54A"/>
+                      <g class="wx-drift-a"><use href="#wxCloud" transform="translate(178 176) scale(1.25)" fill="#FFFFFF" opacity="0.94"/></g>
+                    </g>
+
+                    <g class="wx-layer wx-cloudy">
+                      <rect x="18" y="18" width="364" height="364" fill="url(#skyCloudy)"/>
+                      <g class="wx-drift-b"><use href="#wxCloud" transform="translate(148 128) scale(1.25)" fill="#AEBAC1" opacity="0.9"/></g>
+                      <g class="wx-drift-a"><use href="#wxCloud" transform="translate(244 186) scale(1.55)" fill="#FBFCFB" opacity="0.95"/></g>
+                    </g>
+
+                    <g class="wx-layer wx-rainy">
+                      <rect x="18" y="18" width="364" height="364" fill="url(#skyRainy)"/>
+                      <g class="wx-drift-a">
+                        <use href="#wxCloud" transform="translate(160 120) scale(1.2)" fill="#77889A" opacity="0.9"/>
+                        <use href="#wxCloud" transform="translate(232 150) scale(1.4)" fill="#5A6B7B" opacity="0.95"/>
+                      </g>
+                      <g id="rainDrops" stroke="#DCE9F2" stroke-width="2.5" stroke-linecap="round"></g>
+                    </g>
+
+                    <g class="wx-layer wx-snowy">
+                      <rect x="18" y="18" width="364" height="364" fill="url(#skySnowy)"/>
+                      <g class="wx-drift-a"><use href="#wxCloud" transform="translate(198 130) scale(1.4)" fill="#F6FAFD" opacity="0.95"/></g>
+                      <g id="snowFlakes" fill="#FFFFFF"></g>
+                    </g>
+                  </g>
+                  <circle cx="200" cy="200" r="182" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+
+                  <!-- MORNING COUNTDOWN RING: fills at the start time, drains minute by minute -->
+                  <g transform="rotate(-90 200 200)">
+                    <circle cx="200" cy="200" r="189.5" fill="none" stroke="#9A8F7A" stroke-width="13" opacity="0.5"/>
+                    <circle class="clock-band" id="bandGreen"  cx="200" cy="200" r="189.5" stroke="#5F8B63"/>
+                    <circle class="clock-band" id="bandOrange" cx="200" cy="200" r="189.5" stroke="#D0842F"/>
+                    <circle class="clock-band" id="bandRed"    cx="200" cy="200" r="189.5" stroke="#B94F3D"/>
+                  </g>
+                  <line id="departureTick" stroke="#8E3A2A" stroke-width="3" stroke-linecap="round"/>
+
+                  <g id="clockNumbers"></g>
+
+                  <line class="clock-hand hour"   id="morningHourHand"   x1="200" y1="216" x2="200" y2="118"/>
+                  <line class="clock-hand minute" id="morningMinuteHand" x1="200" y1="220" x2="200" y2="70"/>
+                  <line class="clock-hand second" id="morningSecondHand" x1="200" y1="228" x2="200" y2="55"/>
+                  <circle cx="200" cy="200" r="7" fill="#21262B"/>
+                  <circle cx="200" cy="200" r="2.5" fill="#FFFFFF"/>
+                </svg>
+              </div>
+              </div>
+              <div class="menu-block">
+                <h2 class="menu-title">Today’s Lunch</h2>
+                <div class="menu-row" id="morningMenu"></div>
+                <div class="morning-note" id="morningMenuNote"></div>
               </div>
             </div>
-            <div class="morning-menu-side">
-              <div class="morning-right-half">
-                <div class="weather-widget" id="weatherWidget" aria-live="polite">
-                  <div class="weather-error">Loading Tulsa weather…</div>
-                </div>
+            <div class="morning-side-panel">
+              <div class="checklist-block">
+                <h2 class="side-title">Morning Checklist <span class="side-title-note">Tap when done</span>
+                  <button type="button" class="checklist-reset" id="checklistReset">↺ Reset today</button>
+                </h2>
+                <div class="kid-grid" id="kidChecklists"></div>
               </div>
-              <div class="morning-right-half menu-half">
-                <h2 class="morning-menu-title">Today’s Menu</h2>
-                <div class="menu-grid" id="morningMenu"></div>
-                <div class="morning-note" id="morningMenuNote"></div>
+              <div class="after-school">
+                <h2 class="side-title">After School <span class="side-title-note" id="afterSchoolDay">Today</span></h2>
+                <ul class="as-list" id="afterSchoolList"></ul>
               </div>
             </div>
           </div>
@@ -389,6 +681,54 @@
     <div class="idle-date" id="idleDate">&nbsp;</div>
   </div>
   <div class="idle-tap-hint">Tap anywhere to wake</div>
+</div>
+
+<!-- ================= TEST PANEL (temporary) =================
+     A dev tool for checking the mornings screen at other days, times, and
+     forecasts. Delete this block, the #testPanel CSS block, and the TEST PANEL
+     script section to remove it. -->
+<button id="testToggle" title="Test the board at another day, time, or forecast">🧪 Test</button>
+<div id="testPanel">
+  <h4>Test controls</h4>
+  <p class="test-sub">Pretends it is another moment. Nothing is written to Google — only this screen changes.</p>
+  <div class="test-row"><label for="testDate">Date</label><input type="date" id="testDate"></div>
+  <div class="test-row"><label for="testTime">Time</label><input type="time" id="testTime" step="60"></div>
+  <div class="test-row"><label for="testWeather">Weather</label>
+    <select id="testWeather">
+      <option value="">Live forecast</option>
+      <option value="sunny">Sunny</option>
+      <option value="partly">Partly cloudy</option>
+      <option value="cloudy">Cloudy</option>
+      <option value="rainy">Rainy</option>
+      <option value="snowy">Snowy</option>
+    </select>
+  </div>
+  <div class="test-presets">
+    <button type="button" data-jump="-15">Before start</button>
+    <button type="button" data-jump="12">Green</button>
+    <button type="button" data-jump="27">Orange</button>
+    <button type="button" data-jump="44">Red</button>
+    <button type="button" data-jump="60">Missed it</button>
+  </div>
+  <div class="test-actions">
+    <button type="button" id="testApply">Apply</button>
+    <button type="button" id="testReset">Back to live</button>
+  </div>
+  <div id="testNote">Using live time and forecast.</div>
+</div>
+
+<!-- ================= AVATAR PICKER ================= -->
+<div id="avatarOverlay">
+  <div class="settings-card avatar-card" style="position:relative;">
+    <button class="pill-btn settings-close" id="closeAvatarBtn">Close</button>
+    <h3 id="avatarTitle">Choose an avatar</h3>
+    <p class="sub">Tap one to use it. It is saved on this screen and kept for offline use.</p>
+    <div class="avatar-tabs" id="avatarTabs"></div>
+    <div class="avatar-grid" id="avatarGrid"></div>
+    <div class="settings-actions">
+      <button class="btn-secondary" id="avatarResetBtn">Use the built-in one</button>
+    </div>
+  </div>
 </div>
 
 <!-- ================= SETTINGS / CONNECT MODAL ================= -->
@@ -420,9 +760,27 @@
       <div class="ambient-status" id="ambientStatus"></div>
     </div>
 
+    <div class="field">
+      <label for="menuSheetInput">Menu spreadsheet ID</label>
+      <input type="text" id="menuSheetInput" placeholder="1AbC…" autocomplete="off" spellcheck="false">
+      <div class="hint">From the sheet's URL, the part between <code>/d/</code> and <code>/edit</code>. Needs a tab named <code>Mornings</code>: weekday, main, veggie, fruit, extra — one row per day from row 2.</div>
+    </div>
+
+    <div class="field">
+      <label for="grocerySheetInput">Grocery spreadsheet ID</label>
+      <input type="text" id="grocerySheetInput" placeholder="1AbC…" autocomplete="off" spellcheck="false">
+      <div class="hint">Can be the same spreadsheet, as long as it also has a tab named <code>Groceries</code>: item, qty, done.</div>
+    </div>
+
+    <div class="field">
+      <label for="morningStartInput">Morning countdown starts at</label>
+      <input type="time" id="morningStartInput" step="60">
+      <div class="hint">The ring around the clock fills at this time and drains as the morning goes: green for 20 minutes, orange for 15, red for the last 15, and the red tick on the rim is leave-for-school time.</div>
+    </div>
+
     <div class="settings-actions">
       <button class="btn-secondary" id="cancelSettingsBtn">Cancel</button>
-      <button class="btn-primary" id="saveSettingsBtn">Save calendar choices</button>
+      <button class="btn-primary" id="saveSettingsBtn">Save settings</button>
     </div>
   </div>
 </div>
@@ -445,7 +803,12 @@ function loadConfig() {
 function saveConfig(cfg) {
   localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
 }
-let CONFIG = { ...loadConfig(), ...DEPLOYED_CONFIG };
+/* Deployed values win, but only where they were actually supplied — an unset
+   GitHub variable arrives as '' and must not wipe a value set on the device. */
+const suppliedDeployedConfig = Object.fromEntries(
+  Object.entries(DEPLOYED_CONFIG).filter(([, value]) => value !== '' && value != null)
+);
+let CONFIG = { ...loadConfig(), ...suppliedDeployedConfig };
 
 const SCOPES = [
   'https://www.googleapis.com/auth/calendar.readonly',
@@ -465,7 +828,7 @@ function daysFromToday(offset, hour, minute) {
   return d;
 }
 
-const PERSON_COLORS = { Kendall: '#C68A2E', Jake: '#5B6C8A', Emma: '#6E8B6E', Household: '#9A8F7A' };
+const PERSON_COLORS = { Kendall: '#C68A2E', Jake: '#5B6C8A', Emma: '#6E8B6E', Household: '#9A8F7A', Sami: '#5B6C8A', Rami: '#6E8B6E' };
 function colorForIndex(i) {
   const palette = ['#C68A2E', '#5B6C8A', '#6E8B6E', '#9A8F7A', '#B5533C', '#7A6C9E'];
   return palette[i % palette.length];
@@ -473,8 +836,10 @@ function colorForIndex(i) {
 
 const DEMO_EVENTS = [
   { title: "Team standup", who: "Kendall", start: daysFromToday(0, 9, 0), color: PERSON_COLORS.Kendall },
-  { title: "Dentist appointment", who: "Jake", start: daysFromToday(0, 14, 30), color: PERSON_COLORS.Jake },
-  { title: "Soccer practice", who: "Emma", start: daysFromToday(0, 16, 0), color: PERSON_COLORS.Emma },
+  { title: "Dentist appointment", who: "Jake", start: daysFromToday(0, 14, 30), color: PERSON_COLORS.Jake, location: "Tulsa Family Dental" },
+  { title: "Soccer practice — Sami", who: "Sami", start: daysFromToday(0, 15, 30), color: PERSON_COLORS.Sami, location: "Community Park Field 4", note: "Bring shin guards & water bottle" },
+  { title: "Piano lesson — Rami", who: "Rami", start: daysFromToday(0, 16, 15), color: PERSON_COLORS.Rami, location: "Ms. Rachel's Music Studio", note: "Bring purple songbook" },
+  { title: "Family taco night", who: "Household", start: daysFromToday(0, 18, 30), color: PERSON_COLORS.Household, location: "Kitchen island", note: "Rami helps grate cheese" },
   { title: "Grocery pickup", who: "Household", start: daysFromToday(1, 10, 0), color: PERSON_COLORS.Household },
   { title: "1:1 with manager", who: "Kendall", start: daysFromToday(1, 13, 0), color: PERSON_COLORS.Kendall },
   { title: "Piano lesson", who: "Emma", start: daysFromToday(2, 17, 0), color: PERSON_COLORS.Emma },
@@ -505,8 +870,14 @@ const DEMO_GROCERIES = [
   { label: "Coffee", qty: "1 bag", done: false },
 ];
 
+/* Keyed by weekday, mirroring the Mornings sheet's layout — school lunch is a
+   different row every day, so the demo has to vary too. */
 const DEMO_MORNING_MENU = {
-  main: 'Turkey sandwich', veggie: 'Cucumber slices', fruit: 'Apple', extra: 'Pretzels'
+  monday:    { main: 'Turkey sandwich', veggie: 'Cucumber slices', fruit: 'Apple slices', extra: 'Pretzels' },
+  tuesday:   { main: 'Cheese quesadilla', veggie: 'Bell pepper strips', fruit: 'Grapes', extra: 'Yogurt tube' },
+  wednesday: { main: 'Chicken wrap', veggie: 'Baby carrots', fruit: 'Clementine', extra: 'Granola bar' },
+  thursday:  { main: 'Pasta salad', veggie: 'Snap peas', fruit: 'Strawberries', extra: 'Cheese stick' },
+  friday:    { main: 'Pizza slice', veggie: 'Side salad', fruit: 'Watermelon', extra: 'Cookie' },
 };
 
 const MOCK_PHOTOS = [
@@ -530,6 +901,14 @@ let tokenClient = null;
 let isConnected = false;
 
 /* =========================================================================
+   TIME SOURCE — every morning-screen read of "now" goes through boardNow(),
+   so the test panel can pretend it is another day, hour, or forecast.
+   With the panel off this is just new Date().
+   ========================================================================= */
+const SIM = { active: false, offsetMs: 0, weather: null };
+function boardNow() { return SIM.active ? new Date(Date.now() + SIM.offsetMs) : new Date(); }
+
+/* =========================================================================
    CLOCK + AMBIENT WASH
    ========================================================================= */
 const washEl = document.getElementById('wash');
@@ -543,7 +922,7 @@ function washForHour(h) {
 function pad(n) { return n.toString().padStart(2, '0'); }
 
 function tick() {
-  const now = new Date();
+  const now = boardNow();
   const h24 = now.getHours();
   const h12 = ((h24 + 11) % 12) + 1;
   const ampm = h24 >= 12 ? 'PM' : 'AM';
@@ -556,22 +935,133 @@ function tick() {
   document.getElementById('idleDate').textContent = dateStr;
   washEl.style.background = washForHour(h24);
   updateMorningClock(now);
-}
-tick();
-setInterval(tick, 1000);
 
-function updateMorningClock(now = new Date()) {
-  const seconds = now.getSeconds();
-  const minutes = now.getMinutes() + seconds / 60;
-  const hours = (now.getHours() % 12) + minutes / 60;
-  document.getElementById('morningHourHand').style.transform = `translateX(-50%) rotate(${hours * 30}deg)`;
-  document.getElementById('morningMinuteHand').style.transform = `translateX(-50%) rotate(${minutes * 6}deg)`;
-  document.getElementById('morningSecondHand').style.transform = `translateX(-50%) rotate(${seconds * 6}deg)`;
-
+  if (dayKey(now) !== checklist.day) {
+    checklist = loadChecklist();
+    renderChecklists();
+    renderAfterSchool();
+    renderMorningMenu();
+  }
 }
 
 /* =========================================================================
-   TULSA WEATHER — keyless Open-Meteo forecast, refreshed every 15 minutes
+   MORNING CLOCK — analog dial with a live weather backdrop and a countdown
+   ring on the rim. The ring is anchored to the morning start time: it sits
+   full overnight, drains minute by minute from the start time, and is empty
+   once the leave-for-school marker passes.
+   ========================================================================= */
+const clockEl = document.getElementById('morningClock');
+const BAND_RADIUS = 189.5;
+const BAND_LENGTH = 2 * Math.PI * BAND_RADIUS;
+/* Offsets in minutes from the morning start time. */
+const MORNING_ZONES = { greenEnd: 20, orangeEnd: 35, leaveAt: 50 };
+const DEFAULT_MORNING_START = '07:00';
+
+function morningStart() {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(CONFIG.morningStart || DEFAULT_MORNING_START);
+  if (!match) return { hour: 7, minute: 0 };
+  const hour = Math.min(23, Math.max(0, Number(match[1])));
+  const minute = Math.min(59, Math.max(0, Number(match[2])));
+  return { hour, minute };
+}
+
+function buildClockFace() {
+  const numbers = document.getElementById('clockNumbers');
+  for (let n = 1; n <= 12; n++) {
+    const angle = (n / 12) * 2 * Math.PI - Math.PI / 2;
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('class', n === 12 ? 'clock-num n12' : 'clock-num');
+    text.setAttribute('x', (200 + 152 * Math.cos(angle)).toFixed(1));
+    text.setAttribute('y', (200 + 152 * Math.sin(angle)).toFixed(1));
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'central');
+    text.textContent = n;
+    numbers.appendChild(text);
+  }
+
+  const rays = document.getElementById('sunnyRays');
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * 2 * Math.PI;
+    const ray = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    ray.setAttribute('x1', (200 + 44 * Math.cos(angle)).toFixed(1));
+    ray.setAttribute('y1', (158 + 44 * Math.sin(angle)).toFixed(1));
+    ray.setAttribute('x2', (200 + 66 * Math.cos(angle)).toFixed(1));
+    ray.setAttribute('y2', (158 + 66 * Math.sin(angle)).toFixed(1));
+    rays.appendChild(ray);
+  }
+
+  const drops = document.getElementById('rainDrops');
+  [104, 132, 160, 188, 216, 244, 272, 300, 146, 230].forEach((x, i) => {
+    const drop = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    drop.setAttribute('class', 'wx-drop');
+    drop.setAttribute('x1', x); drop.setAttribute('y1', 176);
+    drop.setAttribute('x2', x - 7); drop.setAttribute('y2', 196);
+    drop.style.animationDelay = `${(i * 0.13).toFixed(2)}s`;
+    drop.style.animationDuration = `${(1.0 + (i % 4) * 0.09).toFixed(2)}s`;
+    drops.appendChild(drop);
+  });
+
+  const flakes = document.getElementById('snowFlakes');
+  [110, 145, 180, 215, 250, 285, 128, 232].forEach((x, i) => {
+    const flake = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    flake.setAttribute('class', 'wx-flake');
+    flake.setAttribute('cx', x); flake.setAttribute('cy', 186);
+    flake.setAttribute('r', (3.4 + (i % 3) * 1.1).toFixed(1));
+    flake.style.animationDelay = `${(i * 0.8).toFixed(2)}s`;
+    flake.style.animationDuration = `${(6 + (i % 3)).toFixed(1)}s`;
+    flakes.appendChild(flake);
+  });
+}
+
+/* Draws one arc of the rim ring between two minute-offsets from the start time. */
+function setBand(el, fromMinute, toMinute) {
+  const span = Math.max(0, toMinute - fromMinute);
+  if (span < 0.02) { el.style.visibility = 'hidden'; return; }
+  const length = (span / 60) * BAND_LENGTH;
+  el.style.visibility = 'visible';
+  el.setAttribute('stroke-dasharray', `${length.toFixed(2)} ${(BAND_LENGTH - length).toFixed(2)}`);
+  el.setAttribute('stroke-dashoffset', (-(fromMinute / 60) * BAND_LENGTH).toFixed(2));
+}
+
+function updateMorningClock(now = boardNow()) {
+  const seconds = now.getSeconds();
+  const minutes = now.getMinutes() + seconds / 60;
+  const hours = (now.getHours() % 12) + minutes / 60;
+  document.getElementById('morningHourHand').style.transform = `rotate(${hours * 30}deg)`;
+  document.getElementById('morningMinuteHand').style.transform = `rotate(${minutes * 6}deg)`;
+  document.getElementById('morningSecondHand').style.transform = `rotate(${seconds * 6}deg)`;
+
+  /* The dial reads minutes-past-the-hour, so every zone edge is expressed as a
+     minute position: the start minute plus its offset. Positions past 60 simply
+     wrap around the dial, which the dash offset handles on its own. */
+  const start = morningStart();
+  const startPosition = start.minute;
+  const elapsed = (now.getHours() * 60 + minutes) - (start.hour * 60 + start.minute);
+  const eaten = startPosition + Math.min(MORNING_ZONES.leaveAt, Math.max(0, elapsed));
+  setBand(document.getElementById('bandGreen'), Math.max(eaten, startPosition), startPosition + MORNING_ZONES.greenEnd);
+  setBand(document.getElementById('bandOrange'), Math.max(eaten, startPosition + MORNING_ZONES.greenEnd), startPosition + MORNING_ZONES.orangeEnd);
+  setBand(document.getElementById('bandRed'), Math.max(eaten, startPosition + MORNING_ZONES.orangeEnd), startPosition + MORNING_ZONES.leaveAt);
+
+  const leaveAngle = (((startPosition + MORNING_ZONES.leaveAt) / 60) * 360 - 90) * (Math.PI / 180);
+  const tick = document.getElementById('departureTick');
+  tick.setAttribute('x1', (200 + 174 * Math.cos(leaveAngle)).toFixed(1));
+  tick.setAttribute('y1', (200 + 174 * Math.sin(leaveAngle)).toFixed(1));
+  tick.setAttribute('x2', (200 + 199 * Math.cos(leaveAngle)).toFixed(1));
+  tick.setAttribute('y2', (200 + 199 * Math.sin(leaveAngle)).toFixed(1));
+}
+
+buildClockFace();
+/* Keep the weather strip exactly as wide as the dial it sits above. */
+if (window.ResizeObserver) {
+  const side = document.querySelector('.morning-clock-side');
+  new ResizeObserver(entries => {
+    side.style.setProperty('--clock-width', `${Math.round(entries[0].contentRect.width)}px`);
+  }).observe(clockEl);
+}
+
+/* =========================================================================
+   TULSA WEATHER — keyless Open-Meteo forecast, refreshed every 15 minutes.
+   Drives both the strip above the clock and the backdrop inside the dial.
    ========================================================================= */
 const WEATHER_URL = 'https://api.open-meteo.com/v1/forecast?latitude=36.1540&longitude=-95.9928&current=temperature_2m,weather_code&hourly=temperature_2m,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=America%2FChicago&forecast_days=1';
 
@@ -587,41 +1077,146 @@ function weatherDescription(code) {
   return ['🌡️', 'Current weather'];
 }
 
+/* Collapses Open-Meteo's weather codes onto the five backdrops the dial draws. */
+/* Stand-in forecasts for the test panel, so simulating snow doesn't leave a
+   93° reading next to a snowflake. */
+const SIM_WEATHER = {
+  sunny: { code: 0, temp: 88, high: 96, low: 71, rain: 0 },
+  partly: { code: 2, temp: 76, high: 83, low: 64, rain: 10 },
+  cloudy: { code: 3, temp: 66, high: 70, low: 58, rain: 25 },
+  rainy: { code: 61, temp: 58, high: 62, low: 52, rain: 85 },
+  snowy: { code: 73, temp: 29, high: 34, low: 22, rain: 90 },
+};
+
+function weatherBackdrop(code) {
+  if (code === 0) return 'sunny';
+  if ([1, 2].includes(code)) return 'partly';
+  if ([3, 45, 48].includes(code)) return 'cloudy';
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return 'snowy';
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code)) return 'rainy';
+  return 'partly';
+}
+
+/* Blend across a fixed absolute scale, so 90° is the same colour every day. */
+const TEMP_SCALE = [[40, [91, 143, 201]], [62, [102, 168, 140]], [78, [217, 162, 60]], [92, [201, 85, 60]], [104, [168, 58, 44]]];
+
+function tempColor(t) {
+  const stops = TEMP_SCALE;
+  if (t <= stops[0][0]) return `rgb(${stops[0][1].join(',')})`;
+  for (let i = 1; i < stops.length; i++) {
+    if (t > stops[i][0]) continue;
+    const [t0, c0] = stops[i - 1], [t1, c1] = stops[i];
+    const k = (t - t0) / (t1 - t0);
+    return `rgb(${c0.map((c, j) => Math.round(c + (c1[j] - c) * k)).join(',')})`;
+  }
+  return `rgb(${stops[stops.length - 1][1].join(',')})`;
+}
+
+/* Today's temperatures as a labelled curve: six sampled hours, each with its
+   own reading, plus a marker for right now. The hourly block was already
+   being fetched and thrown away. */
+function renderTempCurve(currentTemp, offset) {
+  const el = document.getElementById('tempCurve');
+  const hourly = liveWeather && liveWeather.hourly;
+  if (!hourly || !hourly.time) { el.innerHTML = ''; return; }
+
+  const byHour = new Map();
+  hourly.time.forEach((stamp, i) => {
+    const at = new Date(stamp);
+    const temp = hourly.temperature_2m[i] + offset;
+    if (Number.isFinite(temp)) byHour.set(at.getHours(), { time: at, temp });
+  });
+  const points = [6, 9, 12, 15, 18, 21].map(h => byHour.get(h)).filter(Boolean);
+  if (points.length < 4) { el.innerHTML = ''; return; }
+
+  const W = 620, LEFT = 34, RIGHT = 586, TOP = 32, BOTTOM = 72;
+  const temps = points.map(p => p.temp);
+  const min = Math.min(...temps), max = Math.max(...temps);
+  const span = Math.max(1, max - min);
+  const xOf = i => LEFT + (i / (points.length - 1)) * (RIGHT - LEFT);
+  const yOf = t => BOTTOM - ((t - min) / span) * (BOTTOM - TOP);
+
+  const hourLabel = date => date.toLocaleTimeString([], { hour: 'numeric' }).replace(/\s*(AM|PM)/i, (_, m) => m[0].toLowerCase());
+  const line = points.map((p, i) => `${i ? 'L' : 'M'}${xOf(i).toFixed(1)} ${yOf(p.temp).toFixed(1)}`).join(' ');
+
+  /* Slide "now" along the sampled hours so the marker lands in the right gap. */
+  const now = boardNow();
+  const nowHours = now.getHours() + now.getMinutes() / 60;
+  let cursor = 0;
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i].time.getHours(), b = points[i + 1].time.getHours();
+    if (nowHours >= a && nowHours <= b) { cursor = i + (nowHours - a) / (b - a); break; }
+    if (nowHours > b) cursor = i + 1;
+  }
+  const inWindow = nowHours >= points[0].time.getHours() && nowHours <= points[points.length - 1].time.getHours();
+  const floor = Math.floor(cursor);
+  const lower = points[Math.min(floor, points.length - 1)].temp;
+  const upper = points[Math.min(floor + 1, points.length - 1)].temp;
+  const onCurve = lower + (upper - lower) * (cursor - floor);
+  const nowTemp = SIM.active ? onCurve : currentTemp;
+  const nowX = xOf(cursor), nowY = yOf(inWindow ? onCurve : nowTemp);
+
+  /* Compare by time of day: the forecast rows are always dated today, so an
+     absolute comparison collapses the moment the test panel moves the date. */
+  const ahead = points.filter(p => p.time.getHours() >= nowHours);
+  const rest = ahead.length ? ahead : points.slice(-1);
+  const peak = rest.reduce((a, b) => (b.temp > a.temp ? b : a));
+  const trough = rest.reduce((a, b) => (b.temp < a.temp ? b : a));
+  let note;
+  if (peak.temp - nowTemp >= 3) note = `Warming up — ${Math.round(peak.temp)}° by ${hourLabel(peak.time)}`;
+  else if (nowTemp - trough.temp >= 3) note = `Cooling off — ${Math.round(trough.temp)}° by ${hourLabel(trough.time)}`;
+  else note = `Holding around ${Math.round(nowTemp)}° the rest of the day`;
+
+  const gradient = points.map((p, i) =>
+    `<stop offset="${((i / (points.length - 1)) * 100).toFixed(1)}%" stop-color="${tempColor(p.temp)}"/>`).join('');
+
+  el.innerHTML = `
+    <div class="tc-head"><span class="tc-title">Daytime temp trend</span><span class="tc-note">${note}</span></div>
+    <svg viewBox="0 0 ${W} 90" role="img" aria-label="${note}">
+      <defs><linearGradient id="tcLine" x1="0" y1="0" x2="1" y2="0">${gradient}</linearGradient></defs>
+      <path d="${line}" fill="none" stroke="url(#tcLine)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+      ${points.map((p, i) => `
+        <circle cx="${xOf(i).toFixed(1)}" cy="${yOf(p.temp).toFixed(1)}" r="4.2" fill="#FCFBF7" stroke="${tempColor(p.temp)}" stroke-width="2.6"/>
+        <text class="tc-val" x="${xOf(i).toFixed(1)}" y="${(yOf(p.temp) - 11).toFixed(1)}" text-anchor="middle">${Math.round(p.temp)}°</text>
+        <text class="tc-tick" x="${xOf(i).toFixed(1)}" y="86" text-anchor="middle">${hourLabel(p.time)}</text>`).join('')}
+      ${inWindow ? `<circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="7" fill="none" stroke="#2F7D5B" stroke-width="2.4"/>
+        <circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="3" fill="#2F7D5B"/>` : ''}
+    </svg>`;
+}
+
 function renderWeather() {
-  const el = document.getElementById('weatherWidget');
+  const el = document.getElementById('weatherStrip');
+  if (SIM.weather) clockEl.dataset.wx = SIM.weather;
   if (!liveWeather) {
-    el.innerHTML = '<div class="weather-error">Tulsa weather is temporarily unavailable.</div>';
+    el.classList.add('is-error');
+    el.textContent = 'Tulsa weather is temporarily unavailable.';
+    document.getElementById('tempCurve').innerHTML = '';
     return;
   }
-  const { current, hourly, daily } = liveWeather;
-  const currentTemp = Math.round(current.temperature_2m);
-  const nowMs = new Date(current.time).getTime();
-  const futureTemps = hourly.time
-    .map((time, i) => ({ time: new Date(time).getTime(), temp: hourly.temperature_2m[i] }))
-    .filter(point => point.time > nowMs && point.time <= nowMs + 6 * 60 * 60 * 1000)
-    .map(point => point.temp)
-    .filter(Number.isFinite);
-  const laterTemp = futureTemps.length ? futureTemps[futureTemps.length - 1] : currentTemp;
-  const difference = laterTemp - currentTemp;
-  const trend = difference >= 3
-    ? `↗ Warmer later · high ${Math.round(daily.temperature_2m_max[0])}°`
-    : difference <= -3
-      ? `↘ Cooler later · low ${Math.round(daily.temperature_2m_min[0])}°`
-      : `→ Staying about the same`;
-  const rainChance = Math.round(daily.precipitation_probability_max[0] || 0);
-  const rainMessage = rainChance >= 50 ? `☔ Likely · ${rainChance}%` : rainChance >= 20 ? `🌦️ Possible · ${rainChance}%` : `🌂 Unlikely · ${rainChance}%`;
-  const [icon, condition] = weatherDescription(current.weather_code);
-  const updated = new Date(current.time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const { current, daily } = liveWeather;
+  const fake = SIM.weather ? SIM_WEATHER[SIM.weather] : null;
+  const code = fake ? fake.code : current.weather_code;
+  const temp = Math.round(fake ? fake.temp : current.temperature_2m);
+  const high = Math.round(fake ? fake.high : daily.temperature_2m_max[0]);
+  const low = Math.round(fake ? fake.low : daily.temperature_2m_min[0]);
+  const rainChance = Math.round((fake ? fake.rain : daily.precipitation_probability_max[0]) || 0);
+  const [icon, condition] = weatherDescription(code);
+  clockEl.dataset.wx = weatherBackdrop(code);
+  el.classList.remove('is-error');
   el.innerHTML = `
-    <div class="weather-heading"><span class="weather-place">Tulsa weather</span><span class="weather-updated">Updated ${updated}</span></div>
-    <div class="weather-now">
-      <div class="weather-icon" aria-hidden="true">${icon}</div>
-      <div><div class="weather-temp">${currentTemp}°</div><div class="weather-condition">${condition}</div></div>
+    <div class="weather-strip-now">
+      <span class="weather-strip-icon" aria-hidden="true">${icon}</span>
+      <div>
+        <div class="weather-strip-temp"><b>${temp}°</b><span class="weather-strip-cond">${condition}</span></div>
+        <div class="weather-strip-place">Tulsa weather</div>
+      </div>
     </div>
-    <div class="weather-details">
-      <div class="weather-detail"><div class="weather-detail-label">Temperature</div><div class="weather-detail-value">${trend}</div></div>
-      <div class="weather-detail"><div class="weather-detail-label">Rain today</div><div class="weather-detail-value">${rainMessage}</div></div>
+    <div class="weather-strip-stats">
+      <span class="hi">↑ ${high}°</span><i></i>
+      <span class="lo">↓ ${low}°</span><i></i>
+      <span class="rain">☂ ${rainChance}%</span>
     </div>`;
+  renderTempCurve(temp, fake ? fake.temp - current.temperature_2m : 0);
 }
 
 async function fetchWeather() {
@@ -648,6 +1243,9 @@ function openSettings() {
     : 'Connect Google account';
   renderCalendarPicker();
   renderAmbientStatus();
+  document.getElementById('morningStartInput').value = CONFIG.morningStart || DEFAULT_MORNING_START;
+  document.getElementById('menuSheetInput').value = CONFIG.menuSheetId || '';
+  document.getElementById('grocerySheetInput').value = CONFIG.sheetId || '';
   overlay.classList.add('active');
 }
 
@@ -695,7 +1293,12 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   if (liveCalendars) {
     CONFIG.calendarIds = Array.from(document.querySelectorAll('#calendarPicker input:checked')).map(input => input.value);
   }
+  CONFIG.morningStart = document.getElementById('morningStartInput').value || DEFAULT_MORNING_START;
+  CONFIG.menuSheetId = document.getElementById('menuSheetInput').value.trim();
+  CONFIG.sheetId = document.getElementById('grocerySheetInput').value.trim();
   saveConfig(CONFIG);
+  updateMorningClock();
+  if (isConnected) { fetchMorningMenu(); fetchGroceries(); }
   closeSettings();
 });
 
@@ -739,12 +1342,9 @@ function requestAccessToken(interactive) {
 function setConnected(connected) {
   isConnected = connected;
   const btn = document.getElementById('connectBtn');
-  const label = document.getElementById('connectBtnLabel');
   btn.classList.toggle('is-connected', connected);
-  label.textContent = connected ? 'Connected' : 'Connect Google';
-  document.getElementById('syncNote').textContent = connected
-    ? 'Synced with your Google account'
-    : 'Showing demo data';
+  btn.title = connected ? 'Connected — synced with your Google account' : 'Connect Google';
+  btn.setAttribute('aria-label', btn.title);
   ['calendarEyebrow', 'tasksEyebrow', 'groceryEyebrow', 'morningsEyebrow'].forEach(id => {
     const el = document.getElementById(id);
     el.textContent = connected
@@ -787,6 +1387,32 @@ window.addEventListener('load', () => {
 /* =========================================================================
    GOOGLE API HELPERS
    ========================================================================= */
+/* spreadsheetId -> the range prefix that actually worked ('Groceries!' or ''). */
+const resolvedSheetPrefix = {};
+
+async function readSheet(spreadsheetId, range) {
+  const bare = range.includes('!') ? range.split('!').slice(1).join('!') : range;
+  const known = resolvedSheetPrefix[spreadsheetId];
+  const attempts = known === undefined ? [range, bare] : [known + bare];
+  let lastError;
+  for (const attempt of attempts) {
+    try {
+      const data = await gfetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(attempt)}`);
+      resolvedSheetPrefix[spreadsheetId] = attempt.includes('!') ? `${attempt.split('!')[0]}!` : '';
+      return data;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError;
+}
+
+function sheetPrefixFor(spreadsheetId, configuredRange) {
+  const known = resolvedSheetPrefix[spreadsheetId];
+  if (known !== undefined) return known;
+  return configuredRange.includes('!') ? `${configuredRange.split('!')[0]}!` : '';
+}
+
 async function gfetch(url, options) {
   const res = await fetch(url, {
     ...options,
@@ -842,6 +1468,8 @@ async function fetchCalendar() {
           who: cal.summary,
           start: new Date(ev.start.dateTime || ev.start.date),
           color: cal.backgroundColor || '#5B6C8A',
+          location: ev.location || '',
+          note: (ev.description || '').split('\n')[0].trim(), // first line reads as the reminder
         }));
     }));
 
@@ -915,7 +1543,7 @@ async function fetchGroceries() {
   if (!CONFIG.sheetId) { liveGroceries = []; renderGroceries(); return; }
   try {
     const range = CONFIG.sheetRange || 'Groceries!A2:C200';
-    const data = await gfetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.sheetId}/values/${encodeURIComponent(range)}`);
+    const data = await readSheet(CONFIG.sheetId, range);
     const startRow = parseInt((range.match(/(\d+)/) || [null, '2'])[1], 10);
     liveGroceries = (data.values || [])
       .map((row, i) => ({
@@ -936,8 +1564,8 @@ async function fetchMorningMenu() {
   if (!CONFIG.menuSheetId) { liveMorningMenu = null; renderMorningMenu(); return; }
   try {
     const range = CONFIG.menuSheetRange || 'Mornings!A2:E200';
-    const data = await gfetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.menuSheetId}/values/${encodeURIComponent(range)}`);
-    const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const data = await readSheet(CONFIG.menuSheetId, range);
+    const weekday = boardNow().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const row = (data.values || []).find(values => (values[0] || '').toString().trim().toLowerCase() === weekday);
     liveMorningMenu = row ? {
       main: row[1] || '', veggie: row[2] || '', fruit: row[3] || '', extra: row[4] || ''
@@ -954,8 +1582,7 @@ async function toggleLiveGrocery(item) {
   item.done = newDone; // optimistic
   renderGroceries();
   try {
-    const sheetName = (CONFIG.sheetRange || 'Groceries!A2:C200').split('!')[0];
-    const cell = `${sheetName}!C${item.rowNumber}`;
+    const cell = `${sheetPrefixFor(CONFIG.sheetId, CONFIG.sheetRange || 'Groceries!A2:C200')}C${item.rowNumber}`;
     await gfetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.sheetId}/values/${encodeURIComponent(cell)}?valueInputOption=RAW`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -969,7 +1596,8 @@ async function toggleLiveGrocery(item) {
 }
 
 async function addLiveGrocery(label, qty) {
-  const range = CONFIG.sheetRange || 'Groceries!A2:C200';
+  const configured = CONFIG.sheetRange || 'Groceries!A2:C200';
+  const range = sheetPrefixFor(CONFIG.sheetId, configured) + (configured.includes('!') ? configured.split('!').slice(1).join('!') : configured);
   await gfetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1180,12 +1808,17 @@ function checkSVG() {
 function currentEvents() { return isConnected && liveEvents ? liveEvents : DEMO_EVENTS; }
 function currentTasks() { return isConnected && liveTasks ? liveTasks : DEMO_TASKS; }
 function currentGroceries() { return isConnected && liveGroceries ? liveGroceries : DEMO_GROCERIES; }
-function currentMorningMenu() { return isConnected ? liveMorningMenu : DEMO_MORNING_MENU; }
+function currentMorningMenu() {
+  if (isConnected) return liveMorningMenu;
+  const weekday = boardNow().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  return DEMO_MORNING_MENU[weekday] || null; // no demo row on weekends, same as the sheet
+}
 
 function renderCalendar() {
   const events = currentEvents();
   renderWeekAgendaList(events);
   renderWeekLanes(events);
+  renderAfterSchool(); // the mornings tab reads the same events
 }
 
 function renderWeekAgendaList(events) {
@@ -1347,19 +1980,434 @@ function renderMorningMenu() {
   const el = document.getElementById('morningMenu');
   const note = document.getElementById('morningMenuNote');
   const categories = [
-    ['🥪', 'Main', 'main'], ['🥕', 'Veggie', 'veggie'], ['🍎', 'Fruit', 'fruit'], ['✨', 'Extra', 'extra'],
+    ['🥪', 'main', '#C68A2E'], ['🥕', 'veggie', '#6E8B6E'],
+    ['🍎', 'fruit', '#B5533C'], ['✨', 'extra', '#5B6C8A'],
   ];
-  el.innerHTML = categories.map(([emoji, label, key]) => `
-    <div class="menu-card">
-      <div class="category"><span class="emoji">${emoji}</span><span class="kind">${label}</span></div>
-      <div class="food">${escapeHtml(menu && menu[key] ? menu[key] : '—')}</div>
-    </div>`).join('');
+  el.innerHTML = categories.map(([emoji, key, color]) => {
+    const food = menu && menu[key] ? menu[key] : '';
+    return `<div class="menu-chip${food ? '' : ' is-empty'}" style="--cat:${color}" title="${key}">
+      <span class="emoji" aria-hidden="true">${emoji}</span><span class="food">${escapeHtml(food || '—')}</span>
+    </div>`;
+  }).join('');
 
   if (!isConnected) note.textContent = 'Demo menu · connect Google to load today’s row.';
   else if (!CONFIG.menuSheetId) note.textContent = 'Add the menu Spreadsheet ID in Settings.';
-  else if (!menu && [0, 6].includes(new Date().getDay())) note.textContent = 'No school menu on weekends.';
+  else if (!menu && [0, 6].includes(boardNow().getDay())) note.textContent = 'No school menu on weekends.';
   else if (!menu) note.textContent = 'No menu row found for today’s weekday.';
   else note.textContent = 'Loaded from today’s row in Google Sheets.';
+}
+
+/* =========================================================================
+   RENDER: MORNING CHECKLISTS
+   Two kids, five jobs each, ticked off on the touchscreen. Progress lives in
+   localStorage under today's date, so it clears itself overnight and needs
+   no backend.
+   ========================================================================= */
+const CHECKLIST_KEY = 'homeboard_checklist_v1';
+
+/* ---------------------------------------------------------------------------
+   Portrait styles. Each returns a complete <svg>; the board picks one from the
+   test panel and remembers it in CONFIG.avatarStyle.
+
+   The two illustrated sets are third-party artwork, generated once and inlined
+   here so the board keeps working with no network and no build step:
+     anime  — DiceBear "adventurer" by Lisa Wischofsky, CC BY 4.0
+              https://www.dicebear.com/styles/adventurer/
+     animal — Microsoft Fluent Emoji, MIT
+              https://github.com/microsoft/fluentui-emoji
+   Their internal ids are prefixed per portrait so two can share a page.
+   --------------------------------------------------------------------------- */
+const AVATAR_ART = {
+  animeSami: `<mask id="as_viewboxMask"><rect width="762" height="762" rx="0" ry="0" x="0" y="0" fill="#fff" /></mask><g mask="url(#as_viewboxMask)"><path d="M396 164.8a224.8 224.8 0 0 1 104.8 42.4c6.2 4.9 12.5 9.4 18 15a225.4 225.4 0 0 1 71.8 149 58.5 58.5 0 0 1 50.9 42.2 71 71 0 0 1-27.6 76.5c-11 7.7-24.5 12-38 11.7-5 0-10-1.6-15-1.8-1.9 2.2-3.3 4.9-4.8 7.3A223.3 223.3 0 0 1 389 609.8c-11 .7-21.9 2-33 .7a223.7 223.7 0 0 1-178.8-342.3A223.4 223.4 0 0 1 352 163.5c14.6-1.4 29.4-.3 44 1.3Z" fill="#000"/><path fill-rule="evenodd" clip-rule="evenodd" d="M498.8 213.2A216 216 0 0 0 363 169c-13-.2-26.2 1.6-39 4a218 218 0 0 0-113.6 365.5 218.5 218.5 0 0 0 260.4 40.2c35-18.8 64.2-47.3 84.4-81.5l-3-1.6c-2.8-1.4-5.7-3-8-5-2.2-2-.3-5.8 2.7-4.7 1.5.7 3 1.6 4.4 2.4a55 55 0 0 0 59.6-3.6 64.5 64.5 0 0 0 25-69.8 53.1 53.1 0 0 0-24-31 52.6 52.6 0 0 0-47-2.8c-1.6.8-3.4 1.5-5 1.3-2.5-.2-2.8-4.2-.6-5.2 8-4 16.5-5.6 25.4-6.4a217 217 0 0 0-72-146.4c-4.4-4-8.7-8.1-13.9-11.3Zm107.6 196.2c2-1.2 1.3-5.1-1.4-5-2 0-4.2.8-6.2 1.6l-1.4.4a95.1 95.1 0 0 0-25.5 12.4c-2.2 2-2.2 4.4.1 6.2a92 92 0 0 0 5.2 2.8 36 36 0 0 1 13 9.2c-.2 1.9-2 3.4-3.4 4.5l-.2.2c-3.9 3-8.8 5-13.6 7-2.5 1-4.9 2-7.1 3.1-1.7.8-2.6 2.2-1.6 3.9 1 2 3.2 1.1 5 .5l.6-.2 5.4-2.3c5.4-2.3 11-4.5 15.4-8 2.7-2.1 5.1-5.1 5.4-8.7-.5-3.4-2.7-5.7-5.3-7.8a83 83 0 0 0-11.6-7.2l-1.1-.6c5.4-3 10.8-5.6 16.6-7.7l5-1.7a52 52 0 0 0 6.7-2.6Z" fill="#f2d3b1"/><g transform="translate(-161 -83)"><path d="M589.3 432.7a64.4 64.4 0 0 1 28.5 33.5 64.3 64.3 0 0 1 .5 45.1c-1 2.9-2.9 5.2-6.3 4.8-15-.8-30 .1-45 .5-10 1.1-20 2.2-30 3.8-10.5 1.8-20.6 4.1-31 6.1-4.3-.1-5.3-4.2-7.2-7.3A65.5 65.5 0 0 1 546 425c14.8-2.6 30.5.2 43.4 7.7Z" fill="#000"/><path d="M558 429.9a59.1 59.1 0 0 1 54.4 80.6l-3.2-.3a27 27 0 0 0 1.3-15.4 26.6 26.6 0 1 0-50 16.9 287 287 0 0 0-34 5.2c-6.7 1.2-13.4 3.2-20.1 4A59.8 59.8 0 0 1 517 445a59 59 0 0 1 41-15.1Z" fill="#fff"/><path d="M392 447a54.8 54.8 0 0 1 42.8 81.9c-1.1 1.9-2.9 4-5 4.7-3 .8-6.6-.2-9.6-.9-8.7-2-17.4-3.8-26.3-5.1-12.9-.9-26-1-39 0-4.7.4-9.7 1.4-14.5 1-2.3-1-3.7-4.2-4.6-6.4a54.9 54.9 0 0 1 56.2-75Z" fill="#000"/><path d="M401.5 454.7a49.3 49.3 0 0 1 26.7 74l-4.1-.7c4.1-4.4 7-9.8 6.8-16a22.6 22.6 0 0 0-43.7-8.8c-2.5 5.9-1.9 12 .4 18-7.6.2-15-.4-22.6.3-7.3.7-14.7 1.2-22 1.8l-1.9-3.4a49.2 49.2 0 0 1 60.4-65.2Z" fill="#fff"/></g><g transform="translate(-161 -83)"><path d="M452 395.9c.7 4.6-1.5 9.3-4.2 13a43.8 43.8 0 0 1-12.8 11c-7.7 4.4-16 7.8-24.2 10.9a423.5 423.5 0 0 1-73.5 19.5c-3.4.5-7 1.5-10.4 1-2-.8-2-2.7-1.1-4.4 2.3-1.8 5.5-2.8 8.2-4 36-14.6 71.9-29.4 107.8-44.1 3.3-1.3 6.6-3.4 10.2-3ZM479 396l148 22.8c2.6.4 5.3.5 7.8 1.4 2.4 1.1 1.7 5-1 5.2-9.6 1-19.1 1.8-28.8 2-15.4 0-30.6.3-46-1.2-20.9-1.6-42.2-4.6-62.2-11-7-2.5-15-5.5-20.3-10.7-1.8-2-4-4.3-3.2-7.1 1.2-2.2 3.6-1.6 5.7-1.4Z" fill="#000"/></g><g transform="translate(-161 -83)"><path d="M516.5 555.6c6 4.4 11.7 10 15.3 16.6 2.6 4.8 3.2 11.7-.4 16.1-4.2 5.4-11.5 7.6-18 8.8a151 151 0 0 1-47.4-1.6c-5.7-1.1-10.2 1.6-16 2.6-8.7 1.5-18.4 2.9-27 1-5.2-1-10.3-3.2-13.4-7.7-2.8-3.9-2.6-9.3-1.1-13.7 1.6-4 4.1-8 7-11.2 1.4-1.7 3.1-1 5-1.1.3 1.8 1 3.2-.4 4.8-2.6 3.3-5.2 6.4-6.4 10.5-1.1 3.3-.3 7 2.4 9.2 3 2.4 7.2 3.5 11 3.9a76 76 0 0 0 23-1.8c5.7-1 10-3.5 15.9-2.5 12 2 23.8 3.5 36 2.8 7-.2 14-1 20.3-4 3.2-1.9 6-4.2 5.7-8.3-.3-6-6.1-11.8-10.3-15.7-2.5-2.6-6.7-4-6-8.4 1.8-.9 3-1.8 4.8-.3Z" fill="#000"/></g><g transform="translate(-161 -83)"></g><g transform="translate(-161 -83)"><path fill-rule="evenodd" clip-rule="evenodd" d="M589 446c12.8.8 25.7 1.9 37.4 7.6 1.1.5 2.2 1.2 3.3 1.9 1.4.9 2.8 1.8 4.3 2.3 2.3.4 4.7.4 7 .5 2.7.1 5.4.2 8 .7 2.1.8 2.3 2.8 2.4 4.8v1c0 2.2 0 4.2-2.4 5.4-2.2.2-4.4.2-6.6.2h-3.2a92.2 92.2 0 0 1-11.5 52.3 82.3 82.3 0 0 1-43.9 37.2 78.7 78.7 0 0 1-77.4-14.3 88.7 88.7 0 0 1-28.7-44.5c-1-3-1.5-6-2-9-.6-3.2-1.2-6.4-2.3-9.5-2-5.5-10.5-8.8-14.5-3.7-3.3 3.7-3.2 8-3.2 12.6v3.5a77.3 77.3 0 0 1-41.3 65.4 65 65 0 0 1-46.2 5.3 62 62 0 0 1-30.7-19.2 70.8 70.8 0 0 1-16.8-45.2l-1.5-.2c-1.4-.2-2.7-.3-3.4-2v-.4c-.3-2.1-.9-5.5 1.4-6.5 1-.5 2-1 3-1.3 2.2-1 4.4-1.8 6.2-3.5a88.9 88.9 0 0 1 37.6-17.3 152 152 0 0 1 69-1c5.8 1.5 12 1.7 17.7-.4 7.1-2.3 14.9-3.5 22.3-2.5 5.8.6 11.9.4 17.4-1.9 12.1-4.6 24-9.1 36.6-12.3 20.3-5.1 41-7.2 62-6Zm-25 13c17.6-1 36-.8 53.3 3.7a19 19 0 0 1 14.2 15.5c1.3 7.9.3 15.5-1.3 23.3a80.6 80.6 0 0 1-24.7 39 73 73 0 0 1-81.6 9.6 80 80 0 0 1-33.2-32.9 60.6 60.6 0 0 1-6.4-35.5 98 98 0 0 1 20.2-10.3A214.9 214.9 0 0 1 564 459Zm-134.8 19.8c-11.4-2.2-23-2.7-34.7-2-16 1.2-31.3 3.7-46.4 9.4-5.2 2-10.6 4.5-15 8-4.1 2.8-5.5 9.1-5.7 13.8.3 8.9 3.6 17.9 8 25.5a56.4 56.4 0 0 0 66.7 25.6 68 68 0 0 0 46.6-62.1 47 47 0 0 0-1.4-10c-.3-1.6-1.8-2.5-3.1-3.3l-.6-.3a57.8 57.8 0 0 0-14.4-4.6Z" fill="#000"/></g><g transform="translate(-161 -83)"><path d="M459.2 60c1.2-.4 2.6-.6 4-.6 2 3.8 3.2 7.7 4.8 11.7 3.8 9.4 8.7 18.3 14 27 9.1 14.9 19.1 29 30.8 42 5.7 6.5 11.8 12.4 17.4 18.8a116.8 116.8 0 0 1 50.6-41.2c11.6-4.9 24-8.9 36.3-11.5 2.3-.3 5.3-1.4 6.8 1 1.3 1.8-1 5-2 6.7-6.2 9.3-9 20-10.2 31.1-.6 6.4.6 12.5 2 18.8 15.8.6 31.6 2.5 47.3 4.9 9.5 1.3 18.3 4.2 28 3.9 21.3 1 42.9-.5 64-3 4.3-.4 8.7-1.1 13-1 2.6 0 4.4 1.7 4.5 4.3 0 5.2-.3 10.5-.7 15.6-.8 9.4-4 18.2-9.1 26.1 8.7 3.6 17.5 7 26.3 10.4 19 7.1 37.2 14.2 57 19 2.3.5 3.7 3 2 4.8-10.2 9-20.5 17.7-31 26.3-8.9 7.5-18 16-28.5 21.3 8 29.7 10.2 61.2 7.8 91.8a230 230 0 0 1-16 69c-1 2.6-2 5.3-3.7 7.5-.7 1-2.3 1.2-3.4.8-3-1-6-2.7-9-3.7A50.5 50.5 0 0 0 724 465c-4.6 2.3-6.8 6.1-10.4 9.6-5.3 5.3-11 10.4-16.9 15.1-2.8 2.2-6 4.8-9.8 4.6-1.4-.9-2.3-1.4-1.9-3.3 1-4.9 2.7-9.6 3.4-14.5A257 257 0 0 0 687 397c-1.8-10.5-4.1-23-12.4-30.6-9.6-9-18.2-18.9-27.3-28.4-2.5 20.7-10.2 41-20 59.3-8.7 16-19.8 31.4-33.4 43.6-1.8 1.5-3.8 3.2-6 4-2 .4-5.9.1-5.2-2.8.5-3.8 1.8-7.4 2.4-11a184.3 184.3 0 0 0-2.3-70.7c-8.8 12.2-15 26.4-18.2 41.1a70.4 70.4 0 0 0 .7 38c-1.4 1.1-1.9 2.8-4 2a116.6 116.6 0 0 1-55.5-42.1 93.6 93.6 0 0 1-25.1-10.1 91.8 91.8 0 0 1-30-30.8 135 135 0 0 0-5 21.5c-2.9 20.1-2.2 41.6 4.2 61 .5 1.4.7 2.8.6 4.2a7.2 7.2 0 0 1-8 1.3c-17-6.3-31.4-17.2-43.2-30.8a148.7 148.7 0 0 1-22.9-34.2c-3.8 3.4-7.7 6.9-11.3 10.6a308.8 308.8 0 0 0-43.8 58.2c-6.2 10.8-12 22.1-15.8 34-.9 2-1 4-3.5 4.8-3-.6-3.4-3.3-4.4-5.7-4-11.8-6.5-24-7.7-36.4-2.4-20.8-1.5-42 2-62.6a144.4 144.4 0 0 0-35.6 11c-3.3 1.5-6.2 3.8-9.4 5.4-3.3-.3-3.5-3-3.2-5.8a208.8 208.8 0 0 1 44.1-97.6 76 76 0 0 1-29-46c-.4-2.7-1.6-6.5 1.4-8.3 4-.8 8.7.4 12.8.6 15.8 1 32.2-.4 47.4-5.3 7.3-2.3 14.6-4.6 21.4-8.3-16.6-22.4-28.1-48-35-75-1.2-5.2-3-10.7-3.2-16.1 0-2.4.6-4.8 3.4-5.2 3.1.1 6.1 3 9 4.2 20 10.5 41.3 19 63.2 24.7 15.2 3.8 31 5.7 46.5 7.5-1.7-12.8-.7-25.7 2.4-38.2 3.3-13.4 8-26.5 13.9-39 4.1-9 9-17.6 13.4-26.6 1.1-2.1 2.2-4.6 3.8-6.4Z" fill="#000"/><path d="M460.8 68.8A230 230 0 0 0 488 118c6.2 9 13 17.5 20.4 25.7 5.8 6.5 12.3 12.2 18 19 1.7 1.7 2.8 4.3 5.7 3.6 2.3-2.4 3.8-5.6 6-8.3 7.4-9.8 16.5-18.4 26.7-25.2 15.7-10.3 33.1-15.9 51.1-20.5a68.4 68.4 0 0 0-6 56.8c1.6.6 3.5.3 5.1.3 8.3-.2 17 1.2 25 2 12 1.6 24 3.5 36 6 4 1 8 .3 12 .4 16 1 32 .5 48-.6 9.7-.8 19.2-2.3 28.9-3L764 188a53 53 0 0 1-8.8 24.6c-10-3.9-20-7.4-30.4-10.3-1.9-.4-3.5-1-5.1.4-.3 1-.3 2.3-.4 3.4 5.7 2 11.5 3.4 17.2 5.5 17.6 6.4 35 13.8 52.5 20.4 16 6 32.4 12.2 49 16.6a914.7 914.7 0 0 1-26.4 22c-8.6 6.9-17 15-26.7 20.1-2.6-8-5.5-16-9.1-23.5-.8-1.4-1.2-2.8-2.9-3.2-2-1-4 2.1-3 4 1.6 4.3 3.8 8.4 5.4 12.8a249.4 249.4 0 0 1 13.9 97.4 227 227 0 0 1-18 80.9c-13.5-6.2-29-7-43-2.3 7.3-9.8 13.5-20.6 18.8-31.6a48 48 0 0 1 2.4 11.8c.3 2.1-.3 4 1.5 5.6 2.1.4 3.6-.3 3.8-2.6.6-6-1.2-12.6-3.4-18.2-.9-1.9-2-4.8-4.3-5.1-2.3-.3-3.2 1.4-4 3.2a196.8 196.8 0 0 1-29.5 46.6c-6.5 7.4-13.9 13.7-21.3 20.1 2-8.2 3.3-16.6 3.8-25 .4-8 1.2-15.7.6-23.6-1-19.7-2.5-40.2-8.2-59.1 8.1 6.7 16.8 12.5 25.6 18.2 2 1.1 4.3 3.8 6.9 3 2.1-1.2 3-4.1 3.6-6.3 4.4-18.7 5-38 2.1-57-2-13.1-4.7-27-10.3-39-1.2-2.3-2.4-5.2-4.4-6.9-1.9-1.3-4.2-.3-4.2 2.1 1 3.7 3.4 6.9 4.7 10.5 5.3 13 7.8 27.6 9.5 41.5 1.9 16.2.9 32.5-2.7 48.4a246.7 246.7 0 0 1-31.7-22.8c-13.2-11.7-24.8-25-37.2-37.9-7.1-8.1-14.6-16.5-20.1-25.8-4.5-7.4-9.2-14.5-12.7-22.4-2.6-6-5.6-11.6-8.6-17.4-1.9-3.3-2.9-7-4.7-10.4-2-.4-4-.1-4 2.3.4 4.4 3.1 8.8 5 12.8 4.7 8.5 8 17.7 12.8 26l8.7 14.5c4.5 7.2 9.9 13.3 15.3 19.8a160 160 0 0 1-20 62.8c-8.4 15.1-18.9 30-32 41.4 3.9-19.4 3.9-39 1.8-58.5-1.4-8.5-2.2-18-5.6-26-2.8-2.8-4.3.4-6 2.3-17 22.3-26.7 52-22.5 80a104.9 104.9 0 0 1-31.4-20.4 146.4 146.4 0 0 1-39.6-67.7 179.6 179.6 0 0 1-6.5-48c.5-14.2 1.9-28.2 6.1-41.8 1.3-4.4 2.2-8.7 4-13 3.4-7.7 8.1-15 13.2-21.7a139.9 139.9 0 0 1 33.3-31.6c7-4.8 14.6-8.4 22.8-10.6a85 85 0 0 0-4 40.7c.3 1.7.3 3.5 1.7 4.7 1.7 1.7 4.9-.3 4.4-2.6a84.7 84.7 0 0 1 1.8-36.3c.9-3.1 2.6-5.9 3.6-8.9.3-2.7-3-3.7-5-3.7a72.1 72.1 0 0 0-30.6 13.2c-13 9.2-24.4 20.5-33.9 33.2-8 11-14.5 23-17.5 36.4-11.9 45.6-4.6 96 20.6 136a79.4 79.4 0 0 1-45.7-37c-1-1.7-1.8-3.6-3-5.1-2.5-.3-4.6 0-5.4 2.6-5.5 14.6-7.8 31-8.4 46.5 0 14 1.4 28.4 5.6 41.8a98.4 98.4 0 0 1-35-23.6A154 154 0 0 1 370 348c-3-12.8-4.9-25.9-5.4-39-.8-10.4-1-20.5 1-30.8.2-2.3 1.2-4.2-1-6-1.9-1.5-3.6 0-4.9 1.6a213.4 213.4 0 0 0-17 27 106.7 106.7 0 0 0-13 38c0 2-.6 5.7 1.4 7 1.2 1.1 3.9 0 3.6-1.8a90 90 0 0 1 7.6-29.8c4.6-10 10.7-19.7 16.4-29.1-1 14.6.2 29.4 2 44 2 16.3 6.5 32 13.1 47a275.2 275.2 0 0 0-50.4 59.4 242.3 242.3 0 0 0-21.8 41.7 212.8 212.8 0 0 1-4.8-87c1.9-11 4.6-22.6 9.7-32.7.6-1.3 1.6-3 1.3-4.5 0-1.6-1.6-2.3-3-2.3-1.9 1-2.8 2.7-3.7 4.4-3.7 7.5-6 15.3-8 23.4-14.8 2.5-30 6.8-43.2 14.1a202.2 202.2 0 0 1 36.4-84.2c6.5-8.5 14-17 23-23 2.9-2 6.2-3.1 9-5 1.4-1.2 1.3-3.7-.5-4.4-1.2-.8-3.1 0-4.4.5a78 78 0 0 0-21.9 16.5 70.4 70.4 0 0 1-27.5-44.2c17.9 1.4 35.8 1.5 53-3.6 9.5-3 19.6-6 28.2-11 5.9 6.4 12.6 12 20 16.5 2.2 1.2 4.3 2.3 6.9 1.7 1.8-.9 1.3-2.7 1.4-4.4A62 62 0 0 1 355 236c-9.7-8.8-16.4-20-22.7-31.3a229.3 229.3 0 0 1-23-63.4c24.6 13.2 51 23.7 78.4 29.4 16.3 3.2 32.8 4.7 49.2 7 13.8 2.3 27.7 4.4 41.2 7.9 6.3 1.6 12.6 3.2 19 4.6 2.9-.2 2.4-4.7 0-5.3-3.9-1.4-8-2-12-3.1-17.4-5-35.5-8-53.4-10.7-2.3-12.5-1.1-25 1.8-37.2 3.6-14.5 8.8-28.5 15.3-41.9 3.4-7 7-13.6 10.5-20.5l1.4-2.6Z" fill="#3b2717"/></g><g transform="translate(-161 -83)"></g></g>`,
+  animeRami: `<mask id="ar_viewboxMask"><rect width="762" height="762" rx="0" ry="0" x="0" y="0" fill="#fff" /></mask><g mask="url(#ar_viewboxMask)"><path d="M396 164.8a224.8 224.8 0 0 1 104.8 42.4c6.2 4.9 12.5 9.4 18 15a225.4 225.4 0 0 1 71.8 149 58.5 58.5 0 0 1 50.9 42.2 71 71 0 0 1-27.6 76.5c-11 7.7-24.5 12-38 11.7-5 0-10-1.6-15-1.8-1.9 2.2-3.3 4.9-4.8 7.3A223.3 223.3 0 0 1 389 609.8c-11 .7-21.9 2-33 .7a223.7 223.7 0 0 1-178.8-342.3A223.4 223.4 0 0 1 352 163.5c14.6-1.4 29.4-.3 44 1.3Z" fill="#000"/><path fill-rule="evenodd" clip-rule="evenodd" d="M498.8 213.2A216 216 0 0 0 363 169c-13-.2-26.2 1.6-39 4a218 218 0 0 0-113.6 365.5 218.5 218.5 0 0 0 260.4 40.2c35-18.8 64.2-47.3 84.4-81.5l-3-1.6c-2.8-1.4-5.7-3-8-5-2.2-2-.3-5.8 2.7-4.7 1.5.7 3 1.6 4.4 2.4a55 55 0 0 0 59.6-3.6 64.5 64.5 0 0 0 25-69.8 53.1 53.1 0 0 0-24-31 52.6 52.6 0 0 0-47-2.8c-1.6.8-3.4 1.5-5 1.3-2.5-.2-2.8-4.2-.6-5.2 8-4 16.5-5.6 25.4-6.4a217 217 0 0 0-72-146.4c-4.4-4-8.7-8.1-13.9-11.3Zm107.6 196.2c2-1.2 1.3-5.1-1.4-5-2 0-4.2.8-6.2 1.6l-1.4.4a95.1 95.1 0 0 0-25.5 12.4c-2.2 2-2.2 4.4.1 6.2a92 92 0 0 0 5.2 2.8 36 36 0 0 1 13 9.2c-.2 1.9-2 3.4-3.4 4.5l-.2.2c-3.9 3-8.8 5-13.6 7-2.5 1-4.9 2-7.1 3.1-1.7.8-2.6 2.2-1.6 3.9 1 2 3.2 1.1 5 .5l.6-.2 5.4-2.3c5.4-2.3 11-4.5 15.4-8 2.7-2.1 5.1-5.1 5.4-8.7-.5-3.4-2.7-5.7-5.3-7.8a83 83 0 0 0-11.6-7.2l-1.1-.6c5.4-3 10.8-5.6 16.6-7.7l5-1.7a52 52 0 0 0 6.7-2.6Z" fill="#f2d3b1"/><g transform="translate(-161 -83)"><path d="M589.3 432.7a64.4 64.4 0 0 1 28.5 33.5 64.3 64.3 0 0 1 .5 45.1c-1 2.9-2.9 5.2-6.3 4.8-15-.8-30 .1-45 .5-10 1.1-20 2.2-30 3.8-10.5 1.8-20.6 4.1-31 6.1-4.3-.1-5.3-4.2-7.2-7.3A65.5 65.5 0 0 1 546 425c14.8-2.6 30.5.2 43.4 7.7Z" fill="#000"/><path d="M558 429.9a59.1 59.1 0 0 1 54.4 80.6l-3.2-.3a27 27 0 0 0 1.3-15.4 26.6 26.6 0 1 0-50 16.9 287 287 0 0 0-34 5.2c-6.7 1.2-13.4 3.2-20.1 4A59.8 59.8 0 0 1 517 445a59 59 0 0 1 41-15.1Z" fill="#fff"/><path d="M392 447a54.8 54.8 0 0 1 42.8 81.9c-1.1 1.9-2.9 4-5 4.7-3 .8-6.6-.2-9.6-.9-8.7-2-17.4-3.8-26.3-5.1-12.9-.9-26-1-39 0-4.7.4-9.7 1.4-14.5 1-2.3-1-3.7-4.2-4.6-6.4a54.9 54.9 0 0 1 56.2-75Z" fill="#000"/><path d="M401.5 454.7a49.3 49.3 0 0 1 26.7 74l-4.1-.7c4.1-4.4 7-9.8 6.8-16a22.6 22.6 0 0 0-43.7-8.8c-2.5 5.9-1.9 12 .4 18-7.6.2-15-.4-22.6.3-7.3.7-14.7 1.2-22 1.8l-1.9-3.4a49.2 49.2 0 0 1 60.4-65.2Z" fill="#fff"/></g><g transform="translate(-161 -83)"><path d="M452 395.9c.7 4.6-1.5 9.3-4.2 13a43.8 43.8 0 0 1-12.8 11c-7.7 4.4-16 7.8-24.2 10.9a423.5 423.5 0 0 1-73.5 19.5c-3.4.5-7 1.5-10.4 1-2-.8-2-2.7-1.1-4.4 2.3-1.8 5.5-2.8 8.2-4 36-14.6 71.9-29.4 107.8-44.1 3.3-1.3 6.6-3.4 10.2-3ZM479 396l148 22.8c2.6.4 5.3.5 7.8 1.4 2.4 1.1 1.7 5-1 5.2-9.6 1-19.1 1.8-28.8 2-15.4 0-30.6.3-46-1.2-20.9-1.6-42.2-4.6-62.2-11-7-2.5-15-5.5-20.3-10.7-1.8-2-4-4.3-3.2-7.1 1.2-2.2 3.6-1.6 5.7-1.4Z" fill="#000"/></g><g transform="translate(-161 -83)"><path d="M516.5 555.6c6 4.4 11.7 10 15.3 16.6 2.6 4.8 3.2 11.7-.4 16.1-4.2 5.4-11.5 7.6-18 8.8a151 151 0 0 1-47.4-1.6c-5.7-1.1-10.2 1.6-16 2.6-8.7 1.5-18.4 2.9-27 1-5.2-1-10.3-3.2-13.4-7.7-2.8-3.9-2.6-9.3-1.1-13.7 1.6-4 4.1-8 7-11.2 1.4-1.7 3.1-1 5-1.1.3 1.8 1 3.2-.4 4.8-2.6 3.3-5.2 6.4-6.4 10.5-1.1 3.3-.3 7 2.4 9.2 3 2.4 7.2 3.5 11 3.9a76 76 0 0 0 23-1.8c5.7-1 10-3.5 15.9-2.5 12 2 23.8 3.5 36 2.8 7-.2 14-1 20.3-4 3.2-1.9 6-4.2 5.7-8.3-.3-6-6.1-11.8-10.3-15.7-2.5-2.6-6.7-4-6-8.4 1.8-.9 3-1.8 4.8-.3Z" fill="#000"/></g><g transform="translate(-161 -83)"></g><g transform="translate(-161 -83)"></g><g transform="translate(-161 -83)"><path d="M530 122.8a69.9 69.9 0 0 1 42.2 26.5c8.8-5.3 18-9.6 27.8-12.2 12-3.5 24.7-4.2 37-2.8 15.4 2 30.6 9 40.1 21.6a47 47 0 0 1 9.3 31.1c6.5.8 12.9 1.4 19.1 3.3a63 63 0 0 1 34.4 22.9 41.8 41.8 0 0 1 7.6 30.9 70.5 70.5 0 0 1 61 9.4c8.3 6 15.1 13.7 19 23.3 4 10 4 21.4-.2 31.2a45.9 45.9 0 0 1-13 17.1 58 58 0 0 1 42.9 24.7c1.1 1.8 1.6 4-.1 5.6-1.7.4-3.5-.9-5-1.4-3.5-1.7-7-1.4-10.7-1.4a54 54 0 0 1 3.5 70.3 44.6 44.6 0 0 1-29.7 16.7c6.8 17.8 1.5 41-14 52.7-1.7 1.3-4 2.7-5.6.2a56.6 56.6 0 0 0-26.3-27.3 30 30 0 0 1-6.4 11.7 37.1 37.1 0 0 1-55.1-3.7c-5-7-6-15.7-3-23.8-6 3.8-11.7 7.6-16.1 13.3-2 2.4-3.6 2.2-6 .6a59 59 0 0 1-24.2-46.3 78.2 78.2 0 0 1 14.4-48.5c-15.4 2-30.2-8-35.3-22.4a48 48 0 0 1-24.6 7.3 52.3 52.3 0 0 1-30.2-9.2 85.3 85.3 0 0 1-28.4-33.1c-2.5 3.2-5 6.4-8 9.4a74.8 74.8 0 0 1-55.4 22.4c-13.3-.4-26-4.7-37-12.2a59.8 59.8 0 0 0 13.4 23c1.2 1.1 2 2.3 1.4 4-1.5 2.2-4.3 3.6-6.6 4.7a76.4 76.4 0 0 1-49.2 5.9 81 81 0 0 1-39.3-20.6c-8.3 12.7-23 18-37.7 17.4a279 279 0 0 0-18.4 49c-1.1 3.8-1.7 7.8-3.1 11.4-.8 1.8-2.7 2.3-4.5 1.6a34.7 34.7 0 0 1-19.7-20.4 51.8 51.8 0 0 1-2-33.4c-11.1.6-21.4-3.6-29.1-11.5a60.7 60.7 0 0 1-15.4-40.8 78 78 0 0 1 13.9-46.3c1.5-1.8 2.6-4 5.4-3.3 1.9 1.2 1.4 3.7 2 5.6.5 4.4 3 8.3 5.2 12 5.4-15.5 18.6-29.3 35.8-30.3-.6-3.2-1.3-6.4-1.2-9.7a55 55 0 0 1 19.3-38.8 41.1 41.1 0 0 1 26-10.4c1.2-14.3 9-27.7 19-37.7a65 65 0 0 1 38.8-18.9c10-1 20.3 1.7 28.5 7.7 23.8-24 60.4-35.5 93.6-28.2ZM718.5 576.5c1.4-.9 2.6-.3 4 0a81 81 0 0 0 16.5 2.3l7.1-.2c2 .9 2 2.5 2 4.4a33.2 33.2 0 0 1-5.3 17.7 27 27 0 0 1-16.8 11.4 25.7 25.7 0 0 1-21.7-5.4c-1.7-1.5-3.2-3.8-1.5-5.9 3.7-5 7.5-10 10.7-15.3 1.8-2.9 2.9-6.3 5-9Z" fill="#000"/><path d="M518.8 126.7a69.8 69.8 0 0 1 44.1 20.4c2.5 2.5 4.3 5.7 6.7 8.2 1.8 1.3 3.4.4 5-.6a90.7 90.7 0 0 1 67.5-13.6 53.2 53.2 0 0 1 28.6 16.2 41 41 0 0 1 10 29.7c0 1.5-.4 3.5.3 4.9 1.1 1.2 2.4 1 4 1.2a69 69 0 0 1 38.7 12.2c9 6.4 16.2 15.6 18 26.7.4 5.5.8 11-1.6 16.2-.9 2.5 1.2 4.3 3.6 3.4a65 65 0 0 1 58.8 4.8c8.5 5.4 15.8 13 19.5 22.5 3.4 8 3.7 17.5.5 25.6a39 39 0 0 1-13 16.9c-2.5 1.9-5.4 3.4-7.7 5.6-1.4 1.6 0 4.5 2.2 4.3 5.4 0 10.6-.7 16 .4 10.8 2 20.2 7.9 27.8 15.7-3.7 0-8.8-.6-11.8 1.6-1.9 1.2-2.5 3.3-1.2 5.1 2.5 3.2 5.6 5.8 7.7 9.4 7.1 10.8 9 23.9 6.8 36.5a44 44 0 0 1-17.8 27.5c-6.4 4.2-13.7 7-21.5 6.1-2.2-.4-2.8 2.6-1.9 4.2A42 42 0 0 1 799 487a70.9 70.9 0 0 0-18.2-21.6c-3.3-2.6-7.2-4-10.7-6.3-1.5-3.8-.4-8.5-4.8-10.4l-2.8 1.3c.1 4 1.8 7.3 1.5 11.1-.3 6.4-4.2 12-9.4 15.5a32 32 0 0 1-39.4-3.6 19.9 19.9 0 0 1-5.8-18.7c.8-3.3 2.7-5.7 4.4-8.5 1-1.2 0-3-.4-4.4-2 .1-4 .2-5.8 1-8.5 3.3-16 9.1-22 15.8a51.6 51.6 0 0 1-19.8-30.3 71.7 71.7 0 0 1 16-61.2c1.3-1.8 2.6-3.3 1.3-5.5-1.5-2-4-.7-5.9 0-9.9 4.6-22.3-.1-29-8.2-3.5-3.9-5-8.5-6.8-13.4-2.2-.2-3.8-.4-5.8 1a42 42 0 0 1-23.5 7 48.2 48.2 0 0 1-29.2-10.4 84.4 84.4 0 0 1-25.7-34l-2.3-1.6c-1.4 1.1-2.7 2.1-3.6 3.7a68.2 68.2 0 0 1-58.2 31.7 59 59 0 0 1-38.6-13.4c-1.2-.9-2.6-2.1-4.3-1.4-2.2 1-2.5 3.8-2 6 1.9 10.2 7.2 20 13.7 28a72.3 72.3 0 0 1-66.7-.3 71 71 0 0 1-34-37 60.3 60.3 0 0 1-2.7-35.8c.4-1.9 1-3.6 0-5.4-1.9-1.1-3.8-1-4.8 1.1-7 22.7.5 47.2 15.9 64.7a32.5 32.5 0 0 1-23.5 15.2c-7.6.8-15.1.5-22.2-2.4-4.5-1.6-8.2-4.3-12.2-6.7-3-1.3-5.5 2.7-2.8 4.7 6 5.1 14 8.3 21.8 10-8.9 18.1-16 37-20.8 56.6-8-3.8-12.4-11.2-15.3-19.3a42.3 42.3 0 0 1-.3-27.3c.7-2.8 2.6-5-.3-7.2-4-.5-7.8 1.3-12 .3A33.5 33.5 0 0 1 258 351a61.6 61.6 0 0 1-7.9-40c1-10.6 4.8-21 10.3-30 1.9 5.3 4.6 11 8.9 14.8 1.4 1.3 3.2 1.3 4.9.4 1.1-2.4 1-5.4 2-8a39.3 39.3 0 0 1 23.3-22.6c4-1.3 7.5-.4 11.5-.5 1.2-.4 1.7-1.9 2.4-2.8-4.9-11.3-2.4-23.2 3.2-33.7a45.2 45.2 0 0 1 26-21.9c3.7-1.2 7.4-.5 11.3-1 2-.7 1.6-2.9 2-4.7 1.2-13.2 7.6-25 16.9-34.2a59.1 59.1 0 0 1 36.2-17.9 35 35 0 0 1 23.4 6.2c-9 11.3-16 23.4-18 38-.2 2.2 1.6 3.5 3.7 3.2 2.3-1.2 2-3.6 2.7-5.8a69.1 69.1 0 0 1 14.8-30 98.3 98.3 0 0 1 83.2-33.8ZM721.5 582c6.8 1.2 13.6 2.2 20.6 2.4-.2 9-5.4 17.6-13.9 21a20.7 20.7 0 0 1-19.8-2.5c4.7-6.9 9.4-13.5 13.1-21Z" fill="#3b2717"/></g><g transform="translate(-161 -83)"></g></g>`,
+  animalSami: `<path d="M28.9284 19H26.7884C26.3384 19 25.9784 18.64 25.9784 18.19V18V10.42C25.9784 7.33 24.5584 4.15 22.1584 2.24C21.9684 2.08 21.7184 2 21.4684 2C21.2184 2 20.9684 2.08 20.7684 2.24C19.0184 3.64 17.7984 5.84 17.2684 8H14.6884C14.1584 5.84 12.9384 3.64 11.1884 2.24C10.9984 2.08 10.7484 2 10.4984 2C10.2484 2 9.99844 2.08 9.79844 2.24C7.40844 4.15 5.98844 7.32 5.98844 10.42V18V18.19C5.98844 18.64 5.62844 19 5.17844 19H3.03844C2.62844 19 2.32844 19.4 2.43844 19.8C4.09844 25.68 9.49845 30 15.9184 30C15.9384 30 15.9684 30 15.9884 30C16.0084 30 16.0384 30 16.0584 30C22.4684 30 27.8784 25.69 29.5384 19.8C29.6484 19.4 29.3484 19 28.9284 19Z" fill="url(#fx_paint0_radial_28327_1940)"/> <path d="M28.9284 19H26.7884C26.3384 19 25.9784 18.64 25.9784 18.19V18V10.42C25.9784 7.33 24.5584 4.15 22.1584 2.24C21.9684 2.08 21.7184 2 21.4684 2C21.2184 2 20.9684 2.08 20.7684 2.24C19.0184 3.64 17.7984 5.84 17.2684 8H14.6884C14.1584 5.84 12.9384 3.64 11.1884 2.24C10.9984 2.08 10.7484 2 10.4984 2C10.2484 2 9.99844 2.08 9.79844 2.24C7.40844 4.15 5.98844 7.32 5.98844 10.42V18V18.19C5.98844 18.64 5.62844 19 5.17844 19H3.03844C2.62844 19 2.32844 19.4 2.43844 19.8C4.09844 25.68 9.49845 30 15.9184 30C15.9384 30 15.9684 30 15.9884 30C16.0084 30 16.0384 30 16.0584 30C22.4684 30 27.8784 25.69 29.5384 19.8C29.6484 19.4 29.3484 19 28.9284 19Z" fill="url(#fx_paint1_radial_28327_1940)"/> <path d="M28.9284 19H26.7884C26.3384 19 25.9784 18.64 25.9784 18.19V18V10.42C25.9784 7.33 24.5584 4.15 22.1584 2.24C21.9684 2.08 21.7184 2 21.4684 2C21.2184 2 20.9684 2.08 20.7684 2.24C19.0184 3.64 17.7984 5.84 17.2684 8H14.6884C14.1584 5.84 12.9384 3.64 11.1884 2.24C10.9984 2.08 10.7484 2 10.4984 2C10.2484 2 9.99844 2.08 9.79844 2.24C7.40844 4.15 5.98844 7.32 5.98844 10.42V18V18.19C5.98844 18.64 5.62844 19 5.17844 19H3.03844C2.62844 19 2.32844 19.4 2.43844 19.8C4.09844 25.68 9.49845 30 15.9184 30C15.9384 30 15.9684 30 15.9884 30C16.0084 30 16.0384 30 16.0584 30C22.4684 30 27.8784 25.69 29.5384 19.8C29.6484 19.4 29.3484 19 28.9284 19Z" fill="url(#fx_paint2_radial_28327_1940)"/> <ellipse cx="15.9884" cy="17.6314" rx="9.76748" ry="9.66262" fill="url(#fx_paint3_radial_28327_1940)" fill-opacity="0.5"/> <g filter="url(#fx_filter0_f_28327_1940)"> <path d="M20.4241 3.89062C19.9866 4.44271 18.7209 6.03125 18.3459 7.96875" stroke="url(#fx_paint4_linear_28327_1940)" stroke-width="0.25" stroke-linecap="round"/> </g> <g filter="url(#fx_filter1_f_28327_1940)"> <path d="M24.0739 5.1936C24.8239 6.22485 25.5739 8.2561 25.5739 12.0686" stroke="#FFB160" stroke-width="0.25" stroke-linecap="round"/> </g> <g filter="url(#fx_filter2_f_28327_1940)"> <path d="M12.4884 4.34985C12.9821 5.02857 13.8459 6.70312 14.0022 7.95312" stroke="#FFB160" stroke-width="0.25" stroke-linecap="round"/> </g> <path d="M22.1685 2.24C21.9685 2.08 21.7185 2 21.4685 2C21.2185 2 20.9685 2.08 20.7685 2.24C19.5685 3.21 18.6085 4.55 17.9585 6H25.0285C24.3685 4.53 23.3985 3.22 22.1685 2.24Z" fill="url(#fx_paint5_linear_28327_1940)"/> <path d="M22.1685 2.24C21.9685 2.08 21.7185 2 21.4685 2C21.2185 2 20.9685 2.08 20.7685 2.24C19.5685 3.21 18.6085 4.55 17.9585 6H25.0285C24.3685 4.53 23.3985 3.22 22.1685 2.24Z" fill="url(#fx_paint6_linear_28327_1940)"/> <path d="M22.1685 2.24C21.9685 2.08 21.7185 2 21.4685 2C21.2185 2 20.9685 2.08 20.7685 2.24C19.5685 3.21 18.6085 4.55 17.9585 6H25.0285C24.3685 4.53 23.3985 3.22 22.1685 2.24Z" fill="url(#fx_paint7_linear_28327_1940)"/> <path d="M23.9829 12.0019C24.1338 12.2036 24.4785 12.1008 24.4785 11.8489V10.4199C24.4785 7.93995 23.4185 5.60995 21.5885 3.98995C21.5185 3.92995 21.4085 3.92995 21.3385 3.98995C20.1738 5.0302 19.3252 6.35505 18.8632 7.82391C18.7665 8.1314 18.9545 8.44779 19.259 8.55349C21.1637 9.21454 22.8041 10.4263 23.9829 12.0019Z" fill="url(#fx_paint8_linear_28327_1940)"/> <path d="M23.9829 12.0019C24.1338 12.2036 24.4785 12.1008 24.4785 11.8489V10.4199C24.4785 7.93995 23.4185 5.60995 21.5885 3.98995C21.5185 3.92995 21.4085 3.92995 21.3385 3.98995C20.1738 5.0302 19.3252 6.35505 18.8632 7.82391C18.7665 8.1314 18.9545 8.44779 19.259 8.55349C21.1637 9.21454 22.8041 10.4263 23.9829 12.0019Z" fill="url(#fx_paint9_linear_28327_1940)"/> <path d="M23.9829 12.0019C24.1338 12.2036 24.4785 12.1008 24.4785 11.8489V10.4199C24.4785 7.93995 23.4185 5.60995 21.5885 3.98995C21.5185 3.92995 21.4085 3.92995 21.3385 3.98995C20.1738 5.0302 19.3252 6.35505 18.8632 7.82391C18.7665 8.1314 18.9545 8.44779 19.259 8.55349C21.1637 9.21454 22.8041 10.4263 23.9829 12.0019Z" fill="url(#fx_paint10_linear_28327_1940)"/> <path d="M23.9829 12.0019C24.1338 12.2036 24.4785 12.1008 24.4785 11.8489V10.4199C24.4785 7.93995 23.4185 5.60995 21.5885 3.98995C21.5185 3.92995 21.4085 3.92995 21.3385 3.98995C20.1738 5.0302 19.3252 6.35505 18.8632 7.82391C18.7665 8.1314 18.9545 8.44779 19.259 8.55349C21.1637 9.21454 22.8041 10.4263 23.9829 12.0019Z" fill="url(#fx_paint11_linear_28327_1940)"/> <path d="M23.9829 12.0019C24.1338 12.2036 24.4785 12.1008 24.4785 11.8489V10.4199C24.4785 7.93995 23.4185 5.60995 21.5885 3.98995C21.5185 3.92995 21.4085 3.92995 21.3385 3.98995C20.1738 5.0302 19.3252 6.35505 18.8632 7.82391C18.7665 8.1314 18.9545 8.44779 19.259 8.55349C21.1637 9.21454 22.8041 10.4263 23.9829 12.0019Z" fill="url(#fx_paint12_radial_28327_1940)"/> <path d="M23.9829 12.0019C24.1338 12.2036 24.4785 12.1008 24.4785 11.8489V10.4199C24.4785 7.93995 23.4185 5.60995 21.5885 3.98995C21.5185 3.92995 21.4085 3.92995 21.3385 3.98995C20.1738 5.0302 19.3252 6.35505 18.8632 7.82391C18.7665 8.1314 18.9545 8.44779 19.259 8.55349C21.1637 9.21454 22.8041 10.4263 23.9829 12.0019Z" fill="url(#fx_paint13_linear_28327_1940)"/> <g filter="url(#fx_filter3_f_28327_1940)"> <path d="M19.5622 20.2812C19.1522 20.2812 18.8122 19.9412 18.8122 19.5312V18.0312C18.8122 17.6213 19.1522 17.2812 19.5622 17.2812C19.9722 17.2812 20.3122 17.6213 20.3122 18.0312V19.5312C20.3122 19.9412 19.9722 20.2812 19.5622 20.2812Z" fill="#CD5C25"/> </g> <g filter="url(#fx_filter4_f_28327_1940)"> <path d="M11.9822 20.2812C11.5722 20.2812 11.2322 19.9412 11.2322 19.5312V18.0312C11.2322 17.6213 11.5722 17.2812 11.9822 17.2812C12.3922 17.2812 12.7322 17.6213 12.7322 18.0312V19.5312C12.7322 19.9412 12.4022 20.2812 11.9822 20.2812Z" fill="#CD5C25"/> </g> <path d="M19.8085 20C19.3985 20 19.0585 19.66 19.0585 19.25V17.75C19.0585 17.34 19.3985 17 19.8085 17C20.2185 17 20.5585 17.34 20.5585 17.75V19.25C20.5585 19.66 20.2185 20 19.8085 20Z" fill="url(#fx_paint14_linear_28327_1940)"/> <path d="M19.8085 20C19.3985 20 19.0585 19.66 19.0585 19.25V17.75C19.0585 17.34 19.3985 17 19.8085 17C20.2185 17 20.5585 17.34 20.5585 17.75V19.25C20.5585 19.66 20.2185 20 19.8085 20Z" fill="url(#fx_paint15_linear_28327_1940)"/> <path d="M12.2285 20C11.8185 20 11.4785 19.66 11.4785 19.25V17.75C11.4785 17.34 11.8185 17 12.2285 17C12.6385 17 12.9785 17.34 12.9785 17.75V19.25C12.9785 19.66 12.6485 20 12.2285 20Z" fill="url(#fx_paint16_linear_28327_1940)"/> <path d="M12.2285 20C11.8185 20 11.4785 19.66 11.4785 19.25V17.75C11.4785 17.34 11.8185 17 12.2285 17C12.6385 17 12.9785 17.34 12.9785 17.75V19.25C12.9785 19.66 12.6485 20 12.2285 20Z" fill="url(#fx_paint17_linear_28327_1940)"/> <g filter="url(#fx_filter5_f_28327_1940)"> <path d="M8.73413 5.07812C8.29663 5.63021 6.96851 7.6375 6.96851 10.0625C6.96851 12.4875 6.96851 12.25 6.96851 12.0938" stroke="url(#fx_paint18_linear_28327_1940)" stroke-width="0.25" stroke-linecap="round"/> </g> <path d="M13.9885 5.95C13.3385 4.52 12.3885 3.2 11.1985 2.24C10.9985 2.08 10.7485 2 10.4985 2C10.2485 2 9.99851 2.08 9.79851 2.24C8.58851 3.21 7.61851 4.5 6.96851 5.95H13.9885Z" fill="url(#fx_paint19_linear_28327_1940)"/> <path d="M13.9885 5.95C13.3385 4.52 12.3885 3.2 11.1985 2.24C10.9985 2.08 10.7485 2 10.4985 2C10.2485 2 9.99851 2.08 9.79851 2.24C8.58851 3.21 7.61851 4.5 6.96851 5.95H13.9885Z" fill="url(#fx_paint20_linear_28327_1940)"/> <path d="M13.9885 5.95C13.3385 4.52 12.3885 3.2 11.1985 2.24C10.9985 2.08 10.7485 2 10.4985 2C10.2485 2 9.99851 2.08 9.79851 2.24C8.58851 3.21 7.61851 4.5 6.96851 5.95H13.9885Z" fill="url(#fx_paint21_linear_28327_1940)"/> <path d="M29.1385 20.99H22.6785C20.9285 20.99 19.2185 21.54 17.7985 22.56L15.9885 23.85L14.1785 22.56C12.7585 21.54 11.0485 20.99 9.29849 20.99H2.82849C4.83849 26.26 9.93849 30 15.9085 30C15.9285 30 15.9585 30 15.9785 30C15.9985 30 16.0285 30 16.0485 30C22.0285 29.99 27.1285 26.25 29.1385 20.99Z" fill="url(#fx_paint22_radial_28327_1940)"/> <path d="M29.1385 20.99H22.6785C20.9285 20.99 19.2185 21.54 17.7985 22.56L15.9885 23.85L14.1785 22.56C12.7585 21.54 11.0485 20.99 9.29849 20.99H2.82849C4.83849 26.26 9.93849 30 15.9085 30C15.9285 30 15.9585 30 15.9785 30C15.9985 30 16.0285 30 16.0485 30C22.0285 29.99 27.1285 26.25 29.1385 20.99Z" fill="url(#fx_paint23_radial_28327_1940)"/> <path d="M29.1385 20.99H22.6785C20.9285 20.99 19.2185 21.54 17.7985 22.56L15.9885 23.85L14.1785 22.56C12.7585 21.54 11.0485 20.99 9.29849 20.99H2.82849C4.83849 26.26 9.93849 30 15.9085 30C15.9285 30 15.9585 30 15.9785 30C15.9985 30 16.0285 30 16.0485 30C22.0285 29.99 27.1285 26.25 29.1385 20.99Z" fill="url(#fx_paint24_radial_28327_1940)"/> <path d="M29.1385 20.99H22.6785C20.9285 20.99 19.2185 21.54 17.7985 22.56L15.9885 23.85L14.1785 22.56C12.7585 21.54 11.0485 20.99 9.29849 20.99H2.82849C4.83849 26.26 9.93849 30 15.9085 30C15.9285 30 15.9585 30 15.9785 30C15.9985 30 16.0285 30 16.0485 30C22.0285 29.99 27.1285 26.25 29.1385 20.99Z" fill="url(#fx_paint25_radial_28327_1940)"/> <path d="M29.1385 20.99H22.6785C20.9285 20.99 19.2185 21.54 17.7985 22.56L15.9885 23.85L14.1785 22.56C12.7585 21.54 11.0485 20.99 9.29849 20.99H2.82849C4.83849 26.26 9.93849 30 15.9085 30C15.9285 30 15.9585 30 15.9785 30C15.9985 30 16.0285 30 16.0485 30C22.0285 29.99 27.1285 26.25 29.1385 20.99Z" fill="url(#fx_paint26_radial_28327_1940)"/> <path d="M29.1385 20.99H22.6785C20.9285 20.99 19.2185 21.54 17.7985 22.56L15.9885 23.85L14.1785 22.56C12.7585 21.54 11.0485 20.99 9.29849 20.99H2.82849C4.83849 26.26 9.93849 30 15.9085 30C15.9285 30 15.9585 30 15.9785 30C15.9985 30 16.0285 30 16.0485 30C22.0285 29.99 27.1285 26.25 29.1385 20.99Z" fill="url(#fx_paint27_radial_28327_1940)"/> <g filter="url(#fx_filter6_f_28327_1940)"> <path d="M15.1708 23.9533L14.0613 22.8438C13.5213 22.3038 13.9042 21.3906 14.6701 21.3906H16.8891C17.6451 21.3906 17.0266 21.8662 16.4866 22.4062L16.3785 23.9533C16.3481 23.9838 16.3159 24.0115 16.2823 24.0364C16.305 25.169 17.2252 26.075 18.3634 26.075C18.6346 26.075 18.8544 26.2948 18.8544 26.5659C18.8544 26.8371 18.6346 27.0569 18.3634 27.0569C17.2762 27.0569 16.3231 26.4936 15.7796 25.6424C15.2361 26.4936 14.2831 27.0569 13.1958 27.0569C12.9246 27.0569 12.7048 26.8371 12.7048 26.5659C12.7048 26.2948 12.9246 26.075 13.1958 26.075C14.3316 26.075 15.2503 25.1728 15.2768 24.0434C15.2397 24.0167 15.2042 23.9867 15.1708 23.9533Z" fill="#B66A7D"/> </g> <path d="M15.9769 23.6409C15.9769 25.0909 14.8069 26.2609 13.3569 26.2609" stroke="url(#fx_paint28_radial_28327_1940)" stroke-linecap="round"/> <path d="M15.9769 23.6409C15.9769 25.0909 14.8069 26.2609 13.3569 26.2609" stroke="url(#fx_paint29_radial_28327_1940)" stroke-linecap="round"/> <path d="M15.9769 23.6409C15.9769 25.0909 14.8069 26.2609 13.3569 26.2609" stroke="url(#fx_paint30_linear_28327_1940)" stroke-linecap="round"/> <path d="M16 23.6409C16 25.0909 17.17 26.2609 18.62 26.2609" stroke="url(#fx_paint31_radial_28327_1940)" stroke-linecap="round"/> <path d="M16 23.6409C16 25.0909 17.17 26.2609 18.62 26.2609" stroke="url(#fx_paint32_radial_28327_1940)" stroke-linecap="round"/> <path d="M14.2385 22.47L15.3685 23.6C15.7085 23.94 16.2585 23.94 16.5985 23.6L17.7285 22.47C18.2785 21.92 17.8885 20.99 17.1185 20.99H14.8585C14.0785 20.99 13.6885 21.92 14.2385 22.47Z" fill="url(#fx_paint33_linear_28327_1940)"/> <path d="M14.2385 22.47L15.3685 23.6C15.7085 23.94 16.2585 23.94 16.5985 23.6L17.7285 22.47C18.2785 21.92 17.8885 20.99 17.1185 20.99H14.8585C14.0785 20.99 13.6885 21.92 14.2385 22.47Z" fill="url(#fx_paint34_radial_28327_1940)"/> <path d="M14.2385 22.47L15.3685 23.6C15.7085 23.94 16.2585 23.94 16.5985 23.6L17.7285 22.47C18.2785 21.92 17.8885 20.99 17.1185 20.99H14.8585C14.0785 20.99 13.6885 21.92 14.2385 22.47Z" fill="url(#fx_paint35_linear_28327_1940)"/> <path d="M14.2385 22.47L15.3685 23.6C15.7085 23.94 16.2585 23.94 16.5985 23.6L17.7285 22.47C18.2785 21.92 17.8885 20.99 17.1185 20.99H14.8585C14.0785 20.99 13.6885 21.92 14.2385 22.47Z" fill="url(#fx_paint36_linear_28327_1940)"/> <path d="M12.6888 8.55411C12.9929 8.44805 13.1806 8.13188 13.0838 7.82469C12.6201 6.35367 11.7635 5.02055 10.5985 3.98006C10.5285 3.92006 10.4185 3.92006 10.3485 3.98006C8.53852 5.61006 7.47852 7.93006 7.47852 10.4001V11.8612C7.47852 12.113 7.82244 12.2156 7.9731 12.0139C9.15632 10.43 10.7907 9.21604 12.6888 8.55411Z" fill="url(#fx_paint37_linear_28327_1940)"/> <path d="M12.6888 8.55411C12.9929 8.44805 13.1806 8.13188 13.0838 7.82469C12.6201 6.35367 11.7635 5.02055 10.5985 3.98006C10.5285 3.92006 10.4185 3.92006 10.3485 3.98006C8.53852 5.61006 7.47852 7.93006 7.47852 10.4001V11.8612C7.47852 12.113 7.82244 12.2156 7.9731 12.0139C9.15632 10.43 10.7907 9.21604 12.6888 8.55411Z" fill="url(#fx_paint38_linear_28327_1940)"/> <path d="M12.6888 8.55411C12.9929 8.44805 13.1806 8.13188 13.0838 7.82469C12.6201 6.35367 11.7635 5.02055 10.5985 3.98006C10.5285 3.92006 10.4185 3.92006 10.3485 3.98006C8.53852 5.61006 7.47852 7.93006 7.47852 10.4001V11.8612C7.47852 12.113 7.82244 12.2156 7.9731 12.0139C9.15632 10.43 10.7907 9.21604 12.6888 8.55411Z" fill="url(#fx_paint39_linear_28327_1940)"/> <path d="M12.6888 8.55411C12.9929 8.44805 13.1806 8.13188 13.0838 7.82469C12.6201 6.35367 11.7635 5.02055 10.5985 3.98006C10.5285 3.92006 10.4185 3.92006 10.3485 3.98006C8.53852 5.61006 7.47852 7.93006 7.47852 10.4001V11.8612C7.47852 12.113 7.82244 12.2156 7.9731 12.0139C9.15632 10.43 10.7907 9.21604 12.6888 8.55411Z" fill="url(#fx_paint40_linear_28327_1940)"/> <path d="M12.6888 8.55411C12.9929 8.44805 13.1806 8.13188 13.0838 7.82469C12.6201 6.35367 11.7635 5.02055 10.5985 3.98006C10.5285 3.92006 10.4185 3.92006 10.3485 3.98006C8.53852 5.61006 7.47852 7.93006 7.47852 10.4001V11.8612C7.47852 12.113 7.82244 12.2156 7.9731 12.0139C9.15632 10.43 10.7907 9.21604 12.6888 8.55411Z" fill="url(#fx_paint41_radial_28327_1940)"/> <path d="M12.6888 8.55411C12.9929 8.44805 13.1806 8.13188 13.0838 7.82469C12.6201 6.35367 11.7635 5.02055 10.5985 3.98006C10.5285 3.92006 10.4185 3.92006 10.3485 3.98006C8.53852 5.61006 7.47852 7.93006 7.47852 10.4001V11.8612C7.47852 12.113 7.82244 12.2156 7.9731 12.0139C9.15632 10.43 10.7907 9.21604 12.6888 8.55411Z" fill="url(#fx_paint42_linear_28327_1940)"/> <g filter="url(#fx_filter7_f_28327_1940)"> <circle cx="17.0881" cy="21.8359" r="0.320312" fill="#6A6566"/> </g> <g filter="url(#fx_filter8_f_28327_1940)"> <path d="M28.9976 19.6775C29.0353 19.6196 29.0188 19.5422 28.9609 19.5046C28.9031 19.4669 28.8256 19.4834 28.788 19.5413L28.9976 19.6775ZM26.0478 21.2855C25.9812 21.3035 25.9417 21.3721 25.9596 21.4387C25.9776 21.5054 26.0462 21.5449 26.1128 21.527L26.0478 21.2855ZM28.788 19.5413C28.7717 19.5663 28.7315 19.6114 28.6621 19.6756C28.595 19.7376 28.5077 19.8114 28.4043 19.8932C28.1978 20.0567 27.9317 20.249 27.6459 20.4389C27.069 20.8222 26.4321 21.1821 26.0478 21.2855L26.1128 21.527C26.5411 21.4116 27.2088 21.0294 27.7843 20.6471C28.0747 20.4541 28.3466 20.2578 28.5595 20.0892C28.6659 20.005 28.7586 19.9269 28.8319 19.8591C28.9028 19.7934 28.9631 19.7306 28.9976 19.6775L28.788 19.5413Z" fill="url(#fx_paint43_linear_28327_1940)"/> </g> <g filter="url(#fx_filter9_f_28327_1940)"> <path d="M3.13915 19.6775C3.10153 19.6196 3.11795 19.5422 3.17583 19.5046C3.23372 19.4669 3.31114 19.4834 3.34876 19.5413L3.13915 19.6775ZM6.08895 21.2855C6.15562 21.3035 6.19511 21.3721 6.17716 21.4387C6.15921 21.5054 6.09062 21.5449 6.02396 21.527L6.08895 21.2855ZM3.34876 19.5413C3.36506 19.5663 3.40532 19.6114 3.47471 19.6756C3.54173 19.7376 3.6291 19.8114 3.73243 19.8932C3.93895 20.0567 4.20511 20.249 4.49087 20.4389C5.06778 20.8222 5.70472 21.1821 6.08895 21.2855L6.02396 21.527C5.59569 21.4116 4.92795 21.0294 4.35252 20.6471C4.0621 20.4541 3.79017 20.2578 3.57726 20.0892C3.47088 20.005 3.37819 19.9269 3.30489 19.8591C3.23396 19.7934 3.17364 19.7306 3.13915 19.6775L3.34876 19.5413Z" fill="url(#fx_paint44_linear_28327_1940)"/> </g> <g filter="url(#fx_filter10_f_28327_1940)"> <path d="M23.4084 15.1875C23.4084 15.4065 23.419 17.6472 23.4395 17.847C23.6525 19.9282 24.9395 20.9688 26.5647 20.9688" stroke="#FFC177"/> </g> <g filter="url(#fx_filter11_f_28327_1940)"> <path d="M21.6755 2.66406C22.1208 3.0625 23.3395 4.23438 24.0739 5.5625" stroke="#665D5F" stroke-width="0.25" stroke-linecap="round"/> </g> <g filter="url(#fx_filter12_f_28327_1940)"> <path d="M10.5801 2.66406C11.0254 3.0625 12.2441 4.23438 12.9785 5.5625" stroke="#665D5F" stroke-width="0.25" stroke-linecap="round"/> </g> <g filter="url(#fx_filter13_f_28327_1940)"> <path d="M21.5114 2.66406C21.0661 3.0625 19.8474 4.23438 19.113 5.5625" stroke="url(#fx_paint45_linear_28327_1940)" stroke-opacity="0.5" stroke-width="0.25" stroke-linecap="round"/> </g> <g filter="url(#fx_filter14_f_28327_1940)"> <path d="M10.416 2.66406C9.9707 3.0625 8.75195 4.23438 8.01758 5.5625" stroke="url(#fx_paint46_linear_28327_1940)" stroke-opacity="0.5" stroke-width="0.25" stroke-linecap="round"/> </g> <defs> <filter id="fx_filter0_f_28327_1940" x="17.7209" y="3.26562" width="3.32812" height="5.32812" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter1_f_28327_1940" x="23.4489" y="4.5686" width="2.75" height="8.125" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter2_f_28327_1940" x="11.8635" y="3.72485" width="2.76373" height="4.85327" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter3_f_28327_1940" x="18.0622" y="16.5312" width="3" height="4.5" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.375" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter4_f_28327_1940" x="10.4822" y="16.5312" width="3" height="4.5" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.375" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter5_f_28327_1940" x="6.34351" y="4.45312" width="3.01562" height="8.23096" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter6_f_28327_1940" x="11.9548" y="20.6406" width="7.64954" height="7.16626" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.375" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter7_f_28327_1940" x="16.2678" y="21.0156" width="1.64062" height="1.64062" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter8_f_28327_1940" x="25.4553" y="18.9844" width="4.06256" height="3.04688" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter9_f_28327_1940" x="2.11896" y="18.4844" width="5.06256" height="4.04688" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.5" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter10_f_28327_1940" x="20.4084" y="12.6875" width="8.65625" height="11.2812" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="1.25" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter11_f_28327_1940" x="21.0505" y="2.03906" width="3.64844" height="4.14844" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter12_f_28327_1940" x="9.95508" y="2.03906" width="3.64844" height="4.14844" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter13_f_28327_1940" x="18.488" y="2.03906" width="3.64844" height="4.14844" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_1940"/> </filter> <filter id="fx_filter14_f_28327_1940" x="7.39258" y="2.03906" width="3.64844" height="4.14844" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_1940"/> </filter> <radialGradient id="fx_paint0_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(20.1584 12.5) rotate(136.338) scale(20.8211 20.8211)"> <stop stop-color="#FFC177"/> <stop offset="0.284634" stop-color="#FF8D28"/> <stop offset="0.610861" stop-color="#F4763D"/> </radialGradient> <radialGradient id="fx_paint1_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(29.2209 18.125) rotate(134.433) scale(4.46383 3.0354)"> <stop stop-color="#E78327"/> <stop offset="1" stop-color="#F4953D" stop-opacity="0"/> </radialGradient> <radialGradient id="fx_paint2_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1.9397 19.6875) rotate(32.6375) scale(3.30276 1.76965)"> <stop stop-color="#C9510E"/> <stop offset="1" stop-color="#C9510E" stop-opacity="0"/> </radialGradient> <radialGradient id="fx_paint3_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(15.9884 19.875) rotate(-90) scale(13.4375 12.9825)"> <stop offset="0.795349" stop-color="#F46639" stop-opacity="0"/> <stop offset="1" stop-color="#F46639"/> </radialGradient> <linearGradient id="fx_paint4_linear_28327_1940" x1="20.4741" y1="7.40625" x2="20.4741" y2="-3.875" gradientUnits="userSpaceOnUse"> <stop stop-color="#FFB444"/> <stop offset="1" stop-color="#FFB444" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint5_linear_28327_1940" x1="21.4935" y1="0.639241" x2="22.0873" y2="5.664" gradientUnits="userSpaceOnUse"> <stop offset="0.191489" stop-color="#5F5254"/> <stop offset="1" stop-color="#2E2127"/> </linearGradient> <linearGradient id="fx_paint6_linear_28327_1940" x1="22.0576" y1="3.08397" x2="21.9569" y2="0.544347" gradientUnits="userSpaceOnUse"> <stop offset="0.146552" stop-color="#34222C" stop-opacity="0"/> <stop offset="0.872727" stop-color="#34222C"/> </linearGradient> <linearGradient id="fx_paint7_linear_28327_1940" x1="23.2831" y1="7.28481" x2="23.2831" y2="4.5" gradientUnits="userSpaceOnUse"> <stop stop-color="#552D52"/> <stop offset="1" stop-color="#552D52" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint8_linear_28327_1940" x1="23.346" y1="13.75" x2="20.0335" y2="5.1875" gradientUnits="userSpaceOnUse"> <stop stop-color="#FC5737"/> <stop offset="1" stop-color="#EF7E3F"/> </linearGradient> <linearGradient id="fx_paint9_linear_28327_1940" x1="25.0335" y1="12.7299" x2="22.9085" y2="7.6875" gradientUnits="userSpaceOnUse"> <stop stop-color="#E83525"/> <stop offset="1" stop-color="#E83525" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint10_linear_28327_1940" x1="24.7835" y1="7.6875" x2="22.6273" y2="7.6875" gradientUnits="userSpaceOnUse"> <stop stop-color="#E83525"/> <stop offset="1" stop-color="#E83525" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint11_linear_28327_1940" x1="25.2835" y1="4.5625" x2="22.346" y2="7.375" gradientUnits="userSpaceOnUse"> <stop stop-color="#BF5733"/> <stop offset="1" stop-color="#BF5733" stop-opacity="0"/> </linearGradient> <radialGradient id="fx_paint12_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(18.7085 9.375) rotate(-22.746) scale(2.18223 4.8172)"> <stop stop-color="#FF894C"/> <stop offset="1" stop-color="#FF894C" stop-opacity="0"/> </radialGradient> <linearGradient id="fx_paint13_linear_28327_1940" x1="18.7085" y1="6.40625" x2="20.0335" y2="7.34375" gradientUnits="userSpaceOnUse"> <stop stop-color="#FF894C"/> <stop offset="1" stop-color="#FF894C" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint14_linear_28327_1940" x1="20.4712" y1="18.5" x2="19.6458" y2="18.5" gradientUnits="userSpaceOnUse"> <stop offset="0.225" stop-color="#594C4F"/> <stop offset="1" stop-color="#392833"/> </linearGradient> <linearGradient id="fx_paint15_linear_28327_1940" x1="20.7928" y1="20.5249" x2="20.7928" y2="18.9347" gradientUnits="userSpaceOnUse"> <stop stop-color="#552D52"/> <stop offset="1" stop-color="#552D52" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint16_linear_28327_1940" x1="12.8912" y1="18.5" x2="12.0658" y2="18.5" gradientUnits="userSpaceOnUse"> <stop offset="0.225" stop-color="#594C4F"/> <stop offset="1" stop-color="#392833"/> </linearGradient> <linearGradient id="fx_paint17_linear_28327_1940" x1="13.2129" y1="20.5249" x2="13.2129" y2="18.9347" gradientUnits="userSpaceOnUse"> <stop stop-color="#552D52"/> <stop offset="1" stop-color="#552D52" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint18_linear_28327_1940" x1="8.73413" y1="9.5625" x2="8.73413" y2="-1.71875" gradientUnits="userSpaceOnUse"> <stop stop-color="#FFB444"/> <stop offset="1" stop-color="#FFB444" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint19_linear_28327_1940" x1="10.4785" y1="0.65625" x2="11.0618" y2="5.61895" gradientUnits="userSpaceOnUse"> <stop offset="0.191489" stop-color="#5F5254"/> <stop offset="1" stop-color="#2E2127"/> </linearGradient> <linearGradient id="fx_paint20_linear_28327_1940" x1="11.0386" y1="3.07042" x2="10.9398" y2="0.5625" gradientUnits="userSpaceOnUse"> <stop offset="0.146552" stop-color="#34222C" stop-opacity="0"/> <stop offset="0.872727" stop-color="#34222C"/> </linearGradient> <linearGradient id="fx_paint21_linear_28327_1940" x1="12.2554" y1="7.21875" x2="12.2554" y2="4.46875" gradientUnits="userSpaceOnUse"> <stop stop-color="#552D52"/> <stop offset="1" stop-color="#552D52" stop-opacity="0"/> </linearGradient> <radialGradient id="fx_paint22_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(22.2835 18.625) rotate(116.074) scale(14.3337 20.0167)"> <stop offset="0.0844541" stop-color="#FFDFA1"/> <stop offset="1" stop-color="#EBA582"/> </radialGradient> <radialGradient id="fx_paint23_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(15.9835 20.99) rotate(90) scale(10.01 21.575)"> <stop offset="0.512987" stop-color="#D87DA0" stop-opacity="0"/> <stop offset="1" stop-color="#D87DA0"/> </radialGradient> <radialGradient id="fx_paint24_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(15.9835 20.99) rotate(128.469) scale(13.5833 44.3384)"> <stop offset="0.588887" stop-color="#D87DA0" stop-opacity="0"/> <stop offset="1" stop-color="#D87DA0"/> </radialGradient> <radialGradient id="fx_paint25_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(15.9835 20.99) rotate(90) scale(10.5725 16.07)"> <stop offset="0.7921" stop-color="#C55188" stop-opacity="0"/> <stop offset="1" stop-color="#C55188"/> </radialGradient> <radialGradient id="fx_paint26_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(24.346 19.625) rotate(118.156) scale(5.03309 7.12647)"> <stop stop-color="#F9E58C"/> <stop offset="1" stop-color="#F9E58C" stop-opacity="0"/> </radialGradient> <radialGradient id="fx_paint27_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(9.72101 31.1875) rotate(-46.0662) scale(9.026 11.2593)"> <stop stop-color="#D87DA0"/> <stop offset="1" stop-color="#D87DA0" stop-opacity="0"/> </radialGradient> <radialGradient id="fx_paint28_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(13.7485 24.2015) rotate(54.3924) scale(2.97885 3.73897)"> <stop stop-color="#261317"/> <stop offset="0.588542" stop-color="#4E4647"/> <stop offset="0.747451" stop-color="#2F172A"/> </radialGradient> <radialGradient id="fx_paint29_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(14.561 25.264) rotate(-128.517) scale(0.978529 1.62106)"> <stop stop-color="#261317"/> <stop offset="1" stop-color="#261317" stop-opacity="0"/> </radialGradient> <linearGradient id="fx_paint30_linear_28327_1940" x1="15.8423" y1="24.5296" x2="15.1392" y2="25.5452" gradientUnits="userSpaceOnUse"> <stop stop-color="#2F172A"/> <stop offset="1" stop-color="#2F172A" stop-opacity="0"/> </linearGradient> <radialGradient id="fx_paint31_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(18.4673 24.2796) rotate(122.471) scale(3.05588 4.35358)"> <stop stop-color="#261317"/> <stop offset="0.588542" stop-color="#4E4647"/> <stop offset="0.747451" stop-color="#2F172A"/> </radialGradient> <radialGradient id="fx_paint32_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(17.686 24.4984) rotate(135.988) scale(1.28182 2.1235)"> <stop stop-color="#261317"/> <stop offset="1" stop-color="#261317" stop-opacity="0"/> </radialGradient> <linearGradient id="fx_paint33_linear_28327_1940" x1="17.0884" y1="20.7524" x2="14.5549" y2="22.9931" gradientUnits="userSpaceOnUse"> <stop offset="0.191489" stop-color="#5F5254"/> <stop offset="1" stop-color="#2E2127"/> </linearGradient> <radialGradient id="fx_paint34_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(16.2719 21.5399) rotate(132.349) scale(1.80048 3.30126)"> <stop offset="0.462647" stop-color="#34222C" stop-opacity="0"/> <stop offset="0.955607" stop-color="#34222C"/> </radialGradient> <linearGradient id="fx_paint35_linear_28327_1940" x1="16.3032" y1="21.7664" x2="16.3032" y2="20.3776" gradientUnits="userSpaceOnUse"> <stop offset="0.146552" stop-color="#34222C" stop-opacity="0"/> <stop offset="0.872727" stop-color="#34222C"/> </linearGradient> <linearGradient id="fx_paint36_linear_28327_1940" x1="16.9974" y1="24.0956" x2="16.9974" y2="21.996" gradientUnits="userSpaceOnUse"> <stop stop-color="#552D52"/> <stop offset="1" stop-color="#552D52" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint37_linear_28327_1940" x1="12.108" y1="13.7624" x2="8.32611" y2="6.3852" gradientUnits="userSpaceOnUse"> <stop stop-color="#FC5737"/> <stop offset="1" stop-color="#EF7E3F"/> </linearGradient> <linearGradient id="fx_paint38_linear_28327_1940" x1="13.2385" y1="11.0625" x2="10.3481" y2="7.44579" gradientUnits="userSpaceOnUse"> <stop offset="0.139209" stop-color="#E83525"/> <stop offset="1" stop-color="#E83525" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint39_linear_28327_1940" x1="13.543" y1="7.68613" x2="11.3905" y2="7.68613" gradientUnits="userSpaceOnUse"> <stop stop-color="#E83525"/> <stop offset="1" stop-color="#E83525" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint40_linear_28327_1940" x1="13.2385" y1="5.875" x2="11.1038" y2="7.36437" gradientUnits="userSpaceOnUse"> <stop stop-color="#BF5733"/> <stop offset="1" stop-color="#BF5733" stop-opacity="0"/> </linearGradient> <radialGradient id="fx_paint41_radial_28327_1940" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(6.09601 7.125) rotate(10.6197) scale(3.05228 12.7697)"> <stop stop-color="#FF894C"/> <stop offset="1" stop-color="#FF894C" stop-opacity="0"/> </radialGradient> <linearGradient id="fx_paint42_linear_28327_1940" x1="7.47852" y1="6.40197" x2="9.60037" y2="7.55448" gradientUnits="userSpaceOnUse"> <stop stop-color="#FF894C"/> <stop offset="1" stop-color="#FF894C" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint43_linear_28327_1940" x1="29.2053" y1="19.6094" x2="26.7834" y2="21.125" gradientUnits="userSpaceOnUse"> <stop offset="0.211043" stop-color="#FFCB8C"/> <stop offset="1" stop-color="#FFCB8C" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint44_linear_28327_1940" x1="2.93146" y1="19.6094" x2="6.6272" y2="21.875" gradientUnits="userSpaceOnUse"> <stop offset="0.211043" stop-color="#FFD199"/> <stop offset="1" stop-color="#FFCB8C" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint45_linear_28327_1940" x1="21.5114" y1="2.66406" x2="19.2458" y2="5.67188" gradientUnits="userSpaceOnUse"> <stop stop-color="#665D5F"/> <stop offset="1" stop-color="#665D5F" stop-opacity="0"/> </linearGradient> <linearGradient id="fx_paint46_linear_28327_1940" x1="10.416" y1="2.66406" x2="8.15039" y2="5.67188" gradientUnits="userSpaceOnUse"> <stop stop-color="#665D5F"/> <stop offset="1" stop-color="#665D5F" stop-opacity="0"/> </linearGradient> </defs>`,
+  animalRami: `<path d="M25.85 12.4487L23.55 9.2887C24.18 8.7387 24.57 7.9387 24.57 7.0387C24.57 5.3787 23.23 4.0387 21.57 4.0387C20.5 4.0387 19.56 4.5987 19.03 5.4487C18.09 5.0887 17.07 4.8987 16 4.8987C14.93 4.8987 13.91 5.0987 12.97 5.4487C12.44 4.5987 11.5 4.0387 10.43 4.0387C8.77 4.0387 7.43 5.3787 7.43 7.0387C7.43 7.9387 7.83 8.7387 8.45 9.2887L6.15 12.4487C5.4 13.4787 5 14.7287 5 15.9987C5 19.3387 7.7 22.0387 11.04 22.0387H16H20.96C24.3 22.0387 27 19.3387 27 15.9987C27 14.7287 26.6 13.4787 25.85 12.4487Z" fill="url(#ln_paint0_radial_28327_2199)"/> <path d="M25.85 12.4487L23.55 9.2887C24.18 8.7387 24.57 7.9387 24.57 7.0387C24.57 5.3787 23.23 4.0387 21.57 4.0387C20.5 4.0387 19.56 4.5987 19.03 5.4487C18.09 5.0887 17.07 4.8987 16 4.8987C14.93 4.8987 13.91 5.0987 12.97 5.4487C12.44 4.5987 11.5 4.0387 10.43 4.0387C8.77 4.0387 7.43 5.3787 7.43 7.0387C7.43 7.9387 7.83 8.7387 8.45 9.2887L6.15 12.4487C5.4 13.4787 5 14.7287 5 15.9987C5 19.3387 7.7 22.0387 11.04 22.0387H16H20.96C24.3 22.0387 27 19.3387 27 15.9987C27 14.7287 26.6 13.4787 25.85 12.4487Z" fill="url(#ln_paint1_radial_28327_2199)"/> <path d="M25.85 12.4487L23.55 9.2887C24.18 8.7387 24.57 7.9387 24.57 7.0387C24.57 5.3787 23.23 4.0387 21.57 4.0387C20.5 4.0387 19.56 4.5987 19.03 5.4487C18.09 5.0887 17.07 4.8987 16 4.8987C14.93 4.8987 13.91 5.0987 12.97 5.4487C12.44 4.5987 11.5 4.0387 10.43 4.0387C8.77 4.0387 7.43 5.3787 7.43 7.0387C7.43 7.9387 7.83 8.7387 8.45 9.2887L6.15 12.4487C5.4 13.4787 5 14.7287 5 15.9987C5 19.3387 7.7 22.0387 11.04 22.0387H16H20.96C24.3 22.0387 27 19.3387 27 15.9987C27 14.7287 26.6 13.4787 25.85 12.4487Z" fill="url(#ln_paint2_radial_28327_2199)" fill-opacity="0.4"/> <path d="M25.85 12.4487L23.55 9.2887C24.18 8.7387 24.57 7.9387 24.57 7.0387C24.57 5.3787 23.23 4.0387 21.57 4.0387C20.5 4.0387 19.56 4.5987 19.03 5.4487C18.09 5.0887 17.07 4.8987 16 4.8987C14.93 4.8987 13.91 5.0987 12.97 5.4487C12.44 4.5987 11.5 4.0387 10.43 4.0387C8.77 4.0387 7.43 5.3787 7.43 7.0387C7.43 7.9387 7.83 8.7387 8.45 9.2887L6.15 12.4487C5.4 13.4787 5 14.7287 5 15.9987C5 19.3387 7.7 22.0387 11.04 22.0387H16H20.96C24.3 22.0387 27 19.3387 27 15.9987C27 14.7287 26.6 13.4787 25.85 12.4487Z" fill="url(#ln_paint3_radial_28327_2199)"/> <path d="M25.85 12.4487L23.55 9.2887C24.18 8.7387 24.57 7.9387 24.57 7.0387C24.57 5.3787 23.23 4.0387 21.57 4.0387C20.5 4.0387 19.56 4.5987 19.03 5.4487C18.09 5.0887 17.07 4.8987 16 4.8987C14.93 4.8987 13.91 5.0987 12.97 5.4487C12.44 4.5987 11.5 4.0387 10.43 4.0387C8.77 4.0387 7.43 5.3787 7.43 7.0387C7.43 7.9387 7.83 8.7387 8.45 9.2887L6.15 12.4487C5.4 13.4787 5 14.7287 5 15.9987C5 19.3387 7.7 22.0387 11.04 22.0387H16H20.96C24.3 22.0387 27 19.3387 27 15.9987C27 14.7287 26.6 13.4787 25.85 12.4487Z" fill="url(#ln_paint4_radial_28327_2199)"/> <path d="M25.85 12.4487L23.55 9.2887C24.18 8.7387 24.57 7.9387 24.57 7.0387C24.57 5.3787 23.23 4.0387 21.57 4.0387C20.5 4.0387 19.56 4.5987 19.03 5.4487C18.09 5.0887 17.07 4.8987 16 4.8987C14.93 4.8987 13.91 5.0987 12.97 5.4487C12.44 4.5987 11.5 4.0387 10.43 4.0387C8.77 4.0387 7.43 5.3787 7.43 7.0387C7.43 7.9387 7.83 8.7387 8.45 9.2887L6.15 12.4487C5.4 13.4787 5 14.7287 5 15.9987C5 19.3387 7.7 22.0387 11.04 22.0387H16H20.96C24.3 22.0387 27 19.3387 27 15.9987C27 14.7287 26.6 13.4787 25.85 12.4487Z" fill="url(#ln_paint5_radial_28327_2199)"/> <path d="M23.5618 9.27832L23.5549 9.2687C22.5489 7.86879 21.3881 6.25364 18.8398 5.38473L18.8399 5.37861C18.9036 5.40121 18.967 5.42457 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.57 4.0387C23.23 4.0387 24.57 5.3787 24.57 7.0387C24.57 7.93305 24.1849 8.72866 23.5618 9.27832Z" fill="url(#ln_paint6_radial_28327_2199)"/> <path d="M23.5618 9.27832L23.5549 9.2687C22.5489 7.86879 21.3881 6.25364 18.8398 5.38473L18.8399 5.37861C18.9036 5.40121 18.967 5.42457 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.57 4.0387C23.23 4.0387 24.57 5.3787 24.57 7.0387C24.57 7.93305 24.1849 8.72866 23.5618 9.27832Z" fill="url(#ln_paint7_radial_28327_2199)"/> <path d="M8.43427 9.27832L8.44118 9.2687C9.44723 7.86879 10.608 6.25364 13.1562 5.38473L13.1561 5.37861C13.0924 5.40121 13.0291 5.42457 12.9661 5.4487C12.4361 4.5987 11.4961 4.0387 10.4261 4.0387C8.76609 4.0387 7.42609 5.3787 7.42609 7.0387C7.42609 7.93305 7.81122 8.72866 8.43427 9.27832Z" fill="url(#ln_paint8_radial_28327_2199)"/> <path d="M9.03999 8.4687C9.12999 8.3387 9.21999 8.2187 9.31999 8.0987V8.0887C10.06 7.1687 10.99 6.4087 12.04 5.8587C11.68 5.3587 11.09 5.0387 10.43 5.0387C9.32999 5.0387 8.42999 5.9387 8.42999 7.0387C8.42999 7.5987 8.65999 8.1087 9.03999 8.4687Z" fill="url(#ln_paint9_radial_28327_2199)"/> <path d="M9.03999 8.4687C9.12999 8.3387 9.21999 8.2187 9.31999 8.0987V8.0887C10.06 7.1687 10.99 6.4087 12.04 5.8587C11.68 5.3587 11.09 5.0387 10.43 5.0387C9.32999 5.0387 8.42999 5.9387 8.42999 7.0387C8.42999 7.5987 8.65999 8.1087 9.03999 8.4687Z" fill="url(#ln_paint10_linear_28327_2199)"/> <path d="M9.03999 8.4687C9.12999 8.3387 9.21999 8.2187 9.31999 8.0987V8.0887C10.06 7.1687 10.99 6.4087 12.04 5.8587C11.68 5.3587 11.09 5.0387 10.43 5.0387C9.32999 5.0387 8.42999 5.9387 8.42999 7.0387C8.42999 7.5987 8.65999 8.1087 9.03999 8.4687Z" fill="url(#ln_paint11_radial_28327_2199)"/> <path d="M22.68 8.09871C22.78 8.22871 22.88 8.34871 22.97 8.47871C23.34 8.11871 23.58 7.60871 23.58 7.04871C23.58 5.94871 22.68 5.04871 21.58 5.04871C20.92 5.04871 20.33 5.36871 19.96 5.86871C21.01 6.40871 21.94 7.17871 22.68 8.09871Z" fill="url(#ln_paint12_radial_28327_2199)"/> <path d="M28.66 12.3687L29.41 12.7387C29.68 12.8787 30 12.6787 30 12.3787V8.4487C30 7.5387 29.64 6.6787 29 6.0387C28.36 5.3987 27.49 5.0387 26.59 5.0387H26L26.59 3.2687C26.79 2.6687 26.34 2.0387 25.7 2.0387H19C18.35 2.0387 17.72 2.2487 17.2 2.6387C16.48 3.1787 16.05 4.0087 16 4.8987H15.99C15.95 4.0087 15.51 3.1787 14.79 2.6487C14.28 2.2487 13.65 2.0387 13 2.0387H6.3C5.66 2.0387 5.21 2.6687 5.41 3.2687L6 5.0387H5.41C4.51 5.0387 3.64 5.3987 3 6.0387C2.36 6.6787 2 7.5487 2 8.4487V12.3787C2 12.6787 2.32 12.8787 2.59 12.7387L3.34 12.3687C3.62 12.2287 3.92 12.3587 3.99 12.6587C4.04 12.8687 3.94 13.0687 3.75 13.1587L2.75 13.6587C2.29 13.8887 2 14.3587 2 14.8787V21.3287C2 24.1187 3.85 26.5687 6.53 27.3387L15.41 29.8787C15.79 29.9887 16.2 29.9887 16.59 29.8787L25.47 27.3387C28.15 26.5687 30 24.1187 30 21.3287V14.8787C30 14.3687 29.71 13.8987 29.25 13.6687L28.25 13.1687C28.07 13.0787 27.97 12.8687 28.01 12.6687C28.08 12.3587 28.39 12.2287 28.66 12.3687ZM27 15.9987C27 19.3387 24.3 22.0387 20.96 22.0387H16H11.04C7.7 22.0387 5 19.3387 5 15.9987C5 14.7187 5.4 13.4787 6.15 12.4487L8.45 9.2887C7.8 8.7187 7.4 7.8787 7.43 6.9287C7.49 5.3287 8.82 4.0387 10.42 4.0387C11.49 4.0387 12.44 4.5987 12.97 5.4487C14.66 7.0887 17.34 7.0887 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.58 4.0387C23.18 4.0387 24.52 5.3287 24.57 6.9287C24.6 7.8687 24.2 8.7187 23.55 9.2887L25.85 12.4487C26.6 13.4787 27 14.7287 27 15.9987Z" fill="url(#ln_paint13_linear_28327_2199)"/> <path d="M28.66 12.3687L29.41 12.7387C29.68 12.8787 30 12.6787 30 12.3787V8.4487C30 7.5387 29.64 6.6787 29 6.0387C28.36 5.3987 27.49 5.0387 26.59 5.0387H26L26.59 3.2687C26.79 2.6687 26.34 2.0387 25.7 2.0387H19C18.35 2.0387 17.72 2.2487 17.2 2.6387C16.48 3.1787 16.05 4.0087 16 4.8987H15.99C15.95 4.0087 15.51 3.1787 14.79 2.6487C14.28 2.2487 13.65 2.0387 13 2.0387H6.3C5.66 2.0387 5.21 2.6687 5.41 3.2687L6 5.0387H5.41C4.51 5.0387 3.64 5.3987 3 6.0387C2.36 6.6787 2 7.5487 2 8.4487V12.3787C2 12.6787 2.32 12.8787 2.59 12.7387L3.34 12.3687C3.62 12.2287 3.92 12.3587 3.99 12.6587C4.04 12.8687 3.94 13.0687 3.75 13.1587L2.75 13.6587C2.29 13.8887 2 14.3587 2 14.8787V21.3287C2 24.1187 3.85 26.5687 6.53 27.3387L15.41 29.8787C15.79 29.9887 16.2 29.9887 16.59 29.8787L25.47 27.3387C28.15 26.5687 30 24.1187 30 21.3287V14.8787C30 14.3687 29.71 13.8987 29.25 13.6687L28.25 13.1687C28.07 13.0787 27.97 12.8687 28.01 12.6687C28.08 12.3587 28.39 12.2287 28.66 12.3687ZM27 15.9987C27 19.3387 24.3 22.0387 20.96 22.0387H16H11.04C7.7 22.0387 5 19.3387 5 15.9987C5 14.7187 5.4 13.4787 6.15 12.4487L8.45 9.2887C7.8 8.7187 7.4 7.8787 7.43 6.9287C7.49 5.3287 8.82 4.0387 10.42 4.0387C11.49 4.0387 12.44 4.5987 12.97 5.4487C14.66 7.0887 17.34 7.0887 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.58 4.0387C23.18 4.0387 24.52 5.3287 24.57 6.9287C24.6 7.8687 24.2 8.7187 23.55 9.2887L25.85 12.4487C26.6 13.4787 27 14.7287 27 15.9987Z" fill="url(#ln_paint14_linear_28327_2199)"/> <path d="M28.66 12.3687L29.41 12.7387C29.68 12.8787 30 12.6787 30 12.3787V8.4487C30 7.5387 29.64 6.6787 29 6.0387C28.36 5.3987 27.49 5.0387 26.59 5.0387H26L26.59 3.2687C26.79 2.6687 26.34 2.0387 25.7 2.0387H19C18.35 2.0387 17.72 2.2487 17.2 2.6387C16.48 3.1787 16.05 4.0087 16 4.8987H15.99C15.95 4.0087 15.51 3.1787 14.79 2.6487C14.28 2.2487 13.65 2.0387 13 2.0387H6.3C5.66 2.0387 5.21 2.6687 5.41 3.2687L6 5.0387H5.41C4.51 5.0387 3.64 5.3987 3 6.0387C2.36 6.6787 2 7.5487 2 8.4487V12.3787C2 12.6787 2.32 12.8787 2.59 12.7387L3.34 12.3687C3.62 12.2287 3.92 12.3587 3.99 12.6587C4.04 12.8687 3.94 13.0687 3.75 13.1587L2.75 13.6587C2.29 13.8887 2 14.3587 2 14.8787V21.3287C2 24.1187 3.85 26.5687 6.53 27.3387L15.41 29.8787C15.79 29.9887 16.2 29.9887 16.59 29.8787L25.47 27.3387C28.15 26.5687 30 24.1187 30 21.3287V14.8787C30 14.3687 29.71 13.8987 29.25 13.6687L28.25 13.1687C28.07 13.0787 27.97 12.8687 28.01 12.6687C28.08 12.3587 28.39 12.2287 28.66 12.3687ZM27 15.9987C27 19.3387 24.3 22.0387 20.96 22.0387H16H11.04C7.7 22.0387 5 19.3387 5 15.9987C5 14.7187 5.4 13.4787 6.15 12.4487L8.45 9.2887C7.8 8.7187 7.4 7.8787 7.43 6.9287C7.49 5.3287 8.82 4.0387 10.42 4.0387C11.49 4.0387 12.44 4.5987 12.97 5.4487C14.66 7.0887 17.34 7.0887 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.58 4.0387C23.18 4.0387 24.52 5.3287 24.57 6.9287C24.6 7.8687 24.2 8.7187 23.55 9.2887L25.85 12.4487C26.6 13.4787 27 14.7287 27 15.9987Z" fill="url(#ln_paint15_linear_28327_2199)"/> <path d="M28.66 12.3687L29.41 12.7387C29.68 12.8787 30 12.6787 30 12.3787V8.4487C30 7.5387 29.64 6.6787 29 6.0387C28.36 5.3987 27.49 5.0387 26.59 5.0387H26L26.59 3.2687C26.79 2.6687 26.34 2.0387 25.7 2.0387H19C18.35 2.0387 17.72 2.2487 17.2 2.6387C16.48 3.1787 16.05 4.0087 16 4.8987H15.99C15.95 4.0087 15.51 3.1787 14.79 2.6487C14.28 2.2487 13.65 2.0387 13 2.0387H6.3C5.66 2.0387 5.21 2.6687 5.41 3.2687L6 5.0387H5.41C4.51 5.0387 3.64 5.3987 3 6.0387C2.36 6.6787 2 7.5487 2 8.4487V12.3787C2 12.6787 2.32 12.8787 2.59 12.7387L3.34 12.3687C3.62 12.2287 3.92 12.3587 3.99 12.6587C4.04 12.8687 3.94 13.0687 3.75 13.1587L2.75 13.6587C2.29 13.8887 2 14.3587 2 14.8787V21.3287C2 24.1187 3.85 26.5687 6.53 27.3387L15.41 29.8787C15.79 29.9887 16.2 29.9887 16.59 29.8787L25.47 27.3387C28.15 26.5687 30 24.1187 30 21.3287V14.8787C30 14.3687 29.71 13.8987 29.25 13.6687L28.25 13.1687C28.07 13.0787 27.97 12.8687 28.01 12.6687C28.08 12.3587 28.39 12.2287 28.66 12.3687ZM27 15.9987C27 19.3387 24.3 22.0387 20.96 22.0387H16H11.04C7.7 22.0387 5 19.3387 5 15.9987C5 14.7187 5.4 13.4787 6.15 12.4487L8.45 9.2887C7.8 8.7187 7.4 7.8787 7.43 6.9287C7.49 5.3287 8.82 4.0387 10.42 4.0387C11.49 4.0387 12.44 4.5987 12.97 5.4487C14.66 7.0887 17.34 7.0887 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.58 4.0387C23.18 4.0387 24.52 5.3287 24.57 6.9287C24.6 7.8687 24.2 8.7187 23.55 9.2887L25.85 12.4487C26.6 13.4787 27 14.7287 27 15.9987Z" fill="url(#ln_paint16_radial_28327_2199)"/> <path d="M28.66 12.3687L29.41 12.7387C29.68 12.8787 30 12.6787 30 12.3787V8.4487C30 7.5387 29.64 6.6787 29 6.0387C28.36 5.3987 27.49 5.0387 26.59 5.0387H26L26.59 3.2687C26.79 2.6687 26.34 2.0387 25.7 2.0387H19C18.35 2.0387 17.72 2.2487 17.2 2.6387C16.48 3.1787 16.05 4.0087 16 4.8987H15.99C15.95 4.0087 15.51 3.1787 14.79 2.6487C14.28 2.2487 13.65 2.0387 13 2.0387H6.3C5.66 2.0387 5.21 2.6687 5.41 3.2687L6 5.0387H5.41C4.51 5.0387 3.64 5.3987 3 6.0387C2.36 6.6787 2 7.5487 2 8.4487V12.3787C2 12.6787 2.32 12.8787 2.59 12.7387L3.34 12.3687C3.62 12.2287 3.92 12.3587 3.99 12.6587C4.04 12.8687 3.94 13.0687 3.75 13.1587L2.75 13.6587C2.29 13.8887 2 14.3587 2 14.8787V21.3287C2 24.1187 3.85 26.5687 6.53 27.3387L15.41 29.8787C15.79 29.9887 16.2 29.9887 16.59 29.8787L25.47 27.3387C28.15 26.5687 30 24.1187 30 21.3287V14.8787C30 14.3687 29.71 13.8987 29.25 13.6687L28.25 13.1687C28.07 13.0787 27.97 12.8687 28.01 12.6687C28.08 12.3587 28.39 12.2287 28.66 12.3687ZM27 15.9987C27 19.3387 24.3 22.0387 20.96 22.0387H16H11.04C7.7 22.0387 5 19.3387 5 15.9987C5 14.7187 5.4 13.4787 6.15 12.4487L8.45 9.2887C7.8 8.7187 7.4 7.8787 7.43 6.9287C7.49 5.3287 8.82 4.0387 10.42 4.0387C11.49 4.0387 12.44 4.5987 12.97 5.4487C14.66 7.0887 17.34 7.0887 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.58 4.0387C23.18 4.0387 24.52 5.3287 24.57 6.9287C24.6 7.8687 24.2 8.7187 23.55 9.2887L25.85 12.4487C26.6 13.4787 27 14.7287 27 15.9987Z" fill="url(#ln_paint17_radial_28327_2199)"/> <path d="M28.66 12.3687L29.41 12.7387C29.68 12.8787 30 12.6787 30 12.3787V8.4487C30 7.5387 29.64 6.6787 29 6.0387C28.36 5.3987 27.49 5.0387 26.59 5.0387H26L26.59 3.2687C26.79 2.6687 26.34 2.0387 25.7 2.0387H19C18.35 2.0387 17.72 2.2487 17.2 2.6387C16.48 3.1787 16.05 4.0087 16 4.8987H15.99C15.95 4.0087 15.51 3.1787 14.79 2.6487C14.28 2.2487 13.65 2.0387 13 2.0387H6.3C5.66 2.0387 5.21 2.6687 5.41 3.2687L6 5.0387H5.41C4.51 5.0387 3.64 5.3987 3 6.0387C2.36 6.6787 2 7.5487 2 8.4487V12.3787C2 12.6787 2.32 12.8787 2.59 12.7387L3.34 12.3687C3.62 12.2287 3.92 12.3587 3.99 12.6587C4.04 12.8687 3.94 13.0687 3.75 13.1587L2.75 13.6587C2.29 13.8887 2 14.3587 2 14.8787V21.3287C2 24.1187 3.85 26.5687 6.53 27.3387L15.41 29.8787C15.79 29.9887 16.2 29.9887 16.59 29.8787L25.47 27.3387C28.15 26.5687 30 24.1187 30 21.3287V14.8787C30 14.3687 29.71 13.8987 29.25 13.6687L28.25 13.1687C28.07 13.0787 27.97 12.8687 28.01 12.6687C28.08 12.3587 28.39 12.2287 28.66 12.3687ZM27 15.9987C27 19.3387 24.3 22.0387 20.96 22.0387H16H11.04C7.7 22.0387 5 19.3387 5 15.9987C5 14.7187 5.4 13.4787 6.15 12.4487L8.45 9.2887C7.8 8.7187 7.4 7.8787 7.43 6.9287C7.49 5.3287 8.82 4.0387 10.42 4.0387C11.49 4.0387 12.44 4.5987 12.97 5.4487C14.66 7.0887 17.34 7.0887 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.58 4.0387C23.18 4.0387 24.52 5.3287 24.57 6.9287C24.6 7.8687 24.2 8.7187 23.55 9.2887L25.85 12.4487C26.6 13.4787 27 14.7287 27 15.9987Z" fill="url(#ln_paint18_linear_28327_2199)"/> <path d="M28.66 12.3687L29.41 12.7387C29.68 12.8787 30 12.6787 30 12.3787V8.4487C30 7.5387 29.64 6.6787 29 6.0387C28.36 5.3987 27.49 5.0387 26.59 5.0387H26L26.59 3.2687C26.79 2.6687 26.34 2.0387 25.7 2.0387H19C18.35 2.0387 17.72 2.2487 17.2 2.6387C16.48 3.1787 16.05 4.0087 16 4.8987H15.99C15.95 4.0087 15.51 3.1787 14.79 2.6487C14.28 2.2487 13.65 2.0387 13 2.0387H6.3C5.66 2.0387 5.21 2.6687 5.41 3.2687L6 5.0387H5.41C4.51 5.0387 3.64 5.3987 3 6.0387C2.36 6.6787 2 7.5487 2 8.4487V12.3787C2 12.6787 2.32 12.8787 2.59 12.7387L3.34 12.3687C3.62 12.2287 3.92 12.3587 3.99 12.6587C4.04 12.8687 3.94 13.0687 3.75 13.1587L2.75 13.6587C2.29 13.8887 2 14.3587 2 14.8787V21.3287C2 24.1187 3.85 26.5687 6.53 27.3387L15.41 29.8787C15.79 29.9887 16.2 29.9887 16.59 29.8787L25.47 27.3387C28.15 26.5687 30 24.1187 30 21.3287V14.8787C30 14.3687 29.71 13.8987 29.25 13.6687L28.25 13.1687C28.07 13.0787 27.97 12.8687 28.01 12.6687C28.08 12.3587 28.39 12.2287 28.66 12.3687ZM27 15.9987C27 19.3387 24.3 22.0387 20.96 22.0387H16H11.04C7.7 22.0387 5 19.3387 5 15.9987C5 14.7187 5.4 13.4787 6.15 12.4487L8.45 9.2887C7.8 8.7187 7.4 7.8787 7.43 6.9287C7.49 5.3287 8.82 4.0387 10.42 4.0387C11.49 4.0387 12.44 4.5987 12.97 5.4487C14.66 7.0887 17.34 7.0887 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.58 4.0387C23.18 4.0387 24.52 5.3287 24.57 6.9287C24.6 7.8687 24.2 8.7187 23.55 9.2887L25.85 12.4487C26.6 13.4787 27 14.7287 27 15.9987Z" fill="url(#ln_paint19_radial_28327_2199)"/> <path d="M28.66 12.3687L29.41 12.7387C29.68 12.8787 30 12.6787 30 12.3787V8.4487C30 7.5387 29.64 6.6787 29 6.0387C28.36 5.3987 27.49 5.0387 26.59 5.0387H26L26.59 3.2687C26.79 2.6687 26.34 2.0387 25.7 2.0387H19C18.35 2.0387 17.72 2.2487 17.2 2.6387C16.48 3.1787 16.05 4.0087 16 4.8987H15.99C15.95 4.0087 15.51 3.1787 14.79 2.6487C14.28 2.2487 13.65 2.0387 13 2.0387H6.3C5.66 2.0387 5.21 2.6687 5.41 3.2687L6 5.0387H5.41C4.51 5.0387 3.64 5.3987 3 6.0387C2.36 6.6787 2 7.5487 2 8.4487V12.3787C2 12.6787 2.32 12.8787 2.59 12.7387L3.34 12.3687C3.62 12.2287 3.92 12.3587 3.99 12.6587C4.04 12.8687 3.94 13.0687 3.75 13.1587L2.75 13.6587C2.29 13.8887 2 14.3587 2 14.8787V21.3287C2 24.1187 3.85 26.5687 6.53 27.3387L15.41 29.8787C15.79 29.9887 16.2 29.9887 16.59 29.8787L25.47 27.3387C28.15 26.5687 30 24.1187 30 21.3287V14.8787C30 14.3687 29.71 13.8987 29.25 13.6687L28.25 13.1687C28.07 13.0787 27.97 12.8687 28.01 12.6687C28.08 12.3587 28.39 12.2287 28.66 12.3687ZM27 15.9987C27 19.3387 24.3 22.0387 20.96 22.0387H16H11.04C7.7 22.0387 5 19.3387 5 15.9987C5 14.7187 5.4 13.4787 6.15 12.4487L8.45 9.2887C7.8 8.7187 7.4 7.8787 7.43 6.9287C7.49 5.3287 8.82 4.0387 10.42 4.0387C11.49 4.0387 12.44 4.5987 12.97 5.4487C14.66 7.0887 17.34 7.0887 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.58 4.0387C23.18 4.0387 24.52 5.3287 24.57 6.9287C24.6 7.8687 24.2 8.7187 23.55 9.2887L25.85 12.4487C26.6 13.4787 27 14.7287 27 15.9987Z" fill="url(#ln_paint20_radial_28327_2199)"/> <path d="M28.66 12.3687L29.41 12.7387C29.68 12.8787 30 12.6787 30 12.3787V8.4487C30 7.5387 29.64 6.6787 29 6.0387C28.36 5.3987 27.49 5.0387 26.59 5.0387H26L26.59 3.2687C26.79 2.6687 26.34 2.0387 25.7 2.0387H19C18.35 2.0387 17.72 2.2487 17.2 2.6387C16.48 3.1787 16.05 4.0087 16 4.8987H15.99C15.95 4.0087 15.51 3.1787 14.79 2.6487C14.28 2.2487 13.65 2.0387 13 2.0387H6.3C5.66 2.0387 5.21 2.6687 5.41 3.2687L6 5.0387H5.41C4.51 5.0387 3.64 5.3987 3 6.0387C2.36 6.6787 2 7.5487 2 8.4487V12.3787C2 12.6787 2.32 12.8787 2.59 12.7387L3.34 12.3687C3.62 12.2287 3.92 12.3587 3.99 12.6587C4.04 12.8687 3.94 13.0687 3.75 13.1587L2.75 13.6587C2.29 13.8887 2 14.3587 2 14.8787V21.3287C2 24.1187 3.85 26.5687 6.53 27.3387L15.41 29.8787C15.79 29.9887 16.2 29.9887 16.59 29.8787L25.47 27.3387C28.15 26.5687 30 24.1187 30 21.3287V14.8787C30 14.3687 29.71 13.8987 29.25 13.6687L28.25 13.1687C28.07 13.0787 27.97 12.8687 28.01 12.6687C28.08 12.3587 28.39 12.2287 28.66 12.3687ZM27 15.9987C27 19.3387 24.3 22.0387 20.96 22.0387H16H11.04C7.7 22.0387 5 19.3387 5 15.9987C5 14.7187 5.4 13.4787 6.15 12.4487L8.45 9.2887C7.8 8.7187 7.4 7.8787 7.43 6.9287C7.49 5.3287 8.82 4.0387 10.42 4.0387C11.49 4.0387 12.44 4.5987 12.97 5.4487C14.66 7.0887 17.34 7.0887 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.58 4.0387C23.18 4.0387 24.52 5.3287 24.57 6.9287C24.6 7.8687 24.2 8.7187 23.55 9.2887L25.85 12.4487C26.6 13.4787 27 14.7287 27 15.9987Z" fill="url(#ln_paint21_radial_28327_2199)"/> <path d="M22 2.0387H19C18.35 2.0387 17.72 2.2487 17.2 2.6387C16.48 3.1787 16.05 4.0087 16 4.8987H15.99C15.95 4.0087 15.51 3.1787 14.79 2.6487C14.28 2.2487 13.65 2.0387 13 2.0387H9.35187V4.23886C9.68447 4.10963 10.0448 4.0387 10.42 4.0387C11.49 4.0387 12.44 4.5987 12.97 5.4487C14.66 7.0887 17.34 7.0887 19.03 5.4487C19.56 4.5987 20.5 4.0387 21.58 4.0387C21.7223 4.0387 21.8625 4.0489 22 4.06862V2.0387Z" fill="url(#ln_paint22_radial_28327_2199)"/> <path d="M2.53192 6.62301H6.51564L5.99731 5.0387H5.41001C4.51001 5.0387 3.64001 5.3987 3.00001 6.0387C2.82166 6.21705 2.66505 6.41326 2.53192 6.62301Z" fill="url(#ln_paint23_linear_28327_2199)"/> <path d="M2.53192 6.62301H6.51564L5.99731 5.0387H5.41001C4.51001 5.0387 3.64001 5.3987 3.00001 6.0387C2.82166 6.21705 2.66505 6.41326 2.53192 6.62301Z" fill="url(#ln_paint24_linear_28327_2199)"/> <path d="M29.4637 6.62301H25.48L25.9984 5.0387H26.5857C27.4857 5.0387 28.3557 5.3987 28.9957 6.0387C29.174 6.21705 29.3306 6.41326 29.4637 6.62301Z" fill="url(#ln_paint25_linear_28327_2199)"/> <path d="M29.4637 6.62301H25.48L25.9984 5.0387H26.5857C27.4857 5.0387 28.3557 5.3987 28.9957 6.0387C29.174 6.21705 29.3306 6.41326 29.4637 6.62301Z" fill="url(#ln_paint26_linear_28327_2199)"/> <path d="M16 27.0387C12.69 27.0387 10 24.3487 10 21.0387V19.4688H22V21.0387C22 24.3487 19.31 27.0387 16 27.0387Z" fill="#FFDEA3"/> <path d="M16 27.0387C12.69 27.0387 10 24.3487 10 21.0387V19.4688H22V21.0387C22 24.3487 19.31 27.0387 16 27.0387Z" fill="url(#ln_paint27_radial_28327_2199)"/> <path d="M16 27.0387C12.69 27.0387 10 24.3487 10 21.0387V19.4688H22V21.0387C22 24.3487 19.31 27.0387 16 27.0387Z" fill="url(#ln_paint28_radial_28327_2199)"/> <path d="M16 27.0387C12.69 27.0387 10 24.3487 10 21.0387V19.4688H22V21.0387C22 24.3487 19.31 27.0387 16 27.0387Z" fill="url(#ln_paint29_radial_28327_2199)"/> <path d="M16 27.0387C12.69 27.0387 10 24.3487 10 21.0387V19.4688H22V21.0387C22 24.3487 19.31 27.0387 16 27.0387Z" fill="url(#ln_paint30_radial_28327_2199)"/> <g filter="url(#ln_filter0_i_28327_2199)"> <path d="M19.43 16.8988C19.16 16.8988 18.9 16.7788 18.72 16.5788L16.73 14.2788C16.34 13.8288 15.65 13.8288 15.26 14.2788L13.27 16.5788C13.09 16.7888 12.83 16.8988 12.56 16.8988C11.15 16.8988 10 18.0488 10 19.4688C10 20.8888 11.15 22.0388 12.57 22.0388H13.86C14.75 22.0388 15.54 21.5788 16 20.8888C16.46 21.5788 17.25 22.0388 18.14 22.0388H19.43C20.85 22.0388 22 20.8888 22 19.4688C22 18.0488 20.85 16.8988 19.43 16.8988Z" fill="url(#ln_paint31_linear_28327_2199)"/> <path d="M19.43 16.8988C19.16 16.8988 18.9 16.7788 18.72 16.5788L16.73 14.2788C16.34 13.8288 15.65 13.8288 15.26 14.2788L13.27 16.5788C13.09 16.7888 12.83 16.8988 12.56 16.8988C11.15 16.8988 10 18.0488 10 19.4688C10 20.8888 11.15 22.0388 12.57 22.0388H13.86C14.75 22.0388 15.54 21.5788 16 20.8888C16.46 21.5788 17.25 22.0388 18.14 22.0388H19.43C20.85 22.0388 22 20.8888 22 19.4688C22 18.0488 20.85 16.8988 19.43 16.8988Z" fill="url(#ln_paint32_linear_28327_2199)"/> <path d="M19.43 16.8988C19.16 16.8988 18.9 16.7788 18.72 16.5788L16.73 14.2788C16.34 13.8288 15.65 13.8288 15.26 14.2788L13.27 16.5788C13.09 16.7888 12.83 16.8988 12.56 16.8988C11.15 16.8988 10 18.0488 10 19.4688C10 20.8888 11.15 22.0388 12.57 22.0388H13.86C14.75 22.0388 15.54 21.5788 16 20.8888C16.46 21.5788 17.25 22.0388 18.14 22.0388H19.43C20.85 22.0388 22 20.8888 22 19.4688C22 18.0488 20.85 16.8988 19.43 16.8988Z" fill="url(#ln_paint33_linear_28327_2199)"/> <path d="M19.43 16.8988C19.16 16.8988 18.9 16.7788 18.72 16.5788L16.73 14.2788C16.34 13.8288 15.65 13.8288 15.26 14.2788L13.27 16.5788C13.09 16.7888 12.83 16.8988 12.56 16.8988C11.15 16.8988 10 18.0488 10 19.4688C10 20.8888 11.15 22.0388 12.57 22.0388H13.86C14.75 22.0388 15.54 21.5788 16 20.8888C16.46 21.5788 17.25 22.0388 18.14 22.0388H19.43C20.85 22.0388 22 20.8888 22 19.4688C22 18.0488 20.85 16.8988 19.43 16.8988Z" fill="url(#ln_paint34_radial_28327_2199)"/> </g> <g filter="url(#ln_filter1_f_28327_2199)"> <path d="M18.9064 14.0153C18.9064 13.5967 19.2457 13.2574 19.6642 13.2574C20.0828 13.2574 20.4221 13.5967 20.4221 14.0153V15.4996C20.4221 15.9182 20.0828 16.2574 19.6642 16.2574C19.2457 16.2574 18.9064 15.9182 18.9064 15.4996V14.0153Z" fill="#E78D29"/> <path d="M10.8986 14.0153C10.8986 13.5967 11.2379 13.2574 11.6564 13.2574C12.075 13.2574 12.4142 13.5967 12.4142 14.0153V15.4996C12.4142 15.9182 12.075 16.2574 11.6564 16.2574C11.2379 16.2574 10.8986 15.9182 10.8986 15.4996V14.0153Z" fill="#E78D29"/> </g> <rect x="19.25" y="13.0387" width="1.51562" height="3" rx="0.757812" fill="url(#ln_paint35_linear_28327_2199)"/> <rect x="19.25" y="13.0387" width="1.51562" height="3" rx="0.757812" fill="url(#ln_paint36_linear_28327_2199)"/> <rect x="11.2422" y="13.0387" width="1.51562" height="3" rx="0.757812" fill="url(#ln_paint37_linear_28327_2199)"/> <rect x="11.2422" y="13.0387" width="1.51562" height="3" rx="0.757812" fill="url(#ln_paint38_linear_28327_2199)"/> <rect x="11.2422" y="13.0387" width="1.51562" height="3" rx="0.757812" fill="url(#ln_paint39_linear_28327_2199)"/> <g filter="url(#ln_filter2_f_28327_2199)"> <path d="M16.0938 14.2949V17.9199L18.3438 17.1387L16.0938 14.2949Z" fill="#FFEDBA" fill-opacity="0.75"/> </g> <g filter="url(#ln_filter3_f_28327_2199)"> <path d="M13.2474 18.4364L15.0299 20.2296C15.3132 20.5146 15.7794 20.5146 16.0719 20.2296L17.8543 18.4364C18.1651 18.1238 17.9457 17.5996 17.507 17.5996H13.6039C13.156 17.5996 12.9366 18.1238 13.2474 18.4364Z" fill="url(#ln_paint40_linear_28327_2199)"/> </g> <path d="M13.49 17.8088L15.44 19.7588C15.75 20.0688 16.26 20.0688 16.58 19.7588L18.53 17.8088C18.87 17.4688 18.63 16.8988 18.15 16.8988H13.88C13.39 16.8988 13.15 17.4688 13.49 17.8088Z" fill="url(#ln_paint41_linear_28327_2199)"/> <path d="M13.49 17.8088L15.44 19.7588C15.75 20.0688 16.26 20.0688 16.58 19.7588L18.53 17.8088C18.87 17.4688 18.63 16.8988 18.15 16.8988H13.88C13.39 16.8988 13.15 17.4688 13.49 17.8088Z" fill="url(#ln_paint42_linear_28327_2199)"/> <path d="M13.49 17.8088L15.44 19.7588C15.75 20.0688 16.26 20.0688 16.58 19.7588L18.53 17.8088C18.87 17.4688 18.63 16.8988 18.15 16.8988H13.88C13.39 16.8988 13.15 17.4688 13.49 17.8088Z" fill="url(#ln_paint43_linear_28327_2199)"/> <path d="M13.49 17.8088L15.44 19.7588C15.75 20.0688 16.26 20.0688 16.58 19.7588L18.53 17.8088C18.87 17.4688 18.63 16.8988 18.15 16.8988H13.88C13.39 16.8988 13.15 17.4688 13.49 17.8088Z" fill="url(#ln_paint44_linear_28327_2199)"/> <g filter="url(#ln_filter4_f_28327_2199)"> <ellipse cx="19.611" cy="19.0215" rx="2.06085" ry="1.74219" fill="url(#ln_paint45_radial_28327_2199)"/> </g> <g filter="url(#ln_filter5_f_28327_2199)"> <path d="M16.7969 5.9668C17.1094 5.87826 17.9219 5.7793 18.7031 4.49805C19.4938 3.20133 20.6875 3.0918 21.0781 3.0918" stroke="#C49589" stroke-width="0.5" stroke-linecap="round"/> </g> <g filter="url(#ln_filter6_f_28327_2199)"> <rect x="28.1562" y="14.8475" width="0.8125" height="7.85369" fill="#C39589" fill-opacity="0.5"/> </g> <g filter="url(#ln_filter7_f_28327_2199)"> <rect x="27.4719" y="6.67871" width="0.8125" height="4.39365" fill="#C39589" fill-opacity="0.75"/> </g> <g filter="url(#ln_filter8_f_28327_2199)"> <path d="M25.8281 2.95117L25 5.1543" stroke="#C49589" stroke-width="0.2" stroke-linecap="round"/> </g> <defs> <filter id="ln_filter0_i_28327_2199" x="10" y="13.6913" width="12" height="8.34753" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/> <feOffset dy="-0.25"/> <feGaussianBlur stdDeviation="0.3"/> <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/> <feColorMatrix type="matrix" values="0 0 0 0 0.875 0 0 0 0 0.415625 0 0 0 0 0.415625 0 0 0 0.75 0"/> <feBlend mode="normal" in2="shape" result="effect1_innerShadow_28327_2199"/> </filter> <filter id="ln_filter1_f_28327_2199" x="10.3986" y="12.7574" width="10.5234" height="4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_2199"/> </filter> <filter id="ln_filter2_f_28327_2199" x="15.0938" y="13.2949" width="4.25" height="5.625" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.5" result="effect1_foregroundBlur_28327_2199"/> </filter> <filter id="ln_filter3_f_28327_2199" x="12.6021" y="17.0996" width="5.89795" height="3.84375" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.25" result="effect1_foregroundBlur_28327_2199"/> </filter> <filter id="ln_filter4_f_28327_2199" x="16.5502" y="16.2793" width="6.1217" height="5.48438" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.5" result="effect1_foregroundBlur_28327_2199"/> </filter> <filter id="ln_filter5_f_28327_2199" x="15.2968" y="1.5918" width="7.28131" height="5.87512" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.625" result="effect1_foregroundBlur_28327_2199"/> </filter> <filter id="ln_filter6_f_28327_2199" x="26.1562" y="12.8475" width="4.8125" height="11.8536" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="1" result="effect1_foregroundBlur_28327_2199"/> </filter> <filter id="ln_filter7_f_28327_2199" x="25.4719" y="4.67871" width="4.8125" height="8.39368" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="1" result="effect1_foregroundBlur_28327_2199"/> </filter> <filter id="ln_filter8_f_28327_2199" x="23.9" y="1.8512" width="3.0282" height="4.40308" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> <feFlood flood-opacity="0" result="BackgroundImageFix"/> <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/> <feGaussianBlur stdDeviation="0.5" result="effect1_foregroundBlur_28327_2199"/> </filter> <radialGradient id="ln_paint0_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(17.6875 5.20113) rotate(90) scale(19.5625 19.4375)"> <stop stop-color="#FFCB5A"/> <stop offset="0.766773" stop-color="#EA9231"/> </radialGradient> <radialGradient id="ln_paint1_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(26.125 12.6386) rotate(154.026) scale(8.13413 15.2065)"> <stop stop-color="#FFCB5A"/> <stop offset="1" stop-color="#FFCB5A" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint2_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(4 16.8261) rotate(-9.59311) scale(4.50043 13.1042)"> <stop stop-color="#FFD375"/> <stop offset="1" stop-color="#FFCB5A" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint3_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(16 21.6386) rotate(-90) scale(6.75 8.9375)"> <stop stop-color="#DF7D3C"/> <stop offset="1" stop-color="#DF7D3C" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint4_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(16 4.32613) rotate(90) scale(4.625 5.24685)"> <stop stop-color="#DF7D3C"/> <stop offset="1" stop-color="#DF7D3C" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint5_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(17.125 11.5761) rotate(87.1376) scale(11.2641 16.3049)"> <stop offset="0.865337" stop-color="#DF7D3C" stop-opacity="0"/> <stop offset="1" stop-color="#C8692A"/> </radialGradient> <radialGradient id="ln_paint6_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(20.375 8.13863) rotate(-37.9101) scale(4.47574 5.30265)"> <stop stop-color="#DF7D3C"/> <stop offset="1" stop-color="#DF7D3C" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint7_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(23.9063 6.26363) rotate(161.274) scale(0.973401 2.03584)"> <stop stop-color="#FFC567"/> <stop offset="1" stop-color="#FFC362" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint8_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(13.6875 4.51363) rotate(162.628) scale(3.55864 4.21612)"> <stop stop-color="#DF7D3C"/> <stop offset="1" stop-color="#DF7D3C" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint9_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(7.81249 6.26363) rotate(-3.13636) scale(4.56934 4.80913)"> <stop stop-color="#DC8C58"/> <stop offset="1" stop-color="#CC7438"/> </radialGradient> <linearGradient id="ln_paint10_linear_28327_2199" x1="10.4687" y1="7.27926" x2="9.46874" y2="6.35738" gradientUnits="userSpaceOnUse"> <stop stop-color="#CB6C32"/> <stop offset="0.586576" stop-color="#D1743A" stop-opacity="0"/> </linearGradient> <radialGradient id="ln_paint11_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(8.50781 7.62301) rotate(-10.8403) scale(1.49544 2.60836)"> <stop stop-color="#DC8B54"/> <stop offset="1" stop-color="#DC8B54" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint12_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(23.1875 5.04871) rotate(117.038) scale(3.11825 3.27287)"> <stop stop-color="#F49A45"/> <stop offset="1" stop-color="#EA8243"/> </radialGradient> <linearGradient id="ln_paint13_linear_28327_2199" x1="16" y1="1.7303" x2="16" y2="40.2636" gradientUnits="userSpaceOnUse"> <stop stop-color="#9F635E"/> <stop offset="1" stop-color="#612A4F"/> </linearGradient> <linearGradient id="ln_paint14_linear_28327_2199" x1="1.1875" y1="21.2636" x2="7.375" y2="21.2636" gradientUnits="userSpaceOnUse"> <stop stop-color="#9A6A66"/> <stop offset="1" stop-color="#7D5956" stop-opacity="0"/> </linearGradient> <linearGradient id="ln_paint15_linear_28327_2199" x1="32.625" y1="21.2636" x2="24.125" y2="21.2636" gradientUnits="userSpaceOnUse"> <stop stop-color="#996862"/> <stop offset="0.55147" stop-color="#996862" stop-opacity="0"/> </linearGradient> <radialGradient id="ln_paint16_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(16.4375 11.3261) rotate(91.3449) scale(18.6402 27.0972)"> <stop offset="0.688811" stop-color="#612A4F" stop-opacity="0"/> <stop offset="1" stop-color="#612A4F"/> </radialGradient> <radialGradient id="ln_paint17_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(24.5625 9.70113) rotate(136.721) scale(10.3019 10.3305)"> <stop stop-color="#A16662"/> <stop offset="1" stop-color="#A16662" stop-opacity="0"/> </radialGradient> <linearGradient id="ln_paint18_linear_28327_2199" x1="16" y1="0.513634" x2="16" y2="5.26363" gradientUnits="userSpaceOnUse"> <stop stop-color="#754B42"/> <stop offset="1" stop-color="#754B42" stop-opacity="0"/> </linearGradient> <radialGradient id="ln_paint19_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(13.1875 15.4511) rotate(125.272) scale(9.41616 9.04653)"> <stop stop-color="#512242"/> <stop offset="1" stop-color="#612A4F" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint20_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(14.125 22.0761) rotate(109.231) scale(5.69265 5.46919)"> <stop stop-color="#512242"/> <stop offset="1" stop-color="#612A4F" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint21_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(20.5625 19.6386) rotate(56.464) scale(6.44841 8.63095)"> <stop stop-color="#512242"/> <stop offset="1" stop-color="#612A4F" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint22_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(16.0937 2.26363) rotate(90) scale(5.09375 12.75)"> <stop offset="0.575758" stop-color="#844649" stop-opacity="0"/> <stop offset="0.881262" stop-color="#914E52"/> </radialGradient> <linearGradient id="ln_paint23_linear_28327_2199" x1="5.31251" y1="5.71676" x2="7.09376" y2="3.79488" gradientUnits="userSpaceOnUse"> <stop stop-color="#7E3835" stop-opacity="0"/> <stop offset="0.665493" stop-color="#442524"/> </linearGradient> <linearGradient id="ln_paint24_linear_28327_2199" x1="4.71876" y1="6.01363" x2="3.25001" y2="2.63863" gradientUnits="userSpaceOnUse"> <stop stop-color="#7E3835" stop-opacity="0"/> <stop offset="0.572141" stop-color="#442524"/> </linearGradient> <linearGradient id="ln_paint25_linear_28327_2199" x1="26.6832" y1="5.71676" x2="24.9019" y2="3.79488" gradientUnits="userSpaceOnUse"> <stop stop-color="#7E3835" stop-opacity="0"/> <stop offset="0.665493" stop-color="#442524"/> </linearGradient> <linearGradient id="ln_paint26_linear_28327_2199" x1="27.2769" y1="6.01363" x2="28.7457" y2="2.63863" gradientUnits="userSpaceOnUse"> <stop stop-color="#7E3835" stop-opacity="0"/> <stop offset="0.572141" stop-color="#442524"/> </linearGradient> <radialGradient id="ln_paint27_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(22.5625 27.0388) rotate(-159.264) scale(7.48484 7.48484)"> <stop offset="0.238636" stop-color="#FFCFAC"/> <stop offset="1" stop-color="#F5A8A2"/> </radialGradient> <radialGradient id="ln_paint28_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(16 20.3887) rotate(90) scale(7.3125 7.839)"> <stop offset="0.649573" stop-color="#FFBC99" stop-opacity="0"/> <stop offset="0.905983" stop-color="#E98C8C"/> </radialGradient> <radialGradient id="ln_paint29_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(8.25 22.2012) rotate(30.3236) scale(3.83752 6.08326)"> <stop stop-color="#FFCFAC"/> <stop offset="1" stop-color="#FFCFAC" stop-opacity="0"/> </radialGradient> <radialGradient id="ln_paint30_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(16 20.1387) rotate(90) scale(2.8125 5.36337)"> <stop stop-color="#D87B7C"/> <stop offset="1" stop-color="#D87B7C" stop-opacity="0"/> </radialGradient> <linearGradient id="ln_paint31_linear_28327_2199" x1="16" y1="13.9413" x2="16" y2="23.3887" gradientUnits="userSpaceOnUse"> <stop stop-color="#FDCC98"/> <stop offset="1" stop-color="#FBB3BE"/> <stop offset="1" stop-color="#F4AD92"/> </linearGradient> <linearGradient id="ln_paint32_linear_28327_2199" x1="10.7812" y1="15.5137" x2="13.2188" y2="17.99" gradientUnits="userSpaceOnUse"> <stop offset="0.00435963" stop-color="#DAA168"/> <stop offset="1" stop-color="#DAA168" stop-opacity="0"/> </linearGradient> <linearGradient id="ln_paint33_linear_28327_2199" x1="16" y1="22.3575" x2="16" y2="19.2012" gradientUnits="userSpaceOnUse"> <stop offset="0.268293" stop-color="#E98C8C"/> <stop offset="1" stop-color="#DC8CE9" stop-opacity="0"/> </linearGradient> <radialGradient id="ln_paint34_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(16 16.8887) rotate(90) scale(6.125 9.07688)"> <stop offset="0.760204" stop-color="#E98F94" stop-opacity="0"/> <stop offset="1" stop-color="#CC9688"/> </radialGradient> <linearGradient id="ln_paint35_linear_28327_2199" x1="20.6774" y1="14.5387" x2="19.8434" y2="14.5387" gradientUnits="userSpaceOnUse"> <stop offset="0.225" stop-color="#594C4F"/> <stop offset="1" stop-color="#392833"/> </linearGradient> <linearGradient id="ln_paint36_linear_28327_2199" x1="21.0024" y1="16.5636" x2="21.0024" y2="14.9734" gradientUnits="userSpaceOnUse"> <stop stop-color="#552D52"/> <stop offset="1" stop-color="#552D52" stop-opacity="0"/> </linearGradient> <linearGradient id="ln_paint37_linear_28327_2199" x1="12.6696" y1="14.5387" x2="11.8356" y2="14.5387" gradientUnits="userSpaceOnUse"> <stop offset="0.225" stop-color="#594C4F"/> <stop offset="1" stop-color="#392833"/> </linearGradient> <linearGradient id="ln_paint38_linear_28327_2199" x1="10.7813" y1="14.5387" x2="12" y2="14.5387" gradientUnits="userSpaceOnUse"> <stop stop-color="#594C4F"/> <stop offset="1" stop-color="#594C4F" stop-opacity="0"/> </linearGradient> <linearGradient id="ln_paint39_linear_28327_2199" x1="12.9946" y1="16.5636" x2="12.9946" y2="14.9734" gradientUnits="userSpaceOnUse"> <stop stop-color="#552D52"/> <stop offset="1" stop-color="#552D52" stop-opacity="0"/> </linearGradient> <linearGradient id="ln_paint40_linear_28327_2199" x1="15.551" y1="18.1621" x2="15.551" y2="20.9121" gradientUnits="userSpaceOnUse"> <stop stop-color="#CC9688"/> <stop offset="1" stop-color="#E98F94"/> </linearGradient> <linearGradient id="ln_paint41_linear_28327_2199" x1="18.6894" y1="16.3262" x2="14.7835" y2="19.7572" gradientUnits="userSpaceOnUse"> <stop offset="0.191489" stop-color="#5F5254"/> <stop offset="1" stop-color="#2E2127"/> </linearGradient> <linearGradient id="ln_paint42_linear_28327_2199" x1="16.4377" y1="17.7368" x2="16.4377" y2="16.2378" gradientUnits="userSpaceOnUse"> <stop offset="0.146552" stop-color="#34222C" stop-opacity="0"/> <stop offset="0.872727" stop-color="#34222C"/> </linearGradient> <linearGradient id="ln_paint43_linear_28327_2199" x1="17.3665" y1="20.251" x2="17.3665" y2="17.9847" gradientUnits="userSpaceOnUse"> <stop stop-color="#552D52"/> <stop offset="1" stop-color="#552D52" stop-opacity="0"/> </linearGradient> <linearGradient id="ln_paint44_linear_28327_2199" x1="14.25" y1="19.5137" x2="15.2828" y2="18.5124" gradientUnits="userSpaceOnUse"> <stop stop-color="#5F5254"/> <stop offset="1" stop-color="#5F5254" stop-opacity="0"/> </linearGradient> <radialGradient id="ln_paint45_radial_28327_2199" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(21.1979 18.2557) rotate(136.545) scale(3.88941 5.0611)"> <stop stop-color="#FFEDBA"/> <stop offset="1" stop-color="#FFEDBA" stop-opacity="0"/> </radialGradient> </defs>`,
+};
+
+const AVATAR_STYLES = {};
+
+/* Illustrated sets: a tinted disc behind the supplied artwork. */
+AVATAR_STYLES.anime = k => `<svg class="kid-avatar" viewBox="0 0 762 762" aria-hidden="true">
+  <circle cx="381" cy="381" r="381" fill="${k.color}" fill-opacity=".16"/>
+  ${k.id === 'sami' ? AVATAR_ART.animeSami : AVATAR_ART.animeRami}</svg>`;
+
+AVATAR_STYLES.animal = k => `<svg class="kid-avatar" viewBox="0 0 32 32" aria-hidden="true">
+  <circle cx="16" cy="16" r="16" fill="${k.color}" fill-opacity=".16"/>
+  ${k.id === 'sami' ? AVATAR_ART.animalSami : AVATAR_ART.animalRami}</svg>`;
+
+const SKIN='#F6D5B8', SHADE='#E9B98F', HAIR='#4A3324', HAIRHI='#6E4C33', INK='#2A211A';
+const disc = k => `<circle cx="32" cy="32" r="32" fill="${k.color}" fill-opacity=".15"/>`;
+
+/* ---------- 4. PIXEL ---------- */
+AVATAR_STYLES.pixel = k => {
+  const rows = [
+    '................','.....hhhhhh.....','...hhhhhhhhhh...','..hhhhhhhhhhhh..',
+    '..hhhhhhhhhhhh..','..hhssssssssshh.','..hsssssssssssh.','..hsseesseesssh.',
+    '..hsseesseesssh.','..hsssssssssssh.','..hssssmmssssss.','...hsssssssssh..',
+    '....sssssssss...','.....sssssss....','...cccccccccc...','..cccccccccccc..',
+  ].map(r => r.split(''));
+  if (k.curly) { /* longer, lumpy sides */
+    [11,12,13].forEach(y => { rows[y][2]='h'; rows[y][3]='h'; rows[y][12]='h'; rows[y][13]='h'; });
+    rows[13][1]='h'; rows[11][14]='h';
+  }
+  const pal = { h:HAIR, s:SKIN, e:INK, m:'#B8674F', c:k.color, g:'#4A4038' };
+  if (k.glasses) { [[4,7],[8,7]].forEach(([x,y]) => {
+    for (let i=0;i<4;i++){ if(rows[y-1]) rows[y-1][x+i]='g'; if(rows[y+2]) rows[y+2][x+i]='g'; }
+    if(rows[y]) rows[y][x-1]='g'; if(rows[y+1]) rows[y+1][x-1]='g';
+    if(rows[y]) rows[y][x+4]='g'; if(rows[y+1]) rows[y+1][x+4]='g';
+  }); rows[7][8]='g'; }
+  let out = disc(k);
+  rows.forEach((row,y) => row.forEach((ch,x) => {
+    if (pal[ch]) out += `<rect x="${x*4}" y="${y*4}" width="4" height="4" fill="${pal[ch]}"/>`;
+  }));
+  return out;
+};
+
+/* ---------- 5. MONOGRAM ---------- */
+AVATAR_STYLES.monogram = k => `${disc(k)}
+  <circle cx="32" cy="32" r="24" fill="${k.color}"/>
+  <text x="32" y="33" text-anchor="middle" dominant-baseline="central" fill="#fff"
+    font-family="Fraunces, Georgia, serif" font-size="26" font-weight="600">${k.name[0]}</text>
+  ${k.glasses
+    ? `<g fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.8"><circle cx="24" cy="49" r="4.2"/><circle cx="40" cy="49" r="4.2"/><path d="M28.2 49h7.6"/></g>`
+    : `<path d="M22 50q4-5 8 0t8 0" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="2.2" stroke-linecap="round"/>`}`;
+
+
+/* The two drawn styles keep the original 64x64 grid. */
+const drawn64 = fn => k => `<svg class="kid-avatar" viewBox="0 0 64 64" aria-hidden="true">${fn(k)}</svg>`;
+
+AVATAR_STYLES.pixel = drawn64(AVATAR_STYLES.pixel);
+AVATAR_STYLES.monogram = drawn64(AVATAR_STYLES.monogram);
+
+const AVATAR_STYLE_NAMES = { anime: 'Anime', animal: 'Animal', pixel: 'Pixel', monogram: 'Monogram' };
+
+function kidAvatar(kid) {
+  const picked = typeof customAvatars !== 'undefined' && customAvatars[kid.id];
+  if (picked) {
+    const [, , width, height] = picked.viewBox.split(/\s+/).map(Number);
+    return `<svg class="kid-avatar" viewBox="${picked.viewBox}" aria-hidden="true">
+      <circle cx="${width / 2}" cy="${height / 2}" r="${Math.min(width, height) / 2}" fill="${kid.color}" fill-opacity=".15"/>
+      ${picked.inner}</svg>`;
+  }
+  const style = AVATAR_STYLES[CONFIG.avatarStyle] ? CONFIG.avatarStyle : 'anime';
+  return AVATAR_STYLES[style](kid);
+}
+
+/* Each boy has his own list: the shared five plus the one that is his. */
+const SHARED_TASKS = [
+  { id: 'dressed', emoji: '👕', label: 'Dressed' },
+  { id: 'breakfast', emoji: '🥣', label: 'Breakfast' },
+  { id: 'lunch', emoji: '🥪', label: 'Lunch made' },
+  { id: 'shoes', emoji: '👟', label: 'Shoes' },
+  { id: 'backpack', emoji: '🎒', label: 'Backpack' },
+];
+
+const KIDS = [
+  {
+    id: 'sami', name: 'Sami', color: '#5B6C8A', glasses: true, curly: false,
+    /* OIT is taken with food, so it sits right after breakfast. */
+    tasks: [
+      SHARED_TASKS[0], SHARED_TASKS[1],
+      { id: 'oit', emoji: '💊', label: 'OIT' },
+      SHARED_TASKS[2], SHARED_TASKS[3], SHARED_TASKS[4],
+    ],
+  },
+  {
+    id: 'rami', name: 'Rami', color: '#6E8B6E', glasses: false, curly: true,
+    tasks: [
+      SHARED_TASKS[0], SHARED_TASKS[1],
+      { id: 'potty', emoji: '🚽', label: 'Potty' },
+      SHARED_TASKS[2], SHARED_TASKS[3], SHARED_TASKS[4],
+    ],
+  },
+];
+
+function dayKey(d = boardNow()) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+
+function loadChecklist() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(CHECKLIST_KEY)) || {}; } catch (e) { saved = {}; }
+  return saved.day === dayKey() ? { day: saved.day, done: saved.done || {} } : { day: dayKey(), done: {} };
+}
+let checklist = loadChecklist();
+function saveChecklist() {
+  try { localStorage.setItem(CHECKLIST_KEY, JSON.stringify(checklist)); } catch (e) { /* private mode */ }
+}
+
+function renderChecklists() {
+  document.getElementById('kidChecklists').innerHTML = KIDS.map(kid => {
+    const doneCount = kid.tasks.filter(task => checklist.done[`${kid.id}.${task.id}`]).length;
+    const complete = doneCount === kid.tasks.length;
+    return `
+      <div class="kid-card${complete ? ' is-complete' : ''}" style="--kid-color:${kid.color}">
+        <div class="kid-head">
+          <span class="kid-face">${kidAvatar(kid)}<button type="button" class="kid-edit" data-edit="${kid.id}"
+            title="Change ${kid.name}'s avatar" aria-label="Change ${kid.name}'s avatar">✏️</button></span>
+          <span class="kid-name">${kid.name}</span>
+          <span class="kid-count">${complete ? 'All done 🎉' : `${doneCount} of ${kid.tasks.length} done`}</span>
+        </div>
+        <div class="kid-bar"><span style="width:${(doneCount / kid.tasks.length) * 100}%"></span></div>
+        <div class="kid-tiles" style="grid-template-columns:repeat(${kid.tasks.length}, 1fr)">
+          ${kid.tasks.map(task => {
+            const isDone = !!checklist.done[`${kid.id}.${task.id}`];
+            return `<button type="button" class="kid-tile${isDone ? ' is-done' : ''}"
+              data-toggle="${kid.id}.${task.id}" aria-pressed="${isDone}" aria-label="${kid.name}: ${task.label}">
+              <span class="emoji" aria-hidden="true">${task.emoji}</span><span class="label">${task.label}</span>
+            </button>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+document.getElementById('kidChecklists').addEventListener('click', event => {
+  const edit = event.target.closest('[data-edit]');
+  if (edit) { openAvatarPicker(edit.dataset.edit); return; }
+  const tile = event.target.closest('[data-toggle]');
+  if (!tile) return;
+  checklist.done[tile.dataset.toggle] = !checklist.done[tile.dataset.toggle];
+  saveChecklist();
+  renderChecklists();
+});
+
+document.getElementById('checklistReset').addEventListener('click', () => {
+  checklist = { day: dayKey(), done: {} };
+  saveChecklist();
+  renderChecklists();
+});
+
+/* =========================================================================
+   AVATAR PICKER
+   Thumbnails come from two freely licensed sets over their CDNs; the chosen
+   one is fetched once and cached in localStorage, so the board keeps drawing
+   it with no network afterwards.
+     Microsoft Fluent Emoji — MIT — github.com/microsoft/fluentui-emoji
+     DiceBear              — see AVATAR_ART above for per-style licences
+   ========================================================================= */
+const AVATAR_KEY = 'homeboard_avatars_v1';
+
+const FLUENT_ANIMALS = [
+  ['Fox', 'fox'], ['Lion', 'lion'], ['Bear', 'bear'], ['Panda', 'panda'], ['Tiger face', 'tiger_face'],
+  ['Dog face', 'dog_face'], ['Cat face', 'cat_face'], ['Wolf', 'wolf'], ['Koala', 'koala'],
+  ['Monkey face', 'monkey_face'], ['Penguin', 'penguin'], ['Frog', 'frog'], ['Rabbit face', 'rabbit_face'],
+  ['Hamster', 'hamster'], ['Unicorn', 'unicorn'], ['Dragon face', 'dragon_face'], ['Owl', 'owl'],
+  ['Pig face', 'pig_face'], ['Cow face', 'cow_face'], ['Chicken', 'chicken'], ['Turtle', 'turtle'],
+  ['Whale', 'whale'], ['Octopus', 'octopus'], ['Mouse face', 'mouse_face'], ['Hedgehog', 'hedgehog'],
+  ['Otter', 'otter'], ['Sloth', 'sloth'], ['Raccoon', 'raccoon'], ['Dolphin', 'dolphin'],
+];
+
+const ADVENTURER_HAIR = [
+  'short01','short02','short03','short04','short05','short06','short07','short08','short09','short10',
+  'short11','short12','short13','short14','short15','short16','short17','short18','short19',
+  'long11','long17','long20','long21','long22','long25',
+];
+const ADVENTURER_COLORS = ['0e0e0e', '3b2717', '6a4e35', 'ac6651', 'cb6820'];
+
+function adventurerUrl(hair, colorIndex, withGlasses) {
+  const params = new URLSearchParams({
+    seed: 'board', backgroundColor: 'transparent', hair,
+    hairColor: ADVENTURER_COLORS[colorIndex % ADVENTURER_COLORS.length],
+    skinColor: 'f2d3b1', eyes: 'variant12', eyebrows: 'variant07', mouth: 'variant19',
+    earringsProbability: '0', featuresProbability: '0',
+    glassesProbability: withGlasses ? '100' : '0',
+  });
+  if (withGlasses) params.set('glasses', 'variant05');
+  return `https://api.dicebear.com/9.x/adventurer/svg?${params}`;
+}
+
+function dicebearUrl(style, seed) {
+  return `https://api.dicebear.com/9.x/${style}/svg?seed=${encodeURIComponent(seed)}&backgroundColor=transparent`;
+}
+
+const AVATAR_CATALOG = {
+  Animals: FLUENT_ANIMALS.map(([dir, file]) => ({
+    label: dir,
+    url: `https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/${encodeURIComponent(dir)}/Color/${file}_color.svg`,
+  })),
+  Anime: ADVENTURER_HAIR.flatMap((hair, i) => [
+    { label: hair, url: adventurerUrl(hair, i, false) },
+    { label: `${hair} + glasses`, url: adventurerUrl(hair, i, true) },
+  ]),
+  Pixel: Array.from({ length: 24 }, (_, i) => ({ label: `Pixel ${i + 1}`, url: dicebearUrl('pixel-art', `pixel-${i}`) })),
+  Robots: Array.from({ length: 24 }, (_, i) => ({ label: `Bot ${i + 1}`, url: dicebearUrl('bottts', `bot-${i}`) })),
+};
+
+function loadAvatars() {
+  try { return JSON.parse(localStorage.getItem(AVATAR_KEY)) || {}; } catch (e) { return {}; }
+}
+let customAvatars = loadAvatars();
+function saveAvatars() {
+  try { localStorage.setItem(AVATAR_KEY, JSON.stringify(customAvatars)); } catch (e) { /* private mode */ }
+}
+
+/* Prefix every internal id and the references to it, so two portraits with the
+   same source (or Fluent's shared filter names) can share one page. */
+function adoptSvg(text, token) {
+  const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+  const svg = doc.querySelector('svg');
+  if (!svg || doc.querySelector('parsererror')) return null;
+  const viewBox = svg.getAttribute('viewBox') ||
+    `0 0 ${svg.getAttribute('width') || 64} ${svg.getAttribute('height') || 64}`;
+  svg.querySelectorAll('[id]').forEach(el => {
+    const from = el.id, to = token + from;
+    el.id = to;
+    svg.querySelectorAll('*').forEach(node => {
+      Array.from(node.attributes).forEach(attr => {
+        if (attr.value === `url(#${from})`) node.setAttribute(attr.name, `url(#${to})`);
+        else if (attr.value === `#${from}` && /href$/i.test(attr.name)) node.setAttribute(attr.name, `#${to}`);
+      });
+    });
+  });
+  svg.querySelectorAll('metadata').forEach(node => node.remove());
+  return { viewBox, inner: svg.innerHTML };
+}
+
+const avatarOverlay = document.getElementById('avatarOverlay');
+let pickingFor = null;
+let openCategory = 'Animals';
+
+function openAvatarPicker(kidId) {
+  pickingFor = kidId;
+  const kid = KIDS.find(k => k.id === kidId);
+  document.getElementById('avatarTitle').textContent = `Choose an avatar for ${kid.name}`;
+  document.getElementById('avatarTabs').innerHTML = Object.keys(AVATAR_CATALOG)
+    .map(name => `<button type="button" class="avatar-tab${name === openCategory ? ' active' : ''}" data-cat="${name}">${name}</button>`)
+    .join('');
+  renderAvatarGrid();
+  avatarOverlay.classList.add('active');
+}
+
+function renderAvatarGrid() {
+  const current = customAvatars[pickingFor];
+  document.getElementById('avatarGrid').innerHTML = AVATAR_CATALOG[openCategory].map(option => `
+    <button type="button" class="avatar-opt${current && current.url === option.url ? ' is-current' : ''}"
+      data-url="${escapeHtml(option.url)}" title="${escapeHtml(option.label)}">
+      <img src="${escapeHtml(option.url)}" alt="${escapeHtml(option.label)}" loading="lazy">
+    </button>`).join('');
+}
+
+async function chooseAvatar(url) {
+  const grid = document.getElementById('avatarGrid');
+  grid.classList.add('is-busy');
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(response.status);
+    const adopted = adoptSvg(await response.text(), `${pickingFor}_`);
+    if (!adopted) throw new Error('unreadable svg');
+    customAvatars[pickingFor] = { url, viewBox: adopted.viewBox, inner: adopted.inner };
+    saveAvatars();
+    renderChecklists();
+    avatarOverlay.classList.remove('active');
+  } catch (err) {
+    console.error('Avatar fetch failed', err);
+    grid.insertAdjacentHTML('afterbegin', '<div class="avatar-error">Could not load that one — check the connection and try again.</div>');
+  } finally {
+    grid.classList.remove('is-busy');
+  }
+}
+
+document.getElementById('avatarTabs').addEventListener('click', event => {
+  const tab = event.target.closest('[data-cat]');
+  if (!tab) return;
+  openCategory = tab.dataset.cat;
+  document.querySelectorAll('.avatar-tab').forEach(el => el.classList.toggle('active', el === tab));
+  renderAvatarGrid();
+});
+document.getElementById('avatarGrid').addEventListener('click', event => {
+  const option = event.target.closest('[data-url]');
+  if (option) chooseAvatar(option.dataset.url);
+});
+document.getElementById('closeAvatarBtn').addEventListener('click', () => avatarOverlay.classList.remove('active'));
+avatarOverlay.addEventListener('click', event => {
+  if (event.target === avatarOverlay) avatarOverlay.classList.remove('active');
+});
+document.getElementById('avatarResetBtn').addEventListener('click', () => {
+  delete customAvatars[pickingFor];
+  saveAvatars();
+  renderChecklists();
+  avatarOverlay.classList.remove('active');
+});
+
+/* =========================================================================
+   RENDER: AFTER SCHOOL
+   Today's calendar events from 2 PM onward. Everything on the card is derived
+   from the event itself, so nothing new has to be maintained by hand:
+     icon  — a leading emoji in the event title wins; otherwise it is guessed
+             from keywords in the title and location, falling back to a pin.
+     who   — a kid's name anywhere in the title wins (it also colours the card);
+             otherwise it's the calendar the event came from.
+     where — the event's Location field.
+     note  — the first line of the event's Description.
+   ========================================================================= */
+const AFTER_SCHOOL_FROM_HOUR = 14;
+
+/* First match wins, so put the specific patterns above the generic ones. */
+const ACTIVITY_ICONS = [
+  [/soccer|football/i, '⚽'], [/basketball/i, '🏀'], [/baseball|tee.?ball|softball/i, '⚾'],
+  [/tennis/i, '🎾'], [/swim|pool/i, '🏊'], [/karate|taekwondo|judo|jiu.?jitsu/i, '🥋'],
+  [/gymnastic|tumbl/i, '🤸'], [/dance|ballet/i, '🩰'], [/piano|violin|guitar|music|band|orchestra/i, '🎹'],
+  [/art|paint|draw|pottery/i, '🎨'], [/chess/i, '♟️'], [/scout|camp/i, '🏕️'],
+  [/parent.?teacher|conference|open house|school|pta/i, '🏫'], [/library|read/i, '📚'], [/homework|tutor|study|class|lesson/i, '✏️'],
+  [/dentist|orthodont/i, '🦷'], [/doctor|clinic|checkup|appointment|therapy/i, '🩺'],
+  [/haircut|barber/i, '💇'], [/masjid|mosque|quran|church|sunday school|temple/i, '🕌'],
+  [/birthday|party/i, '🎉'], [/playdate|park|playground/i, '🛝'],
+  [/pick.?up|drop.?off|carpool|bus/i, '🚗'], [/grocer|shop|store|errand/i, '🛒'],
+  [/dinner|lunch|taco|pizza|cook|bake/i, '🍽️'],
+  [/game|match|tournament|meet\b/i, '🏆'], [/practice|training|rehearsal/i, '🏃'],
+];
+
+/* An emoji typed at the front of the event title is an explicit override. */
+const LEADING_EMOJI = /^\s*(\p{Extended_Pictographic}\uFE0F?)\s*/u;
+
+function activityIcon(ev) {
+  const explicit = LEADING_EMOJI.exec(ev.title);
+  if (explicit) return explicit[1];
+  const haystack = `${ev.title} ${ev.location || ''}`;
+  const match = ACTIVITY_ICONS.find(([pattern]) => pattern.test(haystack));
+  return match ? match[1] : '📌';
+}
+
+function activityWho(ev) {
+  const named = KIDS.find(kid => new RegExp(`\\b${kid.name}\\b`, 'i').test(ev.title));
+  return named ? { label: named.name, color: named.color } : { label: ev.who, color: ev.color };
+}
+
+function renderAfterSchool() {
+  const el = document.getElementById('afterSchoolList');
+  const today = boardNow();
+  document.getElementById('afterSchoolDay').textContent =
+    today.toLocaleDateString(undefined, { weekday: 'long' });
+  const items = currentEvents()
+    .filter(ev => ev.start.toDateString() === today.toDateString() && ev.start.getHours() >= AFTER_SCHOOL_FROM_HOUR)
+    .sort((a, b) => a.start - b.start);
+
+  if (!items.length) {
+    el.innerHTML = '<li class="as-empty">Nothing on the calendar after school today.</li>';
+    return;
+  }
+  el.innerHTML = items.map(ev => {
+    const who = activityWho(ev);
+    /* Drop the override emoji and any "— Sami" tail already shown as the badge. */
+    const title = ev.title
+      .replace(LEADING_EMOJI, '')
+      .replace(new RegExp(`\\s*[—–-]\\s*${who.label}\\s*$`, 'i'), '')
+      .trim();
+    return `
+    <li class="as-item" style="--as-color:${who.color}">
+      <span class="as-icon" aria-hidden="true">${activityIcon(ev)}</span>
+      <div class="as-body">
+        <div class="as-line">
+          <span class="as-title">${escapeHtml(title || ev.title)}</span>
+          <span class="as-who">${escapeHtml(who.label)}</span>
+        </div>
+        <div class="as-meta">
+          <span>🕐 ${ev.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+          ${ev.location ? `<span>📍 ${escapeHtml(ev.location)}</span>` : ''}
+        </div>
+        ${ev.note ? `<div class="as-note">🔔 ${escapeHtml(ev.note)}</div>` : ''}
+      </div>
+    </li>`;
+  }).join('');
 }
 
 function escapeHtml(str) {
@@ -1371,6 +2419,84 @@ renderCalendar();
 renderTaskLanes();
 renderGroceries();
 renderMorningMenu();
+renderChecklists();
+renderAfterSchool();
+tick(); // starts last: it reads the checklist day, defined above
+setInterval(tick, 1000);
+
+/* =========================================================================
+   TEST PANEL (temporary)
+   Drives SIM, then re-renders everything that reads boardNow(). Delete this
+   whole section plus its CSS and markup to remove the feature.
+   ========================================================================= */
+(function setUpTestPanel() {
+  const panel = document.getElementById('testPanel');
+  const toggle = document.getElementById('testToggle');
+  const dateInput = document.getElementById('testDate');
+  const timeInput = document.getElementById('testTime');
+  const weatherInput = document.getElementById('testWeather');
+  const note = document.getElementById('testNote');
+
+  function fillFromBoard() {
+    const at = boardNow();
+    dateInput.value = dayKey(at);
+    timeInput.value = `${pad(at.getHours())}:${pad(at.getMinutes())}`;
+    weatherInput.value = SIM.weather || '';
+  }
+
+  function refreshEverything() {
+    tick();                 // header clock, date line, ambient wash, dial + ring
+    renderWeather();        // strip + weather backdrop
+    if (isConnected) fetchMorningMenu(); else renderMorningMenu(); // lunch is a per-weekday row
+    checklist = loadChecklist();
+    renderChecklists();
+    renderAfterSchool();
+    toggle.classList.toggle('is-simulating', SIM.active || !!SIM.weather);
+    note.textContent = SIM.active || SIM.weather
+      ? `Simulating ${boardNow().toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}${SIM.weather ? ` · ${SIM.weather}` : ''}. Time still runs forward.`
+      : 'Using live time and forecast.';
+  }
+
+  function applyFromInputs() {
+    const [y, m, d] = (dateInput.value || dayKey()).split('-').map(Number);
+    const [hh, mm] = (timeInput.value || '07:00').split(':').map(Number);
+    const target = new Date(y, m - 1, d, hh, mm, 0, 0);
+    SIM.offsetMs = target.getTime() - Date.now();
+    SIM.active = true;
+    SIM.weather = weatherInput.value || null;
+    refreshEverything();
+  }
+
+  toggle.addEventListener('click', () => {
+    const opening = !panel.classList.contains('active');
+    if (opening) fillFromBoard();
+    panel.classList.toggle('active', opening);
+    toggle.classList.toggle('is-on', opening);
+  });
+
+  document.getElementById('testApply').addEventListener('click', applyFromInputs);
+  document.getElementById('testReset').addEventListener('click', () => {
+    SIM.active = false; SIM.offsetMs = 0; SIM.weather = null;
+    fillFromBoard();
+    refreshEverything();
+  });
+  weatherInput.addEventListener('change', () => { SIM.weather = weatherInput.value || null; refreshEverything(); });
+
+  /* Presets jump to N minutes past the configured morning start time. */
+  panel.querySelectorAll('[data-jump]').forEach(button => {
+    button.addEventListener('click', () => {
+      const start = morningStart();
+      const at = new Date(boardNow());
+      at.setHours(start.hour, start.minute + Number(button.dataset.jump), 0, 0);
+      dateInput.value = dayKey(at);
+      timeInput.value = `${pad(at.getHours())}:${pad(at.getMinutes())}`;
+      applyFromInputs();
+    });
+  });
+
+  fillFromBoard();
+})();
+
 
 // Periodic full reload for unattended kiosk use. Data also refreshes in place,
 // but this resets the page if the browser has been running for a long time.
