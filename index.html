@@ -219,6 +219,10 @@
   .analog-clock { position: relative; flex: none; width: min(100cqw, 100cqh); aspect-ratio: 1; }
   .analog-clock svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 12px 26px rgba(33, 38, 43, 0.26)); }
   .clock-band { fill: none; stroke-width: 13; }
+  /* Only pulses while the red stretch is actually running down. */
+  .clock-band.is-urgent { animation: bandUrgent 1.4s ease-in-out infinite; }
+  @keyframes bandUrgent { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  @media (prefers-reduced-motion: reduce) { .clock-band.is-urgent { animation: none; } }
   .clock-num { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 23px; fill: var(--ink); stroke: rgba(255, 255, 255, 0.85); stroke-width: 5px; paint-order: stroke fill; }
   .clock-num.n12 { font-size: 26px; }
   .clock-hand { stroke-linecap: round; transform-box: view-box; transform-origin: 200px 200px; }
@@ -661,9 +665,9 @@
                     <circle cx="200" cy="200" r="189.5" fill="none" stroke="#9A8F7A" stroke-width="13" opacity="0.5"/>
                     <circle class="clock-band" id="bandGreen"  cx="200" cy="200" r="189.5" stroke="#5F8B63"/>
                     <circle class="clock-band" id="bandOrange" cx="200" cy="200" r="189.5" stroke="#D0842F"/>
-                    <circle class="clock-band" id="bandRed"    cx="200" cy="200" r="189.5" stroke="#B94F3D"/>
+                    <circle class="clock-band" id="bandRed"    cx="200" cy="200" r="189.5" stroke="#E1442A"/>
                   </g>
-                  <line id="departureTick" stroke="#8E3A2A" stroke-width="3" stroke-linecap="round"/>
+                  <line id="departureTick" stroke="#B02D16" stroke-width="3" stroke-linecap="round"/>
 
                   <g id="clockNumbers"></g>
 
@@ -1052,6 +1056,51 @@ function setBand(el, fromMinute, toMinute) {
   el.setAttribute('stroke-dashoffset', (-(fromMinute / 60) * BAND_LENGTH).toFixed(2));
 }
 
+/* =========================================================================
+   ZONE CHIME — two soft sine notes when the ring changes colour. Deliberately
+   not an alarm: short, quiet, and it never fires on the first tick, so a page
+   that loads mid-morning stays silent.
+   ========================================================================= */
+let previousZone = null;
+let audioContext = null;
+
+function zoneFor(elapsed) {
+  if (elapsed < 0 || elapsed > MORNING_ZONES.leaveAt) return 'outside';
+  if (elapsed < MORNING_ZONES.greenEnd) return 'green';
+  if (elapsed < MORNING_ZONES.orangeEnd) return 'orange';
+  return 'red';
+}
+
+/* Browsers only allow audio once the page has been interacted with, so the
+   context is created and woken on the first tap and kept for the day. */
+function wakeAudio() {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return null;
+  if (!audioContext) audioContext = new Ctx();
+  if (audioContext.state === 'suspended') audioContext.resume();
+  return audioContext;
+}
+document.addEventListener('pointerdown', wakeAudio, { passive: true });
+
+function chime(notes) {
+  const ctx = wakeAudio();
+  if (!ctx || ctx.state !== 'running') return; // nobody has touched the screen yet
+  notes.forEach((frequency, i) => {
+    const at = ctx.currentTime + i * 0.19;
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.value = frequency;
+    /* Ramped rather than switched, so it reads as a soft bip and not a click. */
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(0.07, at + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.17);
+    oscillator.connect(gain).connect(ctx.destination);
+    oscillator.start(at);
+    oscillator.stop(at + 0.2);
+  });
+}
+
 function updateMorningClock(now = boardNow()) {
   const seconds = now.getSeconds();
   const minutes = now.getMinutes() + seconds / 60;
@@ -1070,6 +1119,14 @@ function updateMorningClock(now = boardNow()) {
   setBand(document.getElementById('bandGreen'), Math.max(eaten, startPosition), startPosition + MORNING_ZONES.greenEnd);
   setBand(document.getElementById('bandOrange'), Math.max(eaten, startPosition + MORNING_ZONES.greenEnd), startPosition + MORNING_ZONES.orangeEnd);
   setBand(document.getElementById('bandRed'), Math.max(eaten, startPosition + MORNING_ZONES.orangeEnd), startPosition + MORNING_ZONES.leaveAt);
+
+  const zone = zoneFor(elapsed);
+  document.getElementById('bandRed').classList.toggle('is-urgent', zone === 'red');
+  if (previousZone && zone !== previousZone) {
+    if (previousZone === 'green' && zone === 'orange') chime([740]);
+    else if (previousZone === 'orange' && zone === 'red') chime([740, 587]);
+  }
+  previousZone = zone;
 
   const leaveAngle = (((startPosition + MORNING_ZONES.leaveAt) / 60) * 360 - 90) * (Math.PI / 180);
   const tick = document.getElementById('departureTick');
@@ -1526,6 +1583,22 @@ async function fetchAllData() {
    calendar's name. Set up a separate Google Calendar per family member
    (shareable, each with its own color) to get the same per-person feel
    as the Tasks lanes below. ---- */
+/* Google sends a timed event as dateTime with an offset, which Date parses
+   correctly, but an all-day event as a bare "YYYY-MM-DD". new Date() reads
+   that as UTC midnight, which in Central lands at 7pm the previous day — so
+   an all-day Tuesday event showed up as Monday 7:00 PM. Build those from the
+   parts instead, giving local midnight on the right day. */
+function parseEventStart(start) {
+  if (start.dateTime) return new Date(start.dateTime);
+  const [year, month, day] = start.date.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/* All-day events have no meaningful clock time to show. */
+function eventTimeLabel(ev) {
+  return ev.allDay ? 'All day' : ev.start.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
 async function fetchCalendar() {
   try {
     const calendars = [];
@@ -1556,7 +1629,8 @@ async function fetchCalendar() {
         .map(ev => ({
           title: ev.summary || '(untitled event)',
           who: cal.summary,
-          start: new Date(ev.start.dateTime || ev.start.date),
+          start: parseEventStart(ev.start),
+          allDay: !ev.start.dateTime,
           color: cal.backgroundColor || '#5B6C8A',
           location: ev.location || '',
           note: (ev.description || '').split('\n')[0].trim(), // first line reads as the reminder
@@ -1931,9 +2005,8 @@ function renderWeekAgendaList(events) {
       html += `<div class="day-empty">Nothing scheduled</div>`;
     } else {
       dayEvents.forEach(ev => {
-        const timeStr = ev.start.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
         html += `<div class="event-row">
-          <div class="event-time">${timeStr}</div>
+          <div class="event-time">${eventTimeLabel(ev)}</div>
           <div class="event-bar" style="background:${ev.color}"></div>
           <div class="event-body"><div class="event-title">${escapeHtml(ev.title)}</div><div class="event-who">${escapeHtml(ev.who)}</div></div>
         </div>`;
@@ -1964,9 +2037,8 @@ function renderWeekLanes(events) {
       html += `<div class="lane-empty">Nothing</div>`;
     } else {
       dayEvents.forEach(ev => {
-        const timeStr = ev.start.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
         html += `<div class="lane-event" style="border-left-color:${ev.color}">
-          <div class="t">${timeStr}</div>
+          <div class="t">${eventTimeLabel(ev)}</div>
           <div class="n">${escapeHtml(ev.title)}</div>
           <div class="w">${escapeHtml(ev.who)}</div>
         </div>`;
@@ -2183,32 +2255,30 @@ function kidAvatar(kid) {
   return AVATAR_STYLES[style](kid);
 }
 
-/* Each boy has his own list: the shared five plus the one that is his. */
-const SHARED_TASKS = [
-  { id: 'dressed', emoji: '👕', label: 'Dressed' },
-  { id: 'breakfast', emoji: '🥣', label: 'Breakfast' },
-  { id: 'lunch', emoji: '🥪', label: 'Lunch made' },
-  { id: 'shoes', emoji: '👟', label: 'Shoes' },
-  { id: 'backpack', emoji: '🎒', label: 'Backpack' },
-];
+/* Every job the board knows about; each boy names the ones that are his, in
+   the order he does them. Listing by id keeps the order readable and stops a
+   new job shifting everyone else's position. */
+const TASK_LIBRARY = {
+  dressed:   { id: 'dressed',   emoji: '👕', label: 'Dressed' },
+  breakfast: { id: 'breakfast', emoji: '🥣', label: 'Breakfast' },
+  oit:       { id: 'oit',       emoji: '💊', label: 'OIT' },
+  potty:     { id: 'potty',     emoji: '🚽', label: 'Potty' },
+  lunch:     { id: 'lunch',     emoji: '🥪', label: 'Lunch made' },
+  shoes:     { id: 'shoes',     emoji: '👟', label: 'Shoes' },
+  hair:      { id: 'hair',      emoji: '🪮', label: 'Brush hair' },
+  backpack:  { id: 'backpack',  emoji: '🎒', label: 'Backpack' },
+};
+const taskList = (...ids) => ids.map(id => TASK_LIBRARY[id]);
 
 const KIDS = [
   {
     id: 'sami', name: 'Sami', color: '#5B6C8A', glasses: true, curly: false,
     /* OIT is taken with food, so it sits right after breakfast. */
-    tasks: [
-      SHARED_TASKS[0], SHARED_TASKS[1],
-      { id: 'oit', emoji: '💊', label: 'OIT' },
-      SHARED_TASKS[2], SHARED_TASKS[3], SHARED_TASKS[4],
-    ],
+    tasks: taskList('dressed', 'breakfast', 'oit', 'lunch', 'shoes', 'hair', 'backpack'),
   },
   {
     id: 'rami', name: 'Rami', color: '#B5533C', glasses: false, curly: true,
-    tasks: [
-      SHARED_TASKS[0], SHARED_TASKS[1],
-      { id: 'potty', emoji: '🚽', label: 'Potty' },
-      SHARED_TASKS[2], SHARED_TASKS[3], SHARED_TASKS[4],
-    ],
+    tasks: taskList('dressed', 'breakfast', 'potty', 'lunch', 'shoes', 'hair', 'backpack'),
   },
 ];
 
@@ -2506,7 +2576,7 @@ function renderAfterSchool() {
   document.getElementById('afterSchoolDay').textContent =
     today.toLocaleDateString(undefined, { weekday: 'long' });
   const items = currentEvents()
-    .filter(ev => ev.start.toDateString() === today.toDateString() && ev.start.getHours() >= AFTER_SCHOOL_FROM_HOUR)
+    .filter(ev => !ev.allDay && ev.start.toDateString() === today.toDateString() && ev.start.getHours() >= AFTER_SCHOOL_FROM_HOUR)
     .sort((a, b) => a.start - b.start);
 
   if (!items.length) {
