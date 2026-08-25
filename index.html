@@ -86,6 +86,9 @@
     margin-bottom: 12px; flex-shrink: 0;
   }
   .eyebrow-tag.demo { background: #F1DEB4; color: #6b4f1c; }
+  /* Only worth a line of screen while the data is fake — once Google is
+     connected the label just repeats what the tab already is. */
+  .eyebrow-tag.is-hidden { display: none; }
 
   ::-webkit-scrollbar { width: 7px; height: 7px; }
   ::-webkit-scrollbar-thumb { background: #cfd4c9; border-radius: 6px; }
@@ -258,8 +261,57 @@
   /* Lunch reads as a row of chips under the dial — the emoji is the category,
      so the words are only ever the food itself. */
   .menu-block { flex: 0 0 auto; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .menu-title { margin: 0; font-family: 'Fraunces', serif; font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 1.1; }
+  .menu-title { margin: 0; font-family: 'Fraunces', serif; font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 1.1; flex: 0 1 auto; text-align: center; }
   .menu-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  /* The heading doubles as the day stepper: peek at tomorrow's lunch without
+     leaving the board, and it springs back to today on its own. */
+  /* Arrows hug the title so the pair stays centred over the chips; the week
+     button is parked on the right rather than pushing the title off-centre. */
+  .menu-head { position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+  .menu-nav {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    -webkit-tap-highlight-color: transparent; transition: background 0.15s ease, opacity 0.15s ease;
+  }
+  .menu-nav svg { width: 17px; height: 17px; }
+  .menu-nav:hover { background: var(--paper); }
+  .menu-nav:disabled { opacity: 0.25; cursor: default; }
+  .menu-week-btn {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    padding: 5px 11px; border-radius: 100px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.63rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .menu-week-btn:hover { background: #fff; color: var(--ink); }
+
+  /* The whole week goes in an overlay rather than the column — the left side
+     is already tight at 768px tall and a five-day table would not fit. */
+  #menuWeekOverlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(20, 22, 20, 0.45);
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  #menuWeekOverlay.active { display: flex; }
+  .settings-card.menu-week-card { max-width: 640px; padding: 24px 24px 22px; }
+  .week-menu-list { display: flex; flex-direction: column; gap: 8px; }
+  .week-menu-day { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+  .week-menu-day.is-today { border-color: var(--ink); background: var(--paper); }
+  .week-menu-name {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-soft); margin-bottom: 7px;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .week-menu-day.is-today .week-menu-name { color: var(--ink); font-weight: 600; }
+  .week-menu-name .when { font-weight: 400; letter-spacing: 0.04em; text-transform: none; }
+  .week-menu-day .menu-row { justify-content: flex-start; gap: 6px; }
+  .week-menu-day .menu-chip { padding: 5px 12px 5px 9px; gap: 6px; }
+  .week-menu-day .menu-chip .food { font-size: 0.85rem; }
+  .week-menu-day .menu-chip .emoji { font-size: 0.95rem; }
+  .week-menu-empty { font-size: 0.8rem; color: var(--ink-soft); }
   /* Each category carries a colour as well as an emoji, so the four slots are
      tellable apart from across the kitchen. */
   .menu-chip { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 16px 7px 12px; border-radius: 100px; background: #fff; border: 2px solid var(--cat); }
@@ -343,6 +395,11 @@
     .weather-strip-stats { gap: 6px; padding: 4px 8px; }
     .menu-row { gap: 6px; }
     .menu-chip { padding: 5px 11px 5px 8px; gap: 6px; }
+    /* Too narrow to park the week button beside the title without overlapping
+       it, so it drops onto its own line. */
+    .menu-head { flex-wrap: wrap; }
+    .menu-week-btn { position: static; transform: none; margin: 2px auto 0; }
+    .menu-nav { width: 30px; height: 30px; }
     .kid-grid { gap: 7px; }
     .kid-card { padding: 8px 8px 9px; }
     .kid-tiles { gap: 5px; }
@@ -574,7 +631,6 @@
         </div>
 
         <div class="tab-panel active" id="tab-mornings">
-          <div class="eyebrow-tag demo" id="morningsEyebrow">Demo data</div>
           <div class="morning-layout">
             <div class="morning-clock-side">
               <div class="now-strip">
@@ -681,7 +737,16 @@
               </div>
               </div>
               <div class="menu-block">
-                <h2 class="menu-title">Today’s Lunch</h2>
+                <div class="menu-head">
+                  <button type="button" class="menu-nav" id="menuPrevDay" aria-label="Previous day">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+                  </button>
+                  <h2 class="menu-title" id="morningMenuTitle">Today’s Lunch</h2>
+                  <button type="button" class="menu-nav" id="menuNextDay" aria-label="Next day">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                  <button type="button" class="menu-week-btn" id="menuWeekBtn">Week</button>
+                </div>
                 <div class="menu-row" id="morningMenu"></div>
                 <div class="morning-note" id="morningMenuNote"></div>
               </div>
@@ -762,6 +827,16 @@
     <div class="settings-actions">
       <button class="btn-secondary" id="avatarResetBtn">Use the built-in one</button>
     </div>
+  </div>
+</div>
+
+<!-- ================= WEEK OF LUNCHES ================= -->
+<div id="menuWeekOverlay">
+  <div class="settings-card menu-week-card" style="position:relative;">
+    <button class="pill-btn settings-close" id="closeMenuWeekBtn">Close</button>
+    <h3>Lunches this week</h3>
+    <p class="sub" id="menuWeekNote">Straight from the Mornings sheet — one row per weekday.</p>
+    <div class="week-menu-list" id="menuWeekList"></div>
   </div>
 </div>
 
@@ -927,7 +1002,7 @@ let liveEvents = null;   // array or null (null = not fetched yet / not connecte
 let liveCalendars = null;// calendars visible to the signed-in account
 let liveTasks = null;    // array of {label, who, done, taskId, tasklistId}
 let liveGroceries = null;// array of {label, qty, done, rowNumber}
-let liveMorningMenu = null;// {main, veggie, fruit, extra} for today's row
+let liveMorningMenus = null;// {weekday: {main, veggie, fruit, extra}} for the whole sheet
 let liveWeather = null;  // Tulsa conditions from Open-Meteo
 
 let accessToken = null;
@@ -974,7 +1049,7 @@ function tick() {
     checklist = loadChecklist();
     renderChecklists();
     renderAfterSchool();
-    renderMorningMenu();
+    setMenuDayOffset(0); // a new day always opens on its own lunch
   }
 }
 
@@ -1422,6 +1497,28 @@ let tokenExpiresAt = 0;
 let renewalInFlight = false;
 let renewalWatchdog = null;
 
+/* Every token request opens a window, and Firefox on Android asks permission
+   for each one. A token is good for about an hour, so parking it here means a
+   reload — a kiosk restart, a pulled plug, a manual refresh — reuses the token
+   it already has instead of asking Google (and the browser) all over again.
+   It lives only in this origin's storage on the family's own screen. */
+const TOKEN_KEY = 'homeboard_token_v1';
+const TOKEN_MIN_LIFE_MS = 10 * 60 * 1000; // don't restore one about to expire
+
+function storeToken(token, expiresAt) {
+  try { localStorage.setItem(TOKEN_KEY, JSON.stringify({ token, expiresAt })); } catch (e) { /* private mode */ }
+}
+function clearStoredToken() {
+  try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* private mode */ }
+}
+function loadStoredToken() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem(TOKEN_KEY)); } catch (e) { return null; }
+  if (!saved || !saved.token) return null;
+  if (Date.now() > saved.expiresAt - TOKEN_MIN_LIFE_MS) { clearStoredToken(); return null; }
+  return saved;
+}
+
 function settleTokenWaiters(ok) {
   const waiters = tokenWaiters;
   tokenWaiters = [];
@@ -1432,8 +1529,8 @@ function handleTokenResponse(resp) {
   endRenewal();
   if (resp.error) {
     settleTokenWaiters(false);
-    if (pendingInteractive) { setConnected(false); return; }
-    if (!accessToken) setConnected(false); // nothing to fall back on yet
+    if (pendingInteractive) { clearStoredToken(); setConnected(false); return; }
+    if (!accessToken) { clearStoredToken(); setConnected(false); } // nothing to fall back on yet
     scheduleSilentRetry();
     return;
   }
@@ -1442,6 +1539,7 @@ function handleTokenResponse(resp) {
   accessToken = resp.access_token;
   const lifetime = Number(resp.expires_in) || 3600;
   tokenExpiresAt = Date.now() + lifetime * 1000;
+  storeToken(accessToken, tokenExpiresAt);
   scheduleTokenRenewal(lifetime);
   setConnected(true);
   settleTokenWaiters(true);
@@ -1527,12 +1625,12 @@ function setConnected(connected) {
   btn.classList.toggle('is-connected', connected);
   btn.title = connected ? 'Connected — synced with your Google account' : 'Connect Google';
   btn.setAttribute('aria-label', btn.title);
-  ['calendarEyebrow', 'tasksEyebrow', 'groceryEyebrow', 'morningsEyebrow'].forEach(id => {
+  ['calendarEyebrow', 'tasksEyebrow', 'groceryEyebrow'].forEach(id => {
     const el = document.getElementById(id);
-    el.textContent = connected
-      ? (id === 'calendarEyebrow' ? 'Google Calendar' : id === 'tasksEyebrow' ? 'Google Tasks' : 'Google Sheet')
-      : 'Demo data';
+    if (!el) return;
+    el.textContent = 'Demo data';
     el.classList.toggle('demo', !connected);
+    el.classList.toggle('is-hidden', connected);
   });
 }
 
@@ -1543,9 +1641,11 @@ document.getElementById('connectBtn').addEventListener('click', () => {
       google.accounts.oauth2.revoke(accessToken, () => {});
     }
     accessToken = null;
+    tokenExpiresAt = 0;
+    clearStoredToken();
     clearTimeout(tokenRenewTimer);
     silentRetries = 0;
-    liveEvents = liveCalendars = liveTasks = liveGroceries = liveMorningMenu = null;
+    liveEvents = liveCalendars = liveTasks = liveGroceries = liveMorningMenus = null;
     setConnected(false);
     renderCalendar();
     renderTaskLanes();
@@ -1560,14 +1660,23 @@ document.getElementById('connectBtn').addEventListener('click', () => {
   requestAccessToken(true);
 });
 
-// On page load, if a Client ID is already configured, try a silent
-// (non-interactive) reconnect — this is what lets a kiosk skip the login
-// screen on every reload as long as the browser stays signed in to Google.
+// On page load, reuse the token from the last session if it still has real
+// life in it — that reload then costs no window and no permission prompt at
+// all. Only when there is nothing usable do we fall back to asking Google for
+// a silent grant, which is what lets a kiosk skip the login screen.
 window.addEventListener('load', () => {
-  if (CONFIG.clientId) {
-    setUpTokenClient();
-    waitForGis(() => requestAccessToken(false), 40);
+  if (!CONFIG.clientId) return;
+  setUpTokenClient();
+  const saved = loadStoredToken();
+  if (saved) {
+    accessToken = saved.token;
+    tokenExpiresAt = saved.expiresAt;
+    scheduleTokenRenewal(Math.floor((saved.expiresAt - Date.now()) / 1000));
+    setConnected(true);
+    fetchAllData(); // a stale token surfaces as a 401 and renews from there
+    return;
   }
+  waitForGis(() => requestAccessToken(false), 40);
 });
 
 /* =========================================================================
@@ -1766,19 +1875,23 @@ async function fetchGroceries() {
   renderGroceries();
 }
 
+/* The sheet is one row per weekday, so a single read already holds the whole
+   week — keep all of it, and the board can show tomorrow without another call. */
 async function fetchMorningMenu() {
-  if (!CONFIG.menuSheetId) { liveMorningMenu = null; renderMorningMenu(); return; }
+  if (!CONFIG.menuSheetId) { liveMorningMenus = null; renderMorningMenu(); return; }
   try {
     const range = CONFIG.menuSheetRange || 'Mornings!A2:E200';
     const data = await readSheet(CONFIG.menuSheetId, range);
-    const weekday = boardNow().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const row = (data.values || []).find(values => (values[0] || '').toString().trim().toLowerCase() === weekday);
-    liveMorningMenu = row ? {
-      main: row[1] || '', veggie: row[2] || '', fruit: row[3] || '', extra: row[4] || ''
-    } : null;
+    const byDay = {};
+    (data.values || []).forEach(row => {
+      const weekday = (row[0] || '').toString().trim().toLowerCase();
+      if (!weekday || byDay[weekday]) return; // first row for a day wins
+      byDay[weekday] = { main: row[1] || '', veggie: row[2] || '', fruit: row[3] || '', extra: row[4] || '' };
+    });
+    liveMorningMenus = byDay;
   } catch (err) {
     console.error('Morning menu fetch failed', err);
-    liveMorningMenu = null;
+    liveMorningMenus = null;
   }
   renderMorningMenu();
 }
@@ -2014,10 +2127,15 @@ function checkSVG() {
 function currentEvents() { return isConnected && liveEvents ? liveEvents : DEMO_EVENTS; }
 function currentTasks() { return isConnected && liveTasks ? liveTasks : DEMO_TASKS; }
 function currentGroceries() { return isConnected && liveGroceries ? liveGroceries : DEMO_GROCERIES; }
-function currentMorningMenu() {
-  if (isConnected) return liveMorningMenu;
-  const weekday = boardNow().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-  return DEMO_MORNING_MENU[weekday] || null; // no demo row on weekends, same as the sheet
+function currentMorningMenus() {
+  if (isConnected) return liveMorningMenus;
+  return DEMO_MORNING_MENU; // weekdays only, same shape as the sheet
+}
+function menuForDate(date) {
+  const menus = currentMorningMenus();
+  if (!menus) return null;
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  return menus[weekday] || null; // nothing on weekends, same as the sheet
 }
 
 function renderCalendar() {
@@ -2179,27 +2297,103 @@ function renderGroceries() {
 /* =========================================================================
    RENDER: MORNING MENU
    ========================================================================= */
-function renderMorningMenu() {
-  const menu = currentMorningMenu();
-  const el = document.getElementById('morningMenu');
-  const note = document.getElementById('morningMenuNote');
-  const categories = [
-    ['main', '#C68A2E'], ['veggie', '#6E8B6E'],
-    ['fruit', '#B5533C'], ['extra', '#5B6C8A'],
-  ];
-  el.innerHTML = categories.map(([key, color]) => {
+const MENU_CATEGORIES = [
+  ['main', '#C68A2E'], ['veggie', '#6E8B6E'],
+  ['fruit', '#B5533C'], ['extra', '#5B6C8A'],
+];
+
+function menuChipsHtml(menu) {
+  return MENU_CATEGORIES.map(([key, color]) => {
     const food = menu && menu[key] ? menu[key] : '';
     return `<div class="menu-chip${food ? '' : ' is-empty'}" style="--cat:${color}" title="${key}">
       <span class="emoji">${taskIcon(key === 'main' ? 'lunch' : key)}</span><span class="food">${escapeHtml(food || '—')}</span>
     </div>`;
   }).join('');
-
-  if (!isConnected) note.textContent = 'Demo menu · connect Google to load today’s row.';
-  else if (!CONFIG.menuSheetId) note.textContent = 'Add the menu Spreadsheet ID in Settings.';
-  else if (!menu && [0, 6].includes(boardNow().getDay())) note.textContent = 'No school menu on weekends.';
-  else if (!menu) note.textContent = 'No menu row found for today’s weekday.';
-  else note.textContent = 'Loaded from today’s row in Google Sheets.';
 }
+
+/* Packing tomorrow's lunch the night before is the common case, so the heading
+   steps a day at a time. It always walks back to today on its own — the board
+   spends most of its life unattended and must never greet the morning showing
+   Thursday. */
+const MENU_MAX_OFFSET = 6;             // today plus the rest of the week
+const MENU_RETURN_DELAY = 60 * 1000;   // back to today after a minute untouched
+let menuDayOffset = 0;
+let menuReturnTimer = null;
+
+function menuDate(offset) {
+  const d = boardNow();
+  d.setDate(d.getDate() + offset);
+  d.setHours(12, 0, 0, 0); // midday, so a DST shift can't move the weekday
+  return d;
+}
+
+function setMenuDayOffset(offset) {
+  menuDayOffset = Math.min(MENU_MAX_OFFSET, Math.max(0, offset));
+  clearTimeout(menuReturnTimer);
+  if (menuDayOffset !== 0) menuReturnTimer = setTimeout(() => setMenuDayOffset(0), MENU_RETURN_DELAY);
+  renderMorningMenu();
+}
+
+function menuHeading(offset, date) {
+  if (offset === 0) return 'Today’s Lunch';
+  if (offset === 1) return 'Tomorrow’s Lunch';
+  return `${date.toLocaleDateString('en-US', { weekday: 'long' })}’s Lunch`;
+}
+
+function renderMorningMenu() {
+  const date = menuDate(menuDayOffset);
+  const menu = menuForDate(date);
+  const isSchoolDay = ![0, 6].includes(date.getDay());
+  const el = document.getElementById('morningMenu');
+  const note = document.getElementById('morningMenuNote');
+
+  document.getElementById('morningMenuTitle').textContent = menuHeading(menuDayOffset, date);
+  document.getElementById('menuPrevDay').disabled = menuDayOffset <= 0;
+  document.getElementById('menuNextDay').disabled = menuDayOffset >= MENU_MAX_OFFSET;
+  el.innerHTML = menuChipsHtml(menu);
+
+  const when = menuDayOffset === 0 ? 'today’s' : `${date.toLocaleDateString('en-US', { weekday: 'long' })}’s`;
+  const dayStamp = menuDayOffset === 0 ? '' : ` · ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  if (!isConnected) note.textContent = `Demo menu · connect Google to load the real rows.${dayStamp}`;
+  else if (!CONFIG.menuSheetId) note.textContent = 'Add the menu Spreadsheet ID in Settings.';
+  else if (!menu && !isSchoolDay) note.textContent = `No school menu on weekends.${dayStamp}`;
+  else if (!menu) note.textContent = `No menu row found for ${when} weekday.${dayStamp}`;
+  else note.textContent = `From ${when} row in Google Sheets.${dayStamp}`;
+}
+
+document.getElementById('menuPrevDay').addEventListener('click', () => setMenuDayOffset(menuDayOffset - 1));
+document.getElementById('menuNextDay').addEventListener('click', () => setMenuDayOffset(menuDayOffset + 1));
+
+/* ---- the whole week at once ---- */
+const menuWeekOverlay = document.getElementById('menuWeekOverlay');
+
+function renderMenuWeek() {
+  const menus = currentMorningMenus();
+  const list = document.getElementById('menuWeekList');
+  const todayKey = boardNow().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+
+  list.innerHTML = days.map(day => {
+    const menu = menus && menus[day];
+    const label = day.charAt(0).toUpperCase() + day.slice(1);
+    const isToday = day === todayKey;
+    return `<div class="week-menu-day${isToday ? ' is-today' : ''}">
+      <div class="week-menu-name">${label}${isToday ? '<span class="when">today</span>' : ''}</div>
+      ${menu ? `<div class="menu-row">${menuChipsHtml(menu)}</div>`
+             : '<div class="week-menu-empty">No row for this day yet.</div>'}
+    </div>`;
+  }).join('');
+
+  document.getElementById('menuWeekNote').textContent = isConnected
+    ? 'Straight from the Mornings sheet — one row per weekday.'
+    : 'Demo menu · connect Google to load the real rows.';
+}
+
+function openMenuWeek() { renderMenuWeek(); menuWeekOverlay.classList.add('active'); }
+function closeMenuWeek() { menuWeekOverlay.classList.remove('active'); }
+document.getElementById('menuWeekBtn').addEventListener('click', openMenuWeek);
+document.getElementById('closeMenuWeekBtn').addEventListener('click', closeMenuWeek);
+menuWeekOverlay.addEventListener('click', e => { if (e.target === menuWeekOverlay) closeMenuWeek(); });
 
 /* =========================================================================
    RENDER: MORNING CHECKLISTS
