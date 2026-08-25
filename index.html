@@ -1417,6 +1417,9 @@ let tokenRenewTimer = null;
 let silentRetries = 0;
 let pendingInteractive = false;
 let tokenWaiters = [];
+let tokenExpiresAt = 0;
+let renewalInFlight = false;
+let renewalWatchdog = null;
 
 function settleTokenWaiters(ok) {
   const waiters = tokenWaiters;
@@ -1425,17 +1428,20 @@ function settleTokenWaiters(ok) {
 }
 
 function handleTokenResponse(resp) {
+  endRenewal();
   if (resp.error) {
     settleTokenWaiters(false);
     if (pendingInteractive) { setConnected(false); return; }
     if (!accessToken) setConnected(false); // nothing to fall back on yet
-    if (silentRetries < 4) scheduleSilentRetry();
+    scheduleSilentRetry();
     return;
   }
   const firstToken = !accessToken;
   silentRetries = 0;
   accessToken = resp.access_token;
-  scheduleTokenRenewal(Number(resp.expires_in) || 3600);
+  const lifetime = Number(resp.expires_in) || 3600;
+  tokenExpiresAt = Date.now() + lifetime * 1000;
+  scheduleTokenRenewal(lifetime);
   setConnected(true);
   settleTokenWaiters(true);
   if (firstToken) fetchAllData(); // a renewal lets the caller retry instead
@@ -1447,15 +1453,42 @@ function scheduleTokenRenewal(lifetimeSeconds) {
   tokenRenewTimer = setTimeout(() => requestAccessToken(false), Math.max(30, lifetimeSeconds - 300) * 1000);
 }
 
+/* Two quiet attempts cover a blip. Past that the cause is usually the browser
+   blocking the popup or third-party cookies — Firefox on Android does both by
+   default — and retrying only re-triggers its "allow this site to open a
+   window" prompt. So stop asking and let a person reconnect deliberately,
+   which is a real gesture and therefore always allowed to open a window. */
 function scheduleSilentRetry() {
   clearTimeout(tokenRenewTimer);
-  const backoff = [30, 120, 300, 900][Math.min(silentRetries, 3)];
+  if (silentRetries >= 2) { setConnected(false); return; }
+  const backoff = [60, 600][silentRetries];
   silentRetries += 1;
   tokenRenewTimer = setTimeout(() => requestAccessToken(false), backoff * 1000);
 }
 
+/* A blocked popup never calls back at all, so the in-flight flag needs its own
+   way out or renewals would wedge forever. */
+function beginRenewal() {
+  renewalInFlight = true;
+  clearTimeout(renewalWatchdog);
+  renewalWatchdog = setTimeout(() => {
+    renewalInFlight = false;
+    settleTokenWaiters(false);
+    scheduleSilentRetry();
+  }, 15000);
+}
+function endRenewal() {
+  renewalInFlight = false;
+  clearTimeout(renewalWatchdog);
+}
+
 function requestAccessToken(interactive) {
   if (!tokenClient) return;
+  if (!interactive) {
+    if (renewalInFlight) return;                          // never stack attempts
+    if (document.visibilityState !== 'visible') return;   // pointless while asleep
+    beginRenewal();
+  }
   pendingInteractive = interactive;
   /* '' shows the consent screen only when consent is actually missing, so a
      reconnect after the first grant is silent — 'consent' would force Google's
@@ -1474,9 +1507,15 @@ function renewTokenSilently() {
   });
 }
 
-/* A kiosk that slept through the expiry should recover on its own. */
+/* A kiosk that slept through the expiry should recover on its own — but only
+   when the token is genuinely near the end. This used to fire on every wake,
+   which on a browser that blocks popups meant a permission prompt every time
+   the screen came on. */
 function renewIfStale() {
-  if (isConnected && accessToken && document.visibilityState === 'visible') requestAccessToken(false);
+  if (!isConnected || !accessToken) return;
+  if (document.visibilityState !== 'visible') return;
+  if (Date.now() < tokenExpiresAt - 5 * 60 * 1000) return; // still fresh
+  requestAccessToken(false);
 }
 document.addEventListener('visibilitychange', renewIfStale);
 window.addEventListener('online', renewIfStale);
@@ -1514,6 +1553,8 @@ document.getElementById('connectBtn').addEventListener('click', () => {
     return;
   }
   if (!CONFIG.clientId) { openSettings(); return; }
+  silentRetries = 0;
+  endRenewal();
   setUpTokenClient();
   requestAccessToken(true);
 });
