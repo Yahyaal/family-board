@@ -1526,6 +1526,22 @@ async function fetchAllData() {
    calendar's name. Set up a separate Google Calendar per family member
    (shareable, each with its own color) to get the same per-person feel
    as the Tasks lanes below. ---- */
+/* Google sends a timed event as dateTime with an offset, which Date parses
+   correctly, but an all-day event as a bare "YYYY-MM-DD". new Date() reads
+   that as UTC midnight, which in Central lands at 7pm the previous day — so
+   an all-day Tuesday event showed up as Monday 7:00 PM. Build those from the
+   parts instead, giving local midnight on the right day. */
+function parseEventStart(start) {
+  if (start.dateTime) return new Date(start.dateTime);
+  const [year, month, day] = start.date.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/* All-day events have no meaningful clock time to show. */
+function eventTimeLabel(ev) {
+  return ev.allDay ? 'All day' : ev.start.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
 async function fetchCalendar() {
   try {
     const calendars = [];
@@ -1556,7 +1572,8 @@ async function fetchCalendar() {
         .map(ev => ({
           title: ev.summary || '(untitled event)',
           who: cal.summary,
-          start: new Date(ev.start.dateTime || ev.start.date),
+          start: parseEventStart(ev.start),
+          allDay: !ev.start.dateTime,
           color: cal.backgroundColor || '#5B6C8A',
           location: ev.location || '',
           note: (ev.description || '').split('\n')[0].trim(), // first line reads as the reminder
@@ -1931,9 +1948,8 @@ function renderWeekAgendaList(events) {
       html += `<div class="day-empty">Nothing scheduled</div>`;
     } else {
       dayEvents.forEach(ev => {
-        const timeStr = ev.start.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
         html += `<div class="event-row">
-          <div class="event-time">${timeStr}</div>
+          <div class="event-time">${eventTimeLabel(ev)}</div>
           <div class="event-bar" style="background:${ev.color}"></div>
           <div class="event-body"><div class="event-title">${escapeHtml(ev.title)}</div><div class="event-who">${escapeHtml(ev.who)}</div></div>
         </div>`;
@@ -1964,9 +1980,8 @@ function renderWeekLanes(events) {
       html += `<div class="lane-empty">Nothing</div>`;
     } else {
       dayEvents.forEach(ev => {
-        const timeStr = ev.start.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
         html += `<div class="lane-event" style="border-left-color:${ev.color}">
-          <div class="t">${timeStr}</div>
+          <div class="t">${eventTimeLabel(ev)}</div>
           <div class="n">${escapeHtml(ev.title)}</div>
           <div class="w">${escapeHtml(ev.who)}</div>
         </div>`;
@@ -2506,7 +2521,7 @@ function renderAfterSchool() {
   document.getElementById('afterSchoolDay').textContent =
     today.toLocaleDateString(undefined, { weekday: 'long' });
   const items = currentEvents()
-    .filter(ev => ev.start.toDateString() === today.toDateString() && ev.start.getHours() >= AFTER_SCHOOL_FROM_HOUR)
+    .filter(ev => !ev.allDay && ev.start.toDateString() === today.toDateString() && ev.start.getHours() >= AFTER_SCHOOL_FROM_HOUR)
     .sort((a, b) => a.start - b.start);
 
   if (!items.length) {
