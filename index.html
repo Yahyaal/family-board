@@ -2255,32 +2255,30 @@ function kidAvatar(kid) {
   return AVATAR_STYLES[style](kid);
 }
 
-/* Each boy has his own list: the shared five plus the one that is his. */
-const SHARED_TASKS = [
-  { id: 'dressed', emoji: '👕', label: 'Dressed' },
-  { id: 'breakfast', emoji: '🥣', label: 'Breakfast' },
-  { id: 'lunch', emoji: '🥪', label: 'Lunch made' },
-  { id: 'shoes', emoji: '👟', label: 'Shoes' },
-  { id: 'backpack', emoji: '🎒', label: 'Backpack' },
-];
+/* Every job the board knows about; each boy names the ones that are his, in
+   the order he does them. Listing by id keeps the order readable and stops a
+   new job shifting everyone else's position. */
+const TASK_LIBRARY = {
+  dressed:   { id: 'dressed',   emoji: '👕', label: 'Dressed' },
+  breakfast: { id: 'breakfast', emoji: '🥣', label: 'Breakfast' },
+  oit:       { id: 'oit',       emoji: '💊', label: 'OIT' },
+  potty:     { id: 'potty',     emoji: '🚽', label: 'Potty' },
+  lunch:     { id: 'lunch',     emoji: '🥪', label: 'Lunch made' },
+  shoes:     { id: 'shoes',     emoji: '👟', label: 'Shoes' },
+  hair:      { id: 'hair',      emoji: '🪮', label: 'Brush hair' },
+  backpack:  { id: 'backpack',  emoji: '🎒', label: 'Backpack' },
+};
+const taskList = (...ids) => ids.map(id => TASK_LIBRARY[id]);
 
 const KIDS = [
   {
     id: 'sami', name: 'Sami', color: '#5B6C8A', glasses: true, curly: false,
     /* OIT is taken with food, so it sits right after breakfast. */
-    tasks: [
-      SHARED_TASKS[0], SHARED_TASKS[1],
-      { id: 'oit', emoji: '💊', label: 'OIT' },
-      SHARED_TASKS[2], SHARED_TASKS[3], SHARED_TASKS[4],
-    ],
+    tasks: taskList('dressed', 'breakfast', 'oit', 'lunch', 'shoes', 'hair', 'backpack'),
   },
   {
     id: 'rami', name: 'Rami', color: '#B5533C', glasses: false, curly: true,
-    tasks: [
-      SHARED_TASKS[0], SHARED_TASKS[1],
-      { id: 'potty', emoji: '🚽', label: 'Potty' },
-      SHARED_TASKS[2], SHARED_TASKS[3], SHARED_TASKS[4],
-    ],
+    tasks: taskList('dressed', 'breakfast', 'potty', 'lunch', 'shoes', 'hair', 'backpack'),
   },
 ];
 
