@@ -298,6 +298,7 @@
     transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   }
   .kid-tile .emoji { font-size: clamp(1.3rem, 2.2vw, 1.8rem); line-height: 1; }
+  .tw-icon { width: 1em; height: 1em; display: block; }
   .kid-tile .label { max-width: 100%; font-size: clamp(0.62rem, 1.05vw, 0.8rem); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .kid-tile:active { transform: scale(0.96); }
   .kid-tile.is-done { background: var(--kid-color); border-color: var(--kid-color); color: #fff; }
@@ -1417,6 +1418,9 @@ let tokenRenewTimer = null;
 let silentRetries = 0;
 let pendingInteractive = false;
 let tokenWaiters = [];
+let tokenExpiresAt = 0;
+let renewalInFlight = false;
+let renewalWatchdog = null;
 
 function settleTokenWaiters(ok) {
   const waiters = tokenWaiters;
@@ -1425,17 +1429,20 @@ function settleTokenWaiters(ok) {
 }
 
 function handleTokenResponse(resp) {
+  endRenewal();
   if (resp.error) {
     settleTokenWaiters(false);
     if (pendingInteractive) { setConnected(false); return; }
     if (!accessToken) setConnected(false); // nothing to fall back on yet
-    if (silentRetries < 4) scheduleSilentRetry();
+    scheduleSilentRetry();
     return;
   }
   const firstToken = !accessToken;
   silentRetries = 0;
   accessToken = resp.access_token;
-  scheduleTokenRenewal(Number(resp.expires_in) || 3600);
+  const lifetime = Number(resp.expires_in) || 3600;
+  tokenExpiresAt = Date.now() + lifetime * 1000;
+  scheduleTokenRenewal(lifetime);
   setConnected(true);
   settleTokenWaiters(true);
   if (firstToken) fetchAllData(); // a renewal lets the caller retry instead
@@ -1447,15 +1454,42 @@ function scheduleTokenRenewal(lifetimeSeconds) {
   tokenRenewTimer = setTimeout(() => requestAccessToken(false), Math.max(30, lifetimeSeconds - 300) * 1000);
 }
 
+/* Two quiet attempts cover a blip. Past that the cause is usually the browser
+   blocking the popup or third-party cookies — Firefox on Android does both by
+   default — and retrying only re-triggers its "allow this site to open a
+   window" prompt. So stop asking and let a person reconnect deliberately,
+   which is a real gesture and therefore always allowed to open a window. */
 function scheduleSilentRetry() {
   clearTimeout(tokenRenewTimer);
-  const backoff = [30, 120, 300, 900][Math.min(silentRetries, 3)];
+  if (silentRetries >= 2) { setConnected(false); return; }
+  const backoff = [60, 600][silentRetries];
   silentRetries += 1;
   tokenRenewTimer = setTimeout(() => requestAccessToken(false), backoff * 1000);
 }
 
+/* A blocked popup never calls back at all, so the in-flight flag needs its own
+   way out or renewals would wedge forever. */
+function beginRenewal() {
+  renewalInFlight = true;
+  clearTimeout(renewalWatchdog);
+  renewalWatchdog = setTimeout(() => {
+    renewalInFlight = false;
+    settleTokenWaiters(false);
+    scheduleSilentRetry();
+  }, 15000);
+}
+function endRenewal() {
+  renewalInFlight = false;
+  clearTimeout(renewalWatchdog);
+}
+
 function requestAccessToken(interactive) {
   if (!tokenClient) return;
+  if (!interactive) {
+    if (renewalInFlight) return;                          // never stack attempts
+    if (document.visibilityState !== 'visible') return;   // pointless while asleep
+    beginRenewal();
+  }
   pendingInteractive = interactive;
   /* '' shows the consent screen only when consent is actually missing, so a
      reconnect after the first grant is silent — 'consent' would force Google's
@@ -1474,9 +1508,15 @@ function renewTokenSilently() {
   });
 }
 
-/* A kiosk that slept through the expiry should recover on its own. */
+/* A kiosk that slept through the expiry should recover on its own — but only
+   when the token is genuinely near the end. This used to fire on every wake,
+   which on a browser that blocks popups meant a permission prompt every time
+   the screen came on. */
 function renewIfStale() {
-  if (isConnected && accessToken && document.visibilityState === 'visible') requestAccessToken(false);
+  if (!isConnected || !accessToken) return;
+  if (document.visibilityState !== 'visible') return;
+  if (Date.now() < tokenExpiresAt - 5 * 60 * 1000) return; // still fresh
+  requestAccessToken(false);
 }
 document.addEventListener('visibilitychange', renewIfStale);
 window.addEventListener('online', renewIfStale);
@@ -1514,6 +1554,8 @@ document.getElementById('connectBtn').addEventListener('click', () => {
     return;
   }
   if (!CONFIG.clientId) { openSettings(); return; }
+  silentRetries = 0;
+  endRenewal();
   setUpTokenClient();
   requestAccessToken(true);
 });
@@ -2142,13 +2184,13 @@ function renderMorningMenu() {
   const el = document.getElementById('morningMenu');
   const note = document.getElementById('morningMenuNote');
   const categories = [
-    ['🥪', 'main', '#C68A2E'], ['🥕', 'veggie', '#6E8B6E'],
-    ['🍎', 'fruit', '#B5533C'], ['✨', 'extra', '#5B6C8A'],
+    ['main', '#C68A2E'], ['veggie', '#6E8B6E'],
+    ['fruit', '#B5533C'], ['extra', '#5B6C8A'],
   ];
-  el.innerHTML = categories.map(([emoji, key, color]) => {
+  el.innerHTML = categories.map(([key, color]) => {
     const food = menu && menu[key] ? menu[key] : '';
     return `<div class="menu-chip${food ? '' : ' is-empty'}" style="--cat:${color}" title="${key}">
-      <span class="emoji" aria-hidden="true">${emoji}</span><span class="food">${escapeHtml(food || '—')}</span>
+      <span class="emoji">${taskIcon(key === 'main' ? 'lunch' : key)}</span><span class="food">${escapeHtml(food || '—')}</span>
     </div>`;
   }).join('');
 
@@ -2255,6 +2297,30 @@ function kidAvatar(kid) {
   return AVATAR_STYLES[style](kid);
 }
 
+/* Emoji are drawn with whatever font the device happens to have, so the same
+   character looks different — or missing — from one screen to the next: the
+   kitchen tablet's font predates the comb, and drew it as a blank square.
+   These are Twemoji (CC-BY 4.0, github.com/jdecked/twemoji), inlined so every
+   screen gets the same picture. All are 36x36. */
+const TASK_ICON_ART = {
+  dressed: `<path fill="#3B88C3" d="M11 2C8 2 0 4 0 6s1 7 2 9 8 0 9-1 2-12 0-12z"/><path fill="#55ACEE" d="M1 4.717C.352 5.088 0 5.565 0 6c0 2 1 7 2 9 .281.562 1.039.777 2 .85C3 13 2 9 1 4.717z"/><path fill="#3B88C3" d="M25 2c3 0 11 2 11 4s-1 7-2 9-8 0-9-1-2-12 0-12z"/><path fill="#55ACEE" d="M35 4.717c.648.371 1 .848 1 1.283 0 2-1 7-2 9-.281.562-1.039.777-2 .85C33 13 34 9 35 4.717z"/><path fill="#3B88C3" d="M25 2h-1.068C23.515 3.695 21.021 5 18 5s-5.515-1.305-5.932-3H11C8.791 2 6 3.791 6 6c0 0 0 20-1 24s1.791 4 4 4h18c2.209 0 5 0 4-4S30 6 30 6c0-2.209-2.791-4-5-4z"/><path fill="#55ACEE" d="M18 7c3.866 0 7-2.239 7-5h-1.068C23.515 3.695 21.021 5 18 5s-5.515-1.305-5.932-3H11c0 2.761 3.134 5 7 5z"/>`,
+  breakfast: `<path fill="#A0041E" d="M16 31c8.837 0 16-7.163 16-16H0c0 8.837 7.164 16 16 16z"/><ellipse fill="#EA596E" cx="16" cy="15" rx="16.051" ry="8.917"/><ellipse fill="#662113" cx="16" cy="15" rx="14.641" ry="7.719"/><path fill="#99AAB5" d="M34 8c-1 0-4 1-8 4-4.525 3.394-7.596 2.187-7.596 2.187l.001.003C16.981 13.453 15.087 13 13 13c-4.418 0-8 2.015-8 4.5S8.582 22 13 22c2.773 0 5.216-.794 6.651-2 0 0 4.995-4.431 7.349-6 3-2 5-3 7-3s2-3 0-3z"/><ellipse fill="#CCD6DD" cx="13" cy="19" rx="5" ry="2.5"/>`,
+  oit: `<path fill="#BB1A34" d="M33.207 19.773l-8.868-8.855L11.105 24.54l8.684 8.685.001-.001C21.509 34.939 23.881 36 26.5 36c5.246 0 9.5-4.254 9.5-9.5 0-2.628-1.068-5.007-2.793-6.727z"/><path fill="#FDCB58" d="M15.921 2.513C14.229.957 11.979 0 9.5 0 4.253 0 0 4.253 0 9.5c0 2.479.958 4.73 2.514 6.421l-.014.014 8.605 8.605 13.234-13.622-8.418-8.405z"/>`,
+  potty: `<path fill="#AAB8C2" d="M26 18v2H13.293c-.867 0-1.835.896-2.161 2L7.59 34c-.326 1.104.306 2 1.41 2h18c1.104 0 2-.896 2-2V24c0-1.861 1.278-3.412 3-3.858V18h-6z"/><path fill="#E1E8ED" d="M22 21.875C22 25.396 17.522 29 12 29c-5.523 0-10-3.604-10-7.125C2 20 2.833 20 12 20c9.166 0 10 0 10 1.875zM25 19c0 .553-.514 1-1.15 1H3.15C2.515 20 2 19.553 2 19c0-.553.515-1 1.15-1h20.7c.636 0 1.15.447 1.15 1z"/><path fill="#99AAB5" d="M18 16H6c-1.104 0-2 .896-2 2h16c0-1.104-.896-2-2-2zm2-16v18c1.104 0 2-1.007 2-2.25V2.25C22 1.007 21.104 0 20 0z"/><path fill="#E1E8ED" d="M34 4c0-1.104-.896-2-2-2h-8c-1.104 0-2 .896-2 2v14c0 1.104.896 2 2 2h8c1.104 0 2-.896 2-2V4z"/><circle fill="#CCD6DD" cx="20" cy="16" r="2"/><path fill="#CCD6DD" d="M22 4h12v2H22z"/><path fill="#AAB8C2" d="M25 21c0 .553-.447 1-1 1H3c-.552 0-1-.447-1-1 0-.553.448-1 1-1h21c.553 0 1 .447 1 1z"/>`,
+  lunch: `<path fill="#F4900C" d="M35 20.516L1 20l.017 2.625c.017.593.355 1.188 1.08 1.632l6.907 4.228 6.908 4.227c1.526.935 4.145.848 5.525 0 1.383-.845.692-1.267 2.073-2.114 1.381-.844 2.071-.422 3.454-1.266 1.383-.848 6.909-4.227 6.909-4.227.761-.466 1.141-1.077 1.143-1.689l-.016-2.9z"/><path fill="#FFAC33" d="M33.873 18.721s-30.394-1.69-31.776-.845c-1.382.845-1.526 2.447 0 3.382l6.907 4.228 6.908 4.228c1.526.935 4.145.848 5.525 0 1.383-.845.692-1.267 2.073-2.114 1.381-.844 2.071-.422 3.454-1.266 1.383-.848 6.908-4.228 6.908-4.228 1.526-.935 1.527-2.451.001-3.385z"/><path fill="#FFD983" d="M10.222 24.642l7.071 4.228s1.414.844 2.828 0c1.197-.717 2.121-2.114 2.121-2.114l-12.02-2.114z"/><path fill="#77B255" d="M33.739 18.565c-1.941-2.589-26.694-4.412-30.577-.767-.784.737-2.265 2.22-.688 4.439.688 1.162 2.116 1.919 2.306 1.56.443-.842 1.327-1.578 2.653-1.507-.075.178.641 3.207.56 3.275-.925.786.997 3.518 3.249 2.063.561 1.108 3.956 3.843 6.299.102.466.844 5.36 2.128 6.719-1.766-.011.067-.008.124-.026.196-.089.35.722.653 1.548.363 1.389-.486 3.395-1.693 3.75-3.018.991-.173 1.734.102 2.306.858.283.374 1.254.464 1.669-.025.732-.859 1.933-3.503.232-5.773z"/><path fill="#FFCC4D" d="M31 25.041c0 .529-.896.959-2 .959H7c-1.104 0-2-.43-2-.959V18.49h26v6.551z"/><path fill="#BE1931" d="M33.311 19.987c0 2.768-4.586 5.013-10.242 5.013-5.658 0-10.243-2.245-10.243-5.013 0-2.769 4.585-5.013 10.243-5.013 5.656 0 10.242 2.245 10.242 5.013z"/><path fill="#F4900C" d="M35 14.516L1 14v2.625h.017c.017.593.355 1.188 1.08 1.632l6.907 4.228 6.908 4.227c1.526.935 4.145.848 5.525 0 1.383-.845.692-1.267 2.073-2.114 1.381-.844 2.071-.422 3.454-1.266 1.383-.848 6.909-4.227 6.909-4.227.761-.466 1.141-1.077 1.143-1.689v-.005L35 14.516z"/><path fill="#FFAC33" d="M33.873 12.721L20.058 4.267c-1.526-.934-4-.934-5.527 0L7.623 8.495c-1.381.845-.691 1.268-2.072 2.113-1.381.845-2.072.422-3.454 1.268-1.382.845-1.526 2.447 0 3.382l13.815 8.455c1.526.935 4.145.848 5.525 0 1.383-.845.692-1.267 2.073-2.114 1.381-.844 2.071-.422 3.454-1.266 1.383-.848 6.908-4.228 6.908-4.228 1.526-.934 1.527-2.45.001-3.384z"/><path fill="#FFD983" d="M32.85 13.568L18.707 5.113s-1.507-.791-2.829 0L8.916 9.275c-1.197.715-1.033 1.463-2.23 2.178-1.196.716-2.339.553-3.536 1.268-1.414.847 0 1.693 0 1.693l14.142 8.455s1.414.844 2.828 0c1.197-.717.926-1.397 2.121-2.114 1.197-.717 2.447-.619 3.644-1.334 1.197-.714 6.963-4.163 6.963-4.163s1.323-.901.002-1.69z"/>`,
+  shoes: `<path fill="#8899A6" d="M24.161 10.166l-.676-2.034c-.134-.302-.49-.43-.781-.275-.918.487-2.944 1.318-3.684 1.575 1.419.505 3.499 1.503 4.511 1.396.384-.04.787-.308.63-.662zm10.21 24.574c-.399.225-6.509 1.692-18.621-8.906C12.083 22.625 1.2 12.879 1.341 12.547c0 0-.329.36-.602.736-.197.271-.319.559-.274.848.31 1.967 3.112 3.819 6.962 6.781l.549.422.363.279c.588.452 2.316 1.815 4.329 3.403 2.753 2.171 8.284 6.49 8.445 6.61 2.12 1.574 4.635 2.817 7.667 3.672 3.838 1.081 5.591-.558 5.591-.558z"/><path fill="#BE1931" d="M34.371 34.74s.477-.219.97-.918c.493-.699.79-1.924.045-3.248-.745-1.323-3.456-5.121-4.345-6.671-.433-.755-.297-1.447-1.125-2.835 0 0-3.164-5.523-3.864-6.723-1.497-2.567-.84-3.902-1.837-4.668-.665-.511-7.306.166-9.327-1.389-1.397-1.074-1.418-4.428-2.003-5.526-.466-.875-2.02-.475-3.087.11S5.825 6.661 5.123 7.574s-1.601 1.909-1.679 2.928l-.079 1.018S19.226 26.67 23.74 29.726c7.697 5.211 10.631 5.014 10.631 5.014z"/><path fill="#A0041E" d="M24.74 10.464c-.103-.314-.249-.575-.525-.788-.665-.511-7.306.167-9.327-1.389-1.397-1.074-1.418-4.429-2.003-5.526-.182-.341-.532-.485-.952-.502.69 1.4.621 5.574 2.312 6.874 2.038 1.569 8.016 1.133 10.495 1.331z"/><path fill="#DD2E44" d="M13.265 17.873c.505-1.472 1.044-4.915.074-6.962-.909-1.917-4.441-5.955-5.112-6.72C6.987 5.296 5.33 7.229 4.83 7.879c-.66.858-1.455 1.822-1.494 2.801-.014.352.087.51.087.51s9.822 6.741 9.842 6.683z"/><path fill="#CCD6DD" d="M23.107 14.256c-.335 0-.65-.202-.78-.533-.169-.431.043-.917.474-1.087l1.823-.715c.43-.167.919.043 1.087.475.169.431-.043.917-.474 1.087l-1.823.715c-.101.039-.204.058-.307.058zm1.347 3.063c-.291 0-.573-.151-.728-.421-.231-.401-.093-.914.309-1.145l1.793-1.031c.402-.231.915-.092 1.145.309.231.401.093.914-.309 1.145l-1.793 1.031c-.132.076-.275.112-.417.112zm1.821 2.752c-.256 0-.509-.117-.673-.338-.277-.371-.2-.896.171-1.173l1.514-1.129c.371-.277.897-.201 1.173.171.277.372.2.897-.171 1.174l-1.514 1.128c-.15.113-.326.167-.5.167zm1.945 2.571c-.242 0-.482-.104-.648-.307-.294-.358-.241-.887.116-1.181l1.155-.948c.357-.293.887-.242 1.181.116s.241.887-.116 1.181l-1.155.948c-.157.128-.346.191-.533.191zM3.2 10.76s.675.612 1.425.726c.75.114 2.079.95 2.993 1.653.914.703 4.399 3.292 6.534 5.444s5.495 6.58 6.801 7.863c1.306 1.282 3.413 3.193 5.214 4.347s3.455 2.131 4.516 2.686c1.368.716 2.632 1.144 3.688 1.261-.368.216-2.313.946-5.69-.205-3.228-1.101-5.332-2.294-7.071-3.586-1.739-1.292-11.208-8.808-12.759-10.001-1.551-1.193-6.188-4.728-6.92-5.787-1.04-1.504-.99-2.162-.788-2.424.492-.641 1.531-2.382 2.057-1.977z"/><path fill="#DD2E44" d="M35.386 30.574c-.745-1.323-3.456-5.121-4.345-6.671-.174-.304-.257-.599-.347-.931-.091.034-.189.054-.269.109-1.154.792-1.148 3.185.571 5.687 1.378 2.006 3.59 3.552 4.832 3.576.026-.538-.088-1.142-.442-1.77z"/>`,
+  hair: `<path fill="#31373d" d="M35.9 12.22c-.13-.13-.37-.13-.51 0-.24.23-11.05 10.8-11.92 11.52-.19.16-.45.16-.61 0s-.16-.42 0-.61c.72-.86 11.29-11.67 11.52-11.92.13-.14.13-.38 0-.51s-.37-.13-.51 0c-.24.23-11.49 11.24-12.35 11.95-.19.16-.45.16-.61 0s-.16-.42 0-.61c.72-.86 11.72-12.11 11.95-12.35.13-.14.13-.38 0-.51s-.37-.13-.51 0c-.24.23-11.77 11.52-12.64 12.24-.19.16-.45.16-.61 0s-.16-.42 0-.61c.72-.86 12.01-12.39 12.24-12.64.13-.14.13-.38 0-.51s-.37-.13-.51 0c-.24.23-11.92 11.67-12.78 12.38-.19.16-.45.16-.61 0s-.16-.42 0-.61c.72-.86 12.15-12.54 12.38-12.78.13-.14.13-.38 0-.51s-.37-.13-.51 0c-.24.23-11.92 11.67-12.78 12.38-.19.16-.45.16-.61 0s-.16-.42 0-.61c.72-.86 12.15-12.54 12.38-12.78.13-.14.13-.38 0-.51s-.37-.13-.51 0c-.24.23-11.77 11.52-12.64 12.24-.19.16-.45.16-.61 0s-.16-.42 0-.61c.72-.86 12.01-12.39 12.24-12.64.13-.14.13-.38 0-.51s-.37-.13-.51 0c-.24.23-11.49 11.24-12.35 11.95-.19.16-.45.16-.61 0s-.16-.42 0-.61c.72-.86 11.72-12.11 11.95-12.35.13-.14.13-.38 0-.51s-.37-.13-.51 0c-.24.23-11.05 10.8-11.92 11.52-.19.16-.45.16-.61 0s-.16-.42 0-.61C12.94 11.63 23.51.82 23.74.57c.13-.14.13-.38 0-.51s-.37-.13-.51 0c-.24.23-11.31 10.98-12.15 11.73-4.62 4.17-2.53 6.17-2.3 8.58.37 3.97-2.44 6.21-4.38 6.41-2.52.26-4.45 2.06-4.45 4.59 0 1.27.51 2.42 1.35 3.25.83.83 1.98 1.35 3.25 1.35 2.54 0 4.33-1.93 4.59-4.45.2-1.94 2.44-4.75 6.41-4.38 2.41.22 4.41 2.32 8.58-2.3.75-.83 11.5-11.9 11.73-12.15.13-.14.13-.38 0-.51zM4.56 32.69c-.35 0-.66-.14-.88-.37a1.24 1.24 0 0 1-.37-.88c0-.69.56-1.25 1.25-1.25.35 0 .66.14.88.37s.37.54.37.88c0 .69-.56 1.25-1.25 1.25"/><path fill="none" stroke="#7a8891" stroke-linecap="round" stroke-miterlimit="10" d="M3.88 28.12c-1.46.3-2.58 1.55-2.67 3.08m9.28-17.1c-1.61 2.13-1.3 2.91-.65 5.23.55 1.97.06 3.81-.65 5.23"/>`,
+  backpack: `<path d="M11.946 27C-1.036 7.876 7.524 2.752 9.114 2c.149-.07.242-.105.245-.107.418-.209.638-.675.529-1.125C9.779.318 9.372 0 8.903 0H4.847C1.054 0-4.282 11 5.859 28c.151.253 5.073 0 5.073 0 .559 0 1.324-.541 1.014-1zM31.229 0h-4c-.462 0-.863.318-.971.768-.107.45.109.916.521 1.125.004.002.095.037.242.107 1.568.752 10.01 5.876-2.792 25-.307.459.448 1 1 1 0 0 4.854.253 5.002 0 10-17 4.739-28 .998-28z" fill="#C1694F"/><path d="M6.889 28.836l.004.01c-.064-.293 5.363-1.387 5.053-1.846C-1.036 7.876 7.524 2.752 9.114 2H4.845C1.053 2-3.268 13 6.889 28.836zM31.231 2h-4.21c1.568.752 10.01 5.876-2.792 25-.307.459 4.984 1.839 4.986 1.836C39.231 13 34.971 2 31.231 2z" fill="#662113"/><path fill="#C1694F" d="M9.916 8c-.561 0-1.015-.448-1.015-1 0-3.316-2.028-5-4.056-5-.47 0-.08-.782.029-1.232.11-.45.516-.768.985-.768h5.071c3.791 0 4.938 6.136 5.057 6.835.049.29-.034.586-.226.811-.195.225-.478.354-.775.354h-5.07zm16.315 0c.553 0 1-.448 1-1 0-3.316 2-5 4-5 .463 0 .078-.782-.029-1.232-.107-.45-.508-.768-.971-.768h-5c-3.738 0-4.869 6.136-4.986 6.835-.049.29.033.586.223.811.191.225.47.354.763.354h5z"/><path fill="#BE1931" d="M6 32s0 4 4 4h16s4 0 4-4V10s0-4-4-4H10c-4 0-4 4-4 4v22z"/><path fill="#A0041E" d="M24 28H12c-2.201 0-3-1.794-3-3V11c0-.552.448-1 1-1s1 .448 1 1v14c.012.45.195 1 1 1h12c.45-.012 1-.194 1-1V11c0-.552.447-1 1-1s1 .448 1 1v14c0 2.201-1.794 3-3 3z"/><path fill="#FFF" d="M16 25s0-1 1-1h2s1 0 1 1v5s0 1-1 1h-2s-1 0-1-1v-5z"/>`,
+  veggie: `<path fill="#77B255" d="M31.096 8.933c3.535-2.122 4.408-8.32 3.701-7.613.707-.707-5.657 0-7.778 3.536 0-1.414-1.414-7.071-3.535-2.121-2.122 4.95-1.415 5.657-1.415 7.071 0 1.414 2.829 1.414 2.829 1.414s-.125 2.704 1.29 2.704c1.414 0 1.997.583 6.946-1.538 4.95-2.122-.624-3.453-2.038-3.453z"/><path fill="#F4900C" d="M22.422 23.594C14.807 31.209 2.27 36.675.502 34.907c-1.768-1.768 3.699-14.305 11.313-21.92 7.615-7.615 11.53-7.562 14.85-4.243 3.319 3.32 3.372 7.235-4.243 14.85z"/><path d="M21.875 14.56c-.972-.972-2.77-2.785-4.692-6.106-.753.492-1.554 1.091-2.409 1.808 2.803 3.613 8.121 5.317 7.101 4.298zm-7.485 8.072c-1.041-1.041-3.03-3.05-5.105-6.846-.687.832-1.349 1.693-1.98 2.57 2.807 3.597 8.101 5.292 7.085 4.276zm9.301-.351c-3.581-2.008-5.49-3.91-6.502-4.921-1.02-1.022.692 4.315 4.317 7.114.311-.29 1.786-1.767 2.185-2.193zm-12.183 9.324c.895-.492 1.804-1.025 2.715-1.597-3.273-1.905-5.069-3.683-6.034-4.648-.922-.923.386 3.347 3.319 6.245z" fill="#D67503"/>`,
+  fruit: `<path fill="#DD2E44" d="M24 7c-3 0-3 1-6 1s-3-1-6-1c-4 0-9 2-9 9 0 11 6 20 10 20 3 0 3-1 5-1s2 1 5 1c4 0 10-9 10-20 0-7.001-5-9-9-9z"/><path fill="#77B255" d="M19 7s3-4 8-4c4 0 6 2 6 2s-4 3-7 3-7-1-7-1z"/><path fill="#662113" d="M18 10c-.552 0-1-.448-1-1 0-3.441 1.2-6.615 3.293-8.707.391-.391 1.023-.391 1.414 0s.391 1.024 0 1.414C19.986 3.427 19 6.085 19 9c0 .552-.448 1-1 1z"/>`,
+  extra: `<path fill="#FFAC33" d="M34.347 16.893l-8.899-3.294-3.323-10.891c-.128-.42-.517-.708-.956-.708-.439 0-.828.288-.956.708l-3.322 10.891-8.9 3.294c-.393.146-.653.519-.653.938 0 .418.26.793.653.938l8.895 3.293 3.324 11.223c.126.424.516.715.959.715.442 0 .833-.291.959-.716l3.324-11.223 8.896-3.293c.391-.144.652-.518.652-.937 0-.418-.261-.792-.653-.938z"/><path fill="#FFCC4D" d="M14.347 27.894l-2.314-.856-.9-3.3c-.118-.436-.513-.738-.964-.738-.451 0-.846.302-.965.737l-.9 3.3-2.313.856c-.393.145-.653.52-.653.938 0 .418.26.793.653.938l2.301.853.907 3.622c.112.444.511.756.97.756.459 0 .858-.312.97-.757l.907-3.622 2.301-.853c.393-.144.653-.519.653-.937 0-.418-.26-.793-.653-.937zM10.009 6.231l-2.364-.875-.876-2.365c-.145-.393-.519-.653-.938-.653-.418 0-.792.26-.938.653l-.875 2.365-2.365.875c-.393.146-.653.52-.653.938 0 .418.26.793.653.938l2.365.875.875 2.365c.146.393.52.653.938.653.418 0 .792-.26.938-.653l.875-2.365 2.365-.875c.393-.146.653-.52.653-.938 0-.418-.26-.792-.653-.938z"/>`,
+};
+
+function taskIcon(name) {
+  const art = TASK_ICON_ART[name];
+  return art ? `<svg class="tw-icon" viewBox="0 0 36 36" aria-hidden="true">${art}</svg>` : '';
+}
+
 /* Every job the board knows about; each boy names the ones that are his, in
    the order he does them. Listing by id keeps the order readable and stops a
    new job shifting everyone else's position. */
@@ -2312,7 +2378,7 @@ function renderChecklists() {
             const isDone = !!checklist.done[`${kid.id}.${task.id}`];
             return `<button type="button" class="kid-tile${isDone ? ' is-done' : ''}"
               data-toggle="${kid.id}.${task.id}" aria-pressed="${isDone}" aria-label="${kid.name}: ${task.label}">
-              <span class="emoji" aria-hidden="true">${task.emoji}</span><span class="label">${task.label}</span>
+              <span class="emoji">${taskIcon(task.id)}</span><span class="label">${task.label}</span>
             </button>`;
           }).join('')}
         </div>
