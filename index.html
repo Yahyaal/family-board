@@ -182,42 +182,51 @@
      the clock, the curve and the readings sit side by side and the curve takes
      whatever the other two leave. */
   .now-strip {
+    --side-col: auto;
     width: 100%; flex: 0 0 auto;
     display: flex; align-items: center; gap: 14px;
-    padding: 9px 16px; border-radius: 22px;
+    padding: 7px 14px; border-radius: 22px;
     background: var(--paper-panel); border: 1px solid var(--line); box-shadow: var(--shadow);
   }
-  .now-time { flex: 0 0 auto; }
+  .now-time { flex: 0 0 var(--side-col); }
   .now-clock { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.5rem, 2.9vw, 2.15rem); line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
   .now-clock .ampm { margin-left: 5px; font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 0.4em; color: var(--ink-soft); }
   .now-date { margin-top: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.02em; color: var(--ink-soft); white-space: nowrap; }
   .now-divider { flex-shrink: 0; width: 1px; align-self: stretch; margin: 4px 0; background: var(--line); }
-  /* The readings stack into the right-hand column so the widget stays as short
-     as the curve rather than as wide as a single line of them. */
-  .now-weather { flex: 0 0 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-  .now-weather.is-error { flex: 1; align-items: center; justify-content: center; font-size: 0.78rem; color: var(--ink-soft); }
-  .weather-strip-now { display: flex; align-items: center; gap: 11px; min-width: 0; }
-  .weather-strip-now > div { min-width: 0; } /* lets the condition ellipsis instead of overlapping */
-  .weather-strip-icon { font-size: clamp(1.5rem, 3vw, 2.05rem); line-height: 1; flex-shrink: 0; }
-  .weather-strip-temp { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+  /* Reading and forecast side by side, both filling the same height as the
+     curve opposite them — the column used to be a short block floating in a
+     tall card. */
+  .now-weather { flex: 0 0 var(--side-col); min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 13px; }
+  .now-weather.is-error { flex: 1 1 auto; justify-content: center; font-size: 0.78rem; color: var(--ink-soft); }
+  /* The icon rides with the condition rather than sitting in a column of its
+     own — a column the condition then had to fit around, which is how "Cloudy"
+     ended up as "Clou...". */
+  .weather-strip-read { flex: 0 0 auto; text-align: right; }
+  .weather-strip-icon { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
+  .weather-strip-temp { display: flex; align-items: baseline; justify-content: flex-end; gap: 8px; }
   .weather-strip-temp b { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.3rem, 2.6vw, 1.8rem); line-height: 1; }
-  .weather-strip-cond { display: block; margin-top: 3px; font-size: clamp(0.72rem, 1.4vw, 0.86rem); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .weather-strip-cond { display: flex; align-items: center; justify-content: flex-end; gap: 5px; margin-top: 3px; font-size: clamp(0.72rem, 1.4vw, 0.86rem); font-weight: 600; white-space: nowrap; }
   /* The trend sits under the hi/lo pill rather than under the condition: that
      column is sized by the pill, which is wider than the sentence, so it has
      room to spare where the condition column had none. */
-  .weather-strip-now { align-self: flex-end; }
-  .weather-strip-side { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-  .weather-strip-trend { white-space: nowrap; font-size: clamp(0.68rem, 1.2vw, 0.8rem); font-weight: 600; color: var(--ink); }
+  .weather-strip-trend { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; font-size: 0.7rem; color: var(--ink-soft); }
   .weather-strip-trend:empty { display: none; }
   .weather-strip-stats {
-    display: flex; align-items: center; gap: 11px; flex-shrink: 0; padding: 7px 14px; border-radius: 100px;
-    background: var(--paper); font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0;
+    padding: 5px 0 5px 12px; border-left: 1px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace; font-weight: 600; line-height: 1.35;
     font-size: clamp(0.88rem, 1.7vw, 1.1rem);
   }
+  .weather-strip-stats span { white-space: nowrap; font-variant-numeric: tabular-nums; }
   .weather-strip-stats .hi { color: var(--red); }
   .weather-strip-stats .lo { color: var(--dusk); }
   .weather-strip-stats .rain { color: #3E6E8E; }
-  .weather-strip-stats i { width: 1px; height: 1.05em; background: var(--line); }
+
+  /* Squaring the flanks up centres the curve but costs it width: 220px is what
+     the widest reading needs ("Thunderstorms" at three digits) against 118px of
+     clock. Above this there is room to pay that and still plot all six
+     readings; below it, the readings matter more than the symmetry. */
+  @media (min-width: 1800px) { .now-strip { --side-col: 220px; } }
 
   .temp-curve { flex: 1 1 auto; min-width: 0; }
   .temp-curve:empty { display: none; }
@@ -401,9 +410,8 @@
        up: clock, then the curve across the full width, then the readings. */
     .now-strip { width: 100%; flex-direction: column; align-items: stretch; gap: 5px; padding: 6px 12px 5px; border-radius: 16px; }
     .now-divider { display: none; }
-    .now-time { text-align: center; }
-    .now-weather { flex-direction: row; align-items: center; justify-content: center; gap: 10px; }
-    .weather-strip-now { align-self: auto; }
+    .now-time { flex: 0 0 auto; text-align: center; }
+    .now-weather { flex: 0 0 auto; justify-content: center; gap: 10px; }
     .weather-strip-trend { display: none; }
     /* Sharing the line with the hi/lo pill leaves the condition too little to
        spell itself; the icon beside the temperature already says "cloudy". */
@@ -655,6 +663,7 @@
                 <div class="now-time">
                   <div class="now-clock" id="clock">--:--<span class="ampm" id="ampm">AM</span></div>
                   <div class="now-date" id="dateline">Loading&hellip;</div>
+                  <div class="weather-strip-trend" id="weatherTrend"></div>
                 </div>
                 <div class="now-divider"></div>
                 <div class="temp-curve" id="tempCurve"></div>
@@ -1408,20 +1417,14 @@ function renderWeather() {
   clockEl.dataset.wx = weatherBackdrop(code);
   el.classList.remove('is-error');
   el.innerHTML = `
-    <div class="weather-strip-now">
-      <span class="weather-strip-icon" aria-hidden="true">${icon}</span>
-      <div>
-        <div class="weather-strip-temp"><b>${temp}°</b></div>
-        <div class="weather-strip-cond">${condition}</div>
-      </div>
+    <div class="weather-strip-read">
+      <div class="weather-strip-temp"><b>${temp}°</b></div>
+      <div class="weather-strip-cond"><span class="weather-strip-icon" aria-hidden="true">${icon}</span>${condition}</div>
     </div>
-    <div class="weather-strip-side">
-      <div class="weather-strip-stats">
-        <span class="hi">↑ ${high}°</span><i></i>
-        <span class="lo">↓ ${low}°</span><i></i>
-        <span class="rain">☂ ${rainChance}%</span>
-      </div>
-      <div class="weather-strip-trend" id="weatherTrend"></div>
+    <div class="weather-strip-stats">
+      <span class="hi">↑ ${high}°</span>
+      <span class="lo">↓ ${low}°</span>
+      <span class="rain">☂ ${rainChance}%</span>
     </div>`;
   const trend = renderTempCurve(temp, fake ? fake.temp - current.temperature_2m : 0);
   const trendEl = document.getElementById('weatherTrend');
