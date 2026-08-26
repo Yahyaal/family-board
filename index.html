@@ -179,12 +179,16 @@
   .morning-side-panel { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 16px; border-left: 1px solid var(--line); padding-left: 22px; }
 
   /* ---- compact weather strip: the numbers the clock backdrop can't spell out ---- */
+  /* One widget: the "right now" row and today's curve share a card, so the
+     two of them cost one border, one shadow and one set of padding instead of
+     two stacked blocks with a gap down the middle. */
   .now-strip {
     width: min(100%, max(530px, var(--clock-width, 620px))); flex: 0 0 auto;
-    display: flex; align-items: center; gap: 15px;
-    padding: 9px 18px 9px 17px; border-radius: 100px;
+    display: flex; flex-direction: column;
+    padding: 9px 17px 7px; border-radius: 22px;
     background: var(--paper-panel); border: 1px solid var(--line); box-shadow: var(--shadow);
   }
+  .now-row { display: flex; align-items: center; gap: 15px; }
   .now-time { flex-shrink: 0; }
   .now-clock { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.5rem, 2.9vw, 2.15rem); line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
   .now-clock .ampm { margin-left: 5px; font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 0.4em; color: var(--ink-soft); }
@@ -197,8 +201,13 @@
   .weather-strip-icon { font-size: clamp(1.5rem, 3vw, 2.05rem); line-height: 1; flex-shrink: 0; }
   .weather-strip-temp { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
   .weather-strip-temp b { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.3rem, 2.6vw, 1.8rem); line-height: 1; }
-  .weather-strip-cond { font-size: clamp(0.72rem, 1.4vw, 0.86rem); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .weather-strip-place { white-space: nowrap; font-family: 'IBM Plex Mono', monospace; font-size: 0.64rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-soft); margin-top: 3px; }
+  .weather-strip-cond { display: block; margin-top: 3px; font-size: clamp(0.72rem, 1.4vw, 0.86rem); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* The trend sits under the hi/lo pill rather than under the condition: that
+     column is sized by the pill, which is wider than the sentence, so it has
+     room to spare where the condition column had none. */
+  .weather-strip-side { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .weather-strip-trend { white-space: nowrap; font-size: clamp(0.68rem, 1.2vw, 0.8rem); font-weight: 600; color: var(--ink); }
+  .weather-strip-trend:empty { display: none; }
   .weather-strip-stats {
     display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding: 6px 12px; border-radius: 100px;
     background: var(--paper); font-family: 'IBM Plex Mono', monospace; font-weight: 500;
@@ -209,12 +218,9 @@
   .weather-strip-stats .rain { color: #3E6E8E; }
   .weather-strip-stats i { width: 1px; height: 13px; background: var(--line); }
 
-  .temp-curve { width: min(100%, max(530px, var(--clock-width, 620px))); flex: 0 0 auto; }
+  .temp-curve { width: 100%; flex: 0 0 auto; margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line); }
   .temp-curve:empty { display: none; }
   .temp-curve svg { display: block; width: 100%; height: auto; overflow: visible; }
-  .tc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 0 4px 2px; }
-  .tc-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.61rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-soft); }
-  .tc-note { font-size: clamp(0.68rem, 1.2vw, 0.82rem); font-weight: 600; color: var(--ink); }
   .tc-tick { font-family: 'IBM Plex Mono', monospace; font-size: 13px; fill: var(--ink-soft); opacity: 0.8; }
   .tc-val { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; fill: var(--ink); }
 
@@ -260,9 +266,9 @@
 
   /* Lunch reads as a row of chips under the dial — the emoji is the category,
      so the words are only ever the food itself. */
-  .menu-block { flex: 0 0 auto; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .menu-block { flex: 0 0 auto; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 9px; }
   .menu-title { margin: 0; font-family: 'Fraunces', serif; font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 1.1; flex: 0 1 auto; text-align: center; }
-  .menu-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .menu-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
   /* The heading doubles as the day stepper: peek at tomorrow's lunch without
      leaving the board, and it springs back to today on its own. */
   /* Arrows hug the title so the pair stays centred over the chips; the week
@@ -308,15 +314,15 @@
   .week-menu-day.is-today .week-menu-name { color: var(--ink); font-weight: 600; }
   .week-menu-name .when { font-weight: 400; letter-spacing: 0.04em; text-transform: none; }
   .week-menu-day .menu-row { justify-content: flex-start; gap: 6px; }
-  .week-menu-day .menu-chip { padding: 5px 12px 5px 9px; gap: 6px; }
+  .week-menu-day .menu-chip { padding: 5px 12px 5px 9px; gap: 6px; border-width: 2px; }
   .week-menu-day .menu-chip .food { font-size: 0.85rem; }
   .week-menu-day .menu-chip .emoji { font-size: 0.95rem; }
   .week-menu-empty { font-size: 0.8rem; color: var(--ink-soft); }
   /* Each category carries a colour as well as an emoji, so the four slots are
      tellable apart from across the kitchen. */
-  .menu-chip { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 16px 7px 12px; border-radius: 100px; background: #fff; border: 2px solid var(--cat); }
-  .menu-chip .emoji { font-size: 1.15rem; line-height: 1; flex-shrink: 0; }
-  .menu-chip .food { font-family: 'Fraunces', serif; font-size: clamp(0.92rem, 1.55vw, 1.2rem); line-height: 1.15; }
+  .menu-chip { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 10px 19px 10px 14px; border-radius: 100px; background: #fff; border: 2px solid var(--cat); }
+  .menu-chip .emoji { font-size: 1.35rem; line-height: 1; flex-shrink: 0; }
+  .menu-chip .food { font-family: 'Fraunces', serif; font-size: clamp(1rem, 1.75vw, 1.35rem); line-height: 1.15; }
   .menu-chip.is-empty { border-style: dashed; opacity: 0.5; }
   .morning-note { font-size: 0.68rem; color: var(--ink-soft); text-align: center; }
 
@@ -390,7 +396,21 @@
     .morning-layout { grid-template-columns: 42% 58%; gap: 12px; }
     .morning-side-panel { padding-left: 12px; gap: 10px; }
     .morning-clock-side { gap: 7px; padding: 2px; }
-    .now-strip { width: 100%; padding: 5px 12px; gap: 9px; }
+    .now-strip { width: 100%; padding: 6px 12px 5px; border-radius: 16px; }
+    /* 265px of column cannot hold the clock, the reading and the hi/lo pill on
+       one line, so the row wraps into two instead of crushing the condition to
+       nothing. The trend sentence goes — the curve below says the same thing. */
+    .now-row { gap: 4px 9px; flex-wrap: wrap; justify-content: center; }
+    .now-divider { display: none; }
+    .now-time, .now-weather { flex: 0 0 auto; }
+    .now-time { text-align: center; }
+    .now-weather { width: 100%; justify-content: center; gap: 10px; }
+    .weather-strip-trend { display: none; }
+    /* Sharing the line with the hi/lo pill leaves the condition too little to
+       spell itself; the icon beside the temperature already says "cloudy". */
+    .weather-strip-cond { display: none; }
+    .weather-strip-stats { gap: 5px; padding: 4px 8px; }
+    .weather-strip-icon { font-size: 1.25rem; }
     .now-clock { font-size: 1.35rem; }
     .weather-strip-stats { gap: 6px; padding: 4px 8px; }
     .menu-row { gap: 6px; }
@@ -634,14 +654,16 @@
           <div class="morning-layout">
             <div class="morning-clock-side">
               <div class="now-strip">
-                <div class="now-time">
-                  <div class="now-clock" id="clock">--:--<span class="ampm" id="ampm">AM</span></div>
-                  <div class="now-date" id="dateline">Loading&hellip;</div>
+                <div class="now-row">
+                  <div class="now-time">
+                    <div class="now-clock" id="clock">--:--<span class="ampm" id="ampm">AM</span></div>
+                    <div class="now-date" id="dateline">Loading&hellip;</div>
+                  </div>
+                  <div class="now-divider"></div>
+                  <div class="now-weather is-error" id="weatherStrip" aria-live="polite">Loading Tulsa weather…</div>
                 </div>
-                <div class="now-divider"></div>
-                <div class="now-weather is-error" id="weatherStrip" aria-live="polite">Loading Tulsa weather…</div>
+                <div class="temp-curve" id="tempCurve"></div>
               </div>
-              <div class="temp-curve" id="tempCurve"></div>
               <div class="clock-fit">
               <div class="analog-clock" id="morningClock" data-wx="partly" aria-label="Current time">
                 <svg viewBox="0 0 400 400" aria-hidden="true">
@@ -1280,7 +1302,7 @@ function tempColor(t) {
 function renderTempCurve(currentTemp, offset) {
   const el = document.getElementById('tempCurve');
   const hourly = liveWeather && liveWeather.hourly;
-  if (!hourly || !hourly.time) { el.innerHTML = ''; return; }
+  if (!hourly || !hourly.time) { el.innerHTML = ''; return ''; }
 
   const byHour = new Map();
   hourly.time.forEach((stamp, i) => {
@@ -1289,9 +1311,9 @@ function renderTempCurve(currentTemp, offset) {
     if (Number.isFinite(temp)) byHour.set(at.getHours(), { time: at, temp });
   });
   const points = [6, 9, 12, 15, 18, 21].map(h => byHour.get(h)).filter(Boolean);
-  if (points.length < 4) { el.innerHTML = ''; return; }
+  if (points.length < 4) { el.innerHTML = ''; return ''; }
 
-  const W = 620, LEFT = 34, RIGHT = 586, TOP = 32, BOTTOM = 72;
+  const W = 620, LEFT = 34, RIGHT = 586, TOP = 24, BOTTOM = 64;
   const temps = points.map(p => p.temp);
   const min = Math.min(...temps), max = Math.max(...temps);
   const span = Math.max(1, max - min);
@@ -1324,26 +1346,33 @@ function renderTempCurve(currentTemp, offset) {
   const rest = ahead.length ? ahead : points.slice(-1);
   const peak = rest.reduce((a, b) => (b.temp > a.temp ? b : a));
   const trough = rest.reduce((a, b) => (b.temp < a.temp ? b : a));
-  let note;
-  if (peak.temp - nowTemp >= 3) note = `Warming up — ${Math.round(peak.temp)}° by ${hourLabel(peak.time)}`;
-  else if (nowTemp - trough.temp >= 3) note = `Cooling off — ${Math.round(trough.temp)}° by ${hourLabel(trough.time)}`;
-  else note = `Holding around ${Math.round(nowTemp)}° the rest of the day`;
+  let note, spoken;
+  if (peak.temp - nowTemp >= 3) {
+    note = `Up to ${Math.round(peak.temp)}° by ${hourLabel(peak.time)}`;
+    spoken = `Warming up to ${Math.round(peak.temp)} degrees by ${hourLabel(peak.time)}`;
+  } else if (nowTemp - trough.temp >= 3) {
+    note = `Down to ${Math.round(trough.temp)}° by ${hourLabel(trough.time)}`;
+    spoken = `Cooling off to ${Math.round(trough.temp)} degrees by ${hourLabel(trough.time)}`;
+  } else {
+    note = `Steady near ${Math.round(nowTemp)}°`;
+    spoken = `Holding around ${Math.round(nowTemp)} degrees the rest of the day`;
+  }
 
   const gradient = points.map((p, i) =>
     `<stop offset="${((i / (points.length - 1)) * 100).toFixed(1)}%" stop-color="${tempColor(p.temp)}"/>`).join('');
 
   el.innerHTML = `
-    <div class="tc-head"><span class="tc-title">Daytime temp trend</span><span class="tc-note">${note}</span></div>
-    <svg viewBox="0 0 ${W} 90" role="img" aria-label="${note}">
+    <svg viewBox="0 0 ${W} 82" role="img" aria-label="Daytime temperature trend. ${spoken}">
       <defs><linearGradient id="tcLine" x1="0" y1="0" x2="1" y2="0">${gradient}</linearGradient></defs>
       <path d="${line}" fill="none" stroke="url(#tcLine)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
       ${points.map((p, i) => `
         <circle cx="${xOf(i).toFixed(1)}" cy="${yOf(p.temp).toFixed(1)}" r="4.2" fill="#FCFBF7" stroke="${tempColor(p.temp)}" stroke-width="2.6"/>
         <text class="tc-val" x="${xOf(i).toFixed(1)}" y="${(yOf(p.temp) - 11).toFixed(1)}" text-anchor="middle">${Math.round(p.temp)}°</text>
-        <text class="tc-tick" x="${xOf(i).toFixed(1)}" y="86" text-anchor="middle">${hourLabel(p.time)}</text>`).join('')}
+        <text class="tc-tick" x="${xOf(i).toFixed(1)}" y="78" text-anchor="middle">${hourLabel(p.time)}</text>`).join('')}
       ${inWindow ? `<circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="7" fill="none" stroke="#2F7D5B" stroke-width="2.4"/>
         <circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="3" fill="#2F7D5B"/>` : ''}
     </svg>`;
+  return note; // the strip above shows it, so the curve needs no heading
 }
 
 function renderWeather() {
@@ -1369,16 +1398,21 @@ function renderWeather() {
     <div class="weather-strip-now">
       <span class="weather-strip-icon" aria-hidden="true">${icon}</span>
       <div>
-        <div class="weather-strip-temp"><b>${temp}°</b><span class="weather-strip-cond">${condition}</span></div>
-        <div class="weather-strip-place">Tulsa weather</div>
+        <div class="weather-strip-temp"><b>${temp}°</b></div>
+        <div class="weather-strip-cond">${condition}</div>
       </div>
     </div>
-    <div class="weather-strip-stats">
-      <span class="hi">↑ ${high}°</span><i></i>
-      <span class="lo">↓ ${low}°</span><i></i>
-      <span class="rain">☂ ${rainChance}%</span>
+    <div class="weather-strip-side">
+      <div class="weather-strip-stats">
+        <span class="hi">↑ ${high}°</span><i></i>
+        <span class="lo">↓ ${low}°</span><i></i>
+        <span class="rain">☂ ${rainChance}%</span>
+      </div>
+      <div class="weather-strip-trend" id="weatherTrend"></div>
     </div>`;
-  renderTempCurve(temp, fake ? fake.temp - current.temperature_2m : 0);
+  const trend = renderTempCurve(temp, fake ? fake.temp - current.temperature_2m : 0);
+  const trendEl = document.getElementById('weatherTrend');
+  if (trendEl) trendEl.textContent = trend;
 }
 
 async function fetchWeather() {
