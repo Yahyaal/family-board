@@ -219,6 +219,8 @@
   .weather-strip-stats .hi { color: var(--red); }
   .weather-strip-stats .lo { color: var(--dusk); }
   .weather-strip-stats .rain { color: #3E6E8E; }
+  /* The umbrella glyph draws smaller than the arrows at the same font size. */
+  .weather-strip-stats .mark { font-size: 1.35em; line-height: 1; vertical-align: -0.06em; }
 
   /* With the description moved onto the dial the flanks come out at 118px and
      129px, so squaring them up costs the curve almost nothing and it can stay
@@ -405,12 +407,18 @@
     .morning-layout { grid-template-columns: 42% 58%; gap: 12px; }
     .morning-side-panel { padding-left: 12px; gap: 10px; }
     .morning-clock-side { gap: 7px; padding: 2px; }
-    /* 265px of column will not take three columns, so the widget stacks back
-       up: clock, then the curve across the full width, then the readings. */
-    .now-strip { width: 100%; flex-direction: column; align-items: stretch; gap: 5px; padding: 6px 12px 5px; border-radius: 16px; }
+    /* Too narrow for three columns, so it folds to two rows: clock and reading
+       share the top, the curve gets the full width underneath. Ordering rather
+       than restacking, so the markup stays in reading order. */
+    .now-strip {
+      --side-col: auto;
+      width: 100%; flex-wrap: wrap; justify-content: space-between;
+      gap: 6px 10px; padding: 6px 12px 5px; border-radius: 16px;
+    }
     .now-divider { display: none; }
-    .now-time { flex: 0 0 auto; text-align: center; }
-    .now-weather { flex: 0 0 auto; justify-content: center; gap: 10px; }
+    .now-time { order: 1; flex: 0 0 auto; }
+    .now-weather { order: 2; flex: 0 0 auto; justify-content: flex-end; gap: 10px; }
+    .temp-curve { order: 3; flex: 0 0 100%; }
     .weather-strip-trend { display: none; }
     .now-clock { font-size: 1.35rem; }
     .weather-strip-stats { gap: 6px; padding: 4px 8px; }
@@ -427,6 +435,20 @@
     .kid-tile { padding: 7px 2px 6px; gap: 4px; border-radius: 11px; }
     .as-item { padding: 7px 9px; gap: 8px; }
     .as-icon { width: 32px; height: 32px; font-size: 1.05rem; border-radius: 10px; }
+  }
+
+  /* Turn the screen and the two columns become one, checklists under the clock,
+     the whole thing scrolling. The dial needs an explicit height here: its
+     wrapper is a size container, which takes its measurements from its parent,
+     and a scrolling column has no height of its own to give it. */
+  @media (orientation: portrait) {
+    .morning-layout { grid-template-columns: 1fr; grid-auto-rows: min-content; gap: 16px; overflow-y: auto; overflow-x: hidden; }
+    .morning-clock-side { padding: 2px 4px; }
+    .morning-side-panel {
+      border-left: none; padding-left: 0;
+      border-top: 1px solid var(--line); padding-top: 16px;
+    }
+    .clock-fit { flex: 0 0 auto; height: min(62vw, 44vh); }
   }
 
   .panel-footnote { font-size: 0.75rem; color: var(--ink-soft); margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); flex-shrink: 0; }
@@ -1425,7 +1447,7 @@ function renderWeather() {
     <div class="weather-strip-stats">
       <span class="hi">↑ ${high}°</span>
       <span class="lo">↓ ${low}°</span>
-      <span class="rain">☂ ${rainChance}%</span>
+      <span class="rain"><span class="mark">☂</span> ${rainChance}%</span>
     </div>`;
   const trend = renderTempCurve(temp, fake ? fake.temp - current.temperature_2m : 0);
   const trendEl = document.getElementById('weatherTrend');
