@@ -182,10 +182,10 @@
      the clock, the curve and the readings sit side by side and the curve takes
      whatever the other two leave. */
   .now-strip {
-    --side-col: 132px;
+    --side-col: 120px;
     width: 100%; flex: 0 0 auto;
-    display: flex; align-items: center; gap: 14px;
-    padding: 7px 14px; border-radius: 22px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 7px 12px; border-radius: 22px;
     background: var(--paper-panel); border: 1px solid var(--line); box-shadow: var(--shadow);
   }
   .now-time { flex: 0 0 var(--side-col); }
@@ -196,7 +196,7 @@
   /* Reading and forecast side by side, both filling the same height as the
      curve opposite them — the column used to be a short block floating in a
      tall card. */
-  .now-weather { flex: 0 0 var(--side-col); min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 13px; }
+  .now-weather { flex: 0 0 var(--side-col); min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 11px; }
   .now-weather.is-error { flex: 1 1 auto; justify-content: center; font-size: 0.78rem; color: var(--ink-soft); }
   /* The icon rides with the condition rather than sitting in a column of its
      own — a column the condition then had to fit around, which is how "Cloudy"
@@ -207,11 +207,8 @@
   /* The trend sits under the hi/lo pill rather than under the condition: that
      column is sized by the pill, which is wider than the sentence, so it has
      room to spare where the condition column had none. */
-  .weather-strip-trend { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; font-size: 0.7rem; color: var(--ink-soft); }
-  .weather-strip-trend:empty { display: none; }
   .weather-strip-stats {
     display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0;
-    padding: 5px 0 5px 12px; border-left: 1px solid var(--line);
     font-family: 'IBM Plex Mono', monospace; font-weight: 600; line-height: 1.35;
     font-size: clamp(0.88rem, 1.7vw, 1.1rem);
   }
@@ -419,7 +416,6 @@
     .now-time { order: 1; flex: 0 0 auto; }
     .now-weather { order: 2; flex: 0 0 auto; justify-content: flex-end; gap: 10px; }
     .temp-curve { order: 3; flex: 0 0 100%; }
-    .weather-strip-trend { display: none; }
     .now-clock { font-size: 1.35rem; }
     .weather-strip-stats { gap: 6px; padding: 4px 8px; }
     .menu-row { gap: 6px; }
@@ -680,7 +676,6 @@
                 <div class="now-time">
                   <div class="now-clock" id="clock">--:--<span class="ampm" id="ampm">AM</span></div>
                   <div class="now-date" id="dateline">Loading&hellip;</div>
-                  <div class="weather-strip-trend" id="weatherTrend"></div>
                 </div>
                 <div class="now-divider"></div>
                 <div class="temp-curve" id="tempCurve"></div>
@@ -1338,7 +1333,7 @@ function tempColor(t) {
 function renderTempCurve(currentTemp, offset) {
   const el = document.getElementById('tempCurve');
   const hourly = liveWeather && liveWeather.hourly;
-  if (!hourly || !hourly.time) { el.innerHTML = ''; return ''; }
+  if (!hourly || !hourly.time) { el.innerHTML = ''; return; }
 
   const byHour = new Map();
   hourly.time.forEach((stamp, i) => {
@@ -1357,7 +1352,7 @@ function renderTempCurve(currentTemp, offset) {
     ? [6, 9, 12, 15, 18, 21]
     : [6, 11, 16, 21];
   const points = hours.map(h => byHour.get(h)).filter(Boolean);
-  if (points.length < 4) { el.innerHTML = ''; return ''; }
+  if (points.length < 4) { el.innerHTML = ''; return; }
 
   const temps = points.map(p => p.temp);
   const min = Math.min(...temps), max = Math.max(...temps);
@@ -1391,17 +1386,12 @@ function renderTempCurve(currentTemp, offset) {
   const rest = ahead.length ? ahead : points.slice(-1);
   const peak = rest.reduce((a, b) => (b.temp > a.temp ? b : a));
   const trough = rest.reduce((a, b) => (b.temp < a.temp ? b : a));
-  let note, spoken;
-  if (peak.temp - nowTemp >= 3) {
-    note = `Up to ${Math.round(peak.temp)}° by ${hourLabel(peak.time)}`;
-    spoken = `Warming up to ${Math.round(peak.temp)} degrees by ${hourLabel(peak.time)}`;
-  } else if (nowTemp - trough.temp >= 3) {
-    note = `Down to ${Math.round(trough.temp)}° by ${hourLabel(trough.time)}`;
-    spoken = `Cooling off to ${Math.round(trough.temp)} degrees by ${hourLabel(trough.time)}`;
-  } else {
-    note = `Steady near ${Math.round(nowTemp)}°`;
-    spoken = `Holding around ${Math.round(nowTemp)} degrees the rest of the day`;
-  }
+  /* Only a screen reader hears this now — sighted readers get the shape of the
+     day from the curve itself. */
+  let spoken;
+  if (peak.temp - nowTemp >= 3) spoken = `Warming up to ${Math.round(peak.temp)} degrees by ${hourLabel(peak.time)}`;
+  else if (nowTemp - trough.temp >= 3) spoken = `Cooling off to ${Math.round(trough.temp)} degrees by ${hourLabel(trough.time)}`;
+  else spoken = `Holding around ${Math.round(nowTemp)} degrees the rest of the day`;
 
   const gradient = points.map((p, i) =>
     `<stop offset="${((i / (points.length - 1)) * 100).toFixed(1)}%" stop-color="${tempColor(p.temp)}"/>`).join('');
@@ -1417,7 +1407,6 @@ function renderTempCurve(currentTemp, offset) {
       ${inWindow ? `<circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="7" fill="none" stroke="#2F7D5B" stroke-width="2.4"/>
         <circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="3" fill="#2F7D5B"/>` : ''}
     </svg>`;
-  return note; // the strip above shows it, so the curve needs no heading
 }
 
 function renderWeather() {
@@ -1449,9 +1438,7 @@ function renderWeather() {
       <span class="lo">↓ ${low}°</span>
       <span class="rain"><span class="mark">☂</span> ${rainChance}%</span>
     </div>`;
-  const trend = renderTempCurve(temp, fake ? fake.temp - current.temperature_2m : 0);
-  const trendEl = document.getElementById('weatherTrend');
-  if (trendEl) trendEl.textContent = trend;
+  renderTempCurve(temp, fake ? fake.temp - current.temperature_2m : 0);
 }
 
 async function fetchWeather() {
