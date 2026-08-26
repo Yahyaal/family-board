@@ -78,14 +78,16 @@
   .tab-panel { display: none; flex-direction: column; height: 100%; min-height: 0; }
   .tab-panel.active { display: flex; }
 
+  /* Only ever on screen while the data is fake — connected, the label just
+     repeated the name of the tab it was sitting in. */
   .eyebrow-tag {
     display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
     font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; font-weight: 500;
-    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
-    background: var(--dusk-soft); padding: 4px 10px; border-radius: 6px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    background: #F1DEB4; color: #6b4f1c; padding: 4px 10px; border-radius: 6px;
     margin-bottom: 12px; flex-shrink: 0;
   }
-  .eyebrow-tag.demo { background: #F1DEB4; color: #6b4f1c; }
+  .eyebrow-tag.is-hidden { display: none; }
 
   ::-webkit-scrollbar { width: 7px; height: 7px; }
   ::-webkit-scrollbar-thumb { background: #cfd4c9; border-radius: 6px; }
@@ -176,42 +178,57 @@
   .morning-side-panel { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 16px; border-left: 1px solid var(--line); padding-left: 22px; }
 
   /* ---- compact weather strip: the numbers the clock backdrop can't spell out ---- */
+  /* One widget, three columns: the board has far more width than height, so
+     the clock, the curve and the readings sit side by side and the curve takes
+     whatever the other two leave. */
   .now-strip {
-    width: min(100%, max(530px, var(--clock-width, 620px))); flex: 0 0 auto;
-    display: flex; align-items: center; gap: 15px;
-    padding: 9px 18px 9px 17px; border-radius: 100px;
+    --side-col: 132px;
+    width: 100%; flex: 0 0 auto;
+    display: flex; align-items: center; gap: 14px;
+    padding: 7px 14px; border-radius: 22px;
     background: var(--paper-panel); border: 1px solid var(--line); box-shadow: var(--shadow);
   }
-  .now-time { flex-shrink: 0; }
+  .now-time { flex: 0 0 var(--side-col); }
   .now-clock { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.5rem, 2.9vw, 2.15rem); line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
   .now-clock .ampm { margin-left: 5px; font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 0.4em; color: var(--ink-soft); }
   .now-date { margin-top: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.02em; color: var(--ink-soft); white-space: nowrap; }
-  .now-divider { flex-shrink: 0; width: 1px; align-self: stretch; margin: 2px 0; background: var(--line); }
-  .now-weather { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .now-weather.is-error { justify-content: center; font-size: 0.78rem; color: var(--ink-soft); }
-  .weather-strip-now { display: flex; align-items: center; gap: 11px; min-width: 0; }
-  .weather-strip-now > div { min-width: 0; } /* lets the condition ellipsis instead of overlapping */
-  .weather-strip-icon { font-size: clamp(1.5rem, 3vw, 2.05rem); line-height: 1; flex-shrink: 0; }
-  .weather-strip-temp { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
-  .weather-strip-temp b { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.3rem, 2.6vw, 1.8rem); line-height: 1; }
-  .weather-strip-cond { font-size: clamp(0.72rem, 1.4vw, 0.86rem); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .weather-strip-place { white-space: nowrap; font-family: 'IBM Plex Mono', monospace; font-size: 0.64rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-soft); margin-top: 3px; }
+  .now-divider { flex-shrink: 0; width: 1px; align-self: stretch; margin: 4px 0; background: var(--line); }
+  /* Reading and forecast side by side, both filling the same height as the
+     curve opposite them — the column used to be a short block floating in a
+     tall card. */
+  .now-weather { flex: 0 0 var(--side-col); min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 13px; }
+  .now-weather.is-error { flex: 1 1 auto; justify-content: center; font-size: 0.78rem; color: var(--ink-soft); }
+  /* The icon rides with the condition rather than sitting in a column of its
+     own — a column the condition then had to fit around, which is how "Cloudy"
+     ended up as "Clou...". */
+  .weather-strip-read { flex: 0 0 auto; text-align: right; }
+  .weather-strip-temp { display: flex; align-items: baseline; justify-content: flex-end; gap: 8px; }
+  .weather-strip-temp b { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.35rem, 2.8vw, 2rem); line-height: 1; }
+  /* The trend sits under the hi/lo pill rather than under the condition: that
+     column is sized by the pill, which is wider than the sentence, so it has
+     room to spare where the condition column had none. */
+  .weather-strip-trend { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; font-size: 0.7rem; color: var(--ink-soft); }
+  .weather-strip-trend:empty { display: none; }
   .weather-strip-stats {
-    display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding: 6px 12px; border-radius: 100px;
-    background: var(--paper); font-family: 'IBM Plex Mono', monospace; font-weight: 500;
-    font-size: clamp(0.68rem, 1.3vw, 0.8rem);
+    display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0;
+    padding: 5px 0 5px 12px; border-left: 1px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace; font-weight: 600; line-height: 1.35;
+    font-size: clamp(0.88rem, 1.7vw, 1.1rem);
   }
+  .weather-strip-stats span { white-space: nowrap; font-variant-numeric: tabular-nums; }
   .weather-strip-stats .hi { color: var(--red); }
   .weather-strip-stats .lo { color: var(--dusk); }
   .weather-strip-stats .rain { color: #3E6E8E; }
-  .weather-strip-stats i { width: 1px; height: 13px; background: var(--line); }
+  /* The umbrella glyph draws smaller than the arrows at the same font size. */
+  .weather-strip-stats .mark { font-size: 1.35em; line-height: 1; vertical-align: -0.06em; }
 
-  .temp-curve { width: min(100%, max(530px, var(--clock-width, 620px))); flex: 0 0 auto; }
+  /* With the description moved onto the dial the flanks come out at 118px and
+     129px, so squaring them up costs the curve almost nothing and it can stay
+     centred at every width. */
+
+  .temp-curve { flex: 1 1 auto; min-width: 0; }
   .temp-curve:empty { display: none; }
   .temp-curve svg { display: block; width: 100%; height: auto; overflow: visible; }
-  .tc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 0 4px 2px; }
-  .tc-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.61rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-soft); }
-  .tc-note { font-size: clamp(0.68rem, 1.2vw, 0.82rem); font-weight: 600; color: var(--ink); }
   .tc-tick { font-family: 'IBM Plex Mono', monospace; font-size: 13px; fill: var(--ink-soft); opacity: 0.8; }
   .tc-val { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; fill: var(--ink); }
 
@@ -225,6 +242,9 @@
   @media (prefers-reduced-motion: reduce) { .clock-band.is-urgent { animation: none; } }
   .clock-num { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 23px; fill: var(--ink); stroke: rgba(255, 255, 255, 0.85); stroke-width: 5px; paint-order: stroke fill; }
   .clock-num.n12 { font-size: 26px; }
+  /* The dial already draws the weather; the words for it belong here too,
+     rather than costing the widget a column. */
+  .clock-condition { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 21px; fill: var(--ink); stroke: rgba(255, 255, 255, 0.85); stroke-width: 4.5px; paint-order: stroke fill; }
   .clock-hand { stroke-linecap: round; transform-box: view-box; transform-origin: 200px 200px; }
   .clock-hand.hour { stroke: var(--ink); stroke-width: 7; }
   .clock-hand.minute { stroke: var(--ink-soft); stroke-width: 5; }
@@ -257,14 +277,63 @@
 
   /* Lunch reads as a row of chips under the dial — the emoji is the category,
      so the words are only ever the food itself. */
-  .menu-block { flex: 0 0 auto; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .menu-title { margin: 0; font-family: 'Fraunces', serif; font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 1.1; }
-  .menu-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .menu-block { flex: 0 0 auto; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+  .menu-title { margin: 0; font-family: 'Fraunces', serif; font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 1.1; flex: 0 1 auto; text-align: center; }
+  .menu-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+  /* The heading doubles as the day stepper: peek at tomorrow's lunch without
+     leaving the board, and it springs back to today on its own. */
+  /* Arrows hug the title so the pair stays centred over the chips; the week
+     button is parked on the right rather than pushing the title off-centre. */
+  .menu-head { position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+  .menu-nav {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    -webkit-tap-highlight-color: transparent; transition: background 0.15s ease, opacity 0.15s ease;
+  }
+  .menu-nav svg { width: 17px; height: 17px; }
+  .menu-nav:hover { background: var(--paper); }
+  .menu-nav:disabled { opacity: 0.25; cursor: default; }
+  .menu-week-btn {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    padding: 5px 11px; border-radius: 100px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.63rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .menu-week-btn:hover { background: #fff; color: var(--ink); }
+
+  /* The whole week goes in an overlay rather than the column — the left side
+     is already tight at 768px tall and a five-day table would not fit. */
+  #menuWeekOverlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(20, 22, 20, 0.45);
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  #menuWeekOverlay.active { display: flex; }
+  .settings-card.menu-week-card { max-width: 640px; padding: 24px 24px 22px; }
+  .week-menu-list { display: flex; flex-direction: column; gap: 8px; }
+  .week-menu-day { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+  .week-menu-day.is-today { border-color: var(--ink); background: var(--paper); }
+  .week-menu-name {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-soft); margin-bottom: 7px;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .week-menu-day.is-today .week-menu-name { color: var(--ink); font-weight: 600; }
+  .week-menu-name .when { font-weight: 400; letter-spacing: 0.04em; text-transform: none; }
+  .week-menu-day .menu-row { justify-content: flex-start; gap: 6px; }
+  .week-menu-day .menu-chip { padding: 5px 12px 5px 9px; gap: 6px; border-width: 2px; }
+  .week-menu-day .menu-chip .food { font-size: 0.85rem; }
+  .week-menu-day .menu-chip .emoji { font-size: 0.95rem; }
+  .week-menu-empty { font-size: 0.8rem; color: var(--ink-soft); }
   /* Each category carries a colour as well as an emoji, so the four slots are
      tellable apart from across the kitchen. */
-  .menu-chip { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 16px 7px 12px; border-radius: 100px; background: #fff; border: 2px solid var(--cat); }
-  .menu-chip .emoji { font-size: 1.15rem; line-height: 1; flex-shrink: 0; }
-  .menu-chip .food { font-family: 'Fraunces', serif; font-size: clamp(0.92rem, 1.55vw, 1.2rem); line-height: 1.15; }
+  .menu-chip { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 10px 19px 10px 14px; border-radius: 100px; background: #fff; border: 2px solid var(--cat); }
+  .menu-chip .emoji { font-size: 1.35rem; line-height: 1; flex-shrink: 0; }
+  .menu-chip .food { font-family: 'Fraunces', serif; font-size: clamp(1rem, 1.75vw, 1.35rem); line-height: 1.15; }
   .menu-chip.is-empty { border-style: dashed; opacity: 0.5; }
   .morning-note { font-size: 0.68rem; color: var(--ink-soft); text-align: center; }
 
@@ -338,17 +407,48 @@
     .morning-layout { grid-template-columns: 42% 58%; gap: 12px; }
     .morning-side-panel { padding-left: 12px; gap: 10px; }
     .morning-clock-side { gap: 7px; padding: 2px; }
-    .now-strip { width: 100%; padding: 5px 12px; gap: 9px; }
+    /* Too narrow for three columns, so it folds to two rows: clock and reading
+       share the top, the curve gets the full width underneath. Ordering rather
+       than restacking, so the markup stays in reading order. */
+    .now-strip {
+      --side-col: auto;
+      width: 100%; flex-wrap: wrap; justify-content: space-between;
+      gap: 6px 10px; padding: 6px 12px 5px; border-radius: 16px;
+    }
+    .now-divider { display: none; }
+    .now-time { order: 1; flex: 0 0 auto; }
+    .now-weather { order: 2; flex: 0 0 auto; justify-content: flex-end; gap: 10px; }
+    .temp-curve { order: 3; flex: 0 0 100%; }
+    .weather-strip-trend { display: none; }
     .now-clock { font-size: 1.35rem; }
     .weather-strip-stats { gap: 6px; padding: 4px 8px; }
     .menu-row { gap: 6px; }
     .menu-chip { padding: 5px 11px 5px 8px; gap: 6px; }
+    /* Too narrow to park the week button beside the title without overlapping
+       it, so it drops onto its own line. */
+    .menu-head { flex-wrap: wrap; }
+    .menu-week-btn { position: static; transform: none; margin: 2px auto 0; }
+    .menu-nav { width: 30px; height: 30px; }
     .kid-grid { gap: 7px; }
     .kid-card { padding: 8px 8px 9px; }
     .kid-tiles { gap: 5px; }
     .kid-tile { padding: 7px 2px 6px; gap: 4px; border-radius: 11px; }
     .as-item { padding: 7px 9px; gap: 8px; }
     .as-icon { width: 32px; height: 32px; font-size: 1.05rem; border-radius: 10px; }
+  }
+
+  /* Turn the screen and the two columns become one, checklists under the clock,
+     the whole thing scrolling. The dial needs an explicit height here: its
+     wrapper is a size container, which takes its measurements from its parent,
+     and a scrolling column has no height of its own to give it. */
+  @media (orientation: portrait) {
+    .morning-layout { grid-template-columns: 1fr; grid-auto-rows: min-content; gap: 16px; overflow-y: auto; overflow-x: hidden; }
+    .morning-clock-side { padding: 2px 4px; }
+    .morning-side-panel {
+      border-left: none; padding-left: 0;
+      border-top: 1px solid var(--line); padding-top: 16px;
+    }
+    .clock-fit { flex: 0 0 auto; height: min(62vw, 44vh); }
   }
 
   .panel-footnote { font-size: 0.75rem; color: var(--ink-soft); margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); flex-shrink: 0; }
@@ -552,18 +652,18 @@
 
       <div class="tab-panels">
         <div class="tab-panel" id="tab-calendar">
-          <div class="eyebrow-tag demo" id="calendarEyebrow">Demo data</div>
+          <div class="eyebrow-tag" id="calendarEyebrow">Demo data</div>
           <div class="week-agenda" id="weekAgenda"></div>
           <div class="week-lanes" id="weekLanes"></div>
         </div>
 
         <div class="tab-panel" id="tab-tasks">
-          <div class="eyebrow-tag demo" id="tasksEyebrow">Demo data</div>
+          <div class="eyebrow-tag" id="tasksEyebrow">Demo data</div>
           <div class="task-lanes" id="taskLanes"></div>
         </div>
 
         <div class="tab-panel" id="tab-grocery">
-          <div class="eyebrow-tag demo" id="groceryEyebrow">Demo data</div>
+          <div class="eyebrow-tag" id="groceryEyebrow">Demo data</div>
           <form class="grocery-add" id="groceryAddForm">
             <input name="item" id="groceryItemInput" aria-label="Grocery item" placeholder="Add an item" autocomplete="off">
             <input name="qty" id="groceryQtyInput" aria-label="Quantity" placeholder="Qty" autocomplete="off">
@@ -574,18 +674,19 @@
         </div>
 
         <div class="tab-panel active" id="tab-mornings">
-          <div class="eyebrow-tag demo" id="morningsEyebrow">Demo data</div>
           <div class="morning-layout">
             <div class="morning-clock-side">
               <div class="now-strip">
                 <div class="now-time">
                   <div class="now-clock" id="clock">--:--<span class="ampm" id="ampm">AM</span></div>
                   <div class="now-date" id="dateline">Loading&hellip;</div>
+                  <div class="weather-strip-trend" id="weatherTrend"></div>
                 </div>
+                <div class="now-divider"></div>
+                <div class="temp-curve" id="tempCurve"></div>
                 <div class="now-divider"></div>
                 <div class="now-weather is-error" id="weatherStrip" aria-live="polite">Loading Tulsa weather…</div>
               </div>
-              <div class="temp-curve" id="tempCurve"></div>
               <div class="clock-fit">
               <div class="analog-clock" id="morningClock" data-wx="partly" aria-label="Current time">
                 <svg viewBox="0 0 400 400" aria-hidden="true">
@@ -671,6 +772,7 @@
                   <line id="departureTick" stroke="#B02D16" stroke-width="3" stroke-linecap="round"/>
 
                   <g id="clockNumbers"></g>
+                  <text class="clock-condition" id="clockCondition" x="200" y="268" text-anchor="middle" dominant-baseline="central"></text>
 
                   <line class="clock-hand hour"   id="morningHourHand"   x1="200" y1="216" x2="200" y2="118"/>
                   <line class="clock-hand minute" id="morningMinuteHand" x1="200" y1="220" x2="200" y2="70"/>
@@ -681,7 +783,16 @@
               </div>
               </div>
               <div class="menu-block">
-                <h2 class="menu-title">Today’s Lunch</h2>
+                <div class="menu-head">
+                  <button type="button" class="menu-nav" id="menuPrevDay" aria-label="Previous day">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+                  </button>
+                  <h2 class="menu-title" id="morningMenuTitle">Today’s Lunch</h2>
+                  <button type="button" class="menu-nav" id="menuNextDay" aria-label="Next day">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+                  </button>
+                  <button type="button" class="menu-week-btn" id="menuWeekBtn">Week</button>
+                </div>
                 <div class="menu-row" id="morningMenu"></div>
                 <div class="morning-note" id="morningMenuNote"></div>
               </div>
@@ -762,6 +873,16 @@
     <div class="settings-actions">
       <button class="btn-secondary" id="avatarResetBtn">Use the built-in one</button>
     </div>
+  </div>
+</div>
+
+<!-- ================= WEEK OF LUNCHES ================= -->
+<div id="menuWeekOverlay">
+  <div class="settings-card menu-week-card" style="position:relative;">
+    <button class="pill-btn settings-close" id="closeMenuWeekBtn">Close</button>
+    <h3>Lunches this week</h3>
+    <p class="sub" id="menuWeekNote">Straight from the Mornings sheet — one row per weekday.</p>
+    <div class="week-menu-list" id="menuWeekList"></div>
   </div>
 </div>
 
@@ -927,7 +1048,7 @@ let liveEvents = null;   // array or null (null = not fetched yet / not connecte
 let liveCalendars = null;// calendars visible to the signed-in account
 let liveTasks = null;    // array of {label, who, done, taskId, tasklistId}
 let liveGroceries = null;// array of {label, qty, done, rowNumber}
-let liveMorningMenu = null;// {main, veggie, fruit, extra} for today's row
+let liveMorningMenus = null;// {weekday: {main, veggie, fruit, extra}} for the whole sheet
 let liveWeather = null;  // Tulsa conditions from Open-Meteo
 
 let accessToken = null;
@@ -974,7 +1095,7 @@ function tick() {
     checklist = loadChecklist();
     renderChecklists();
     renderAfterSchool();
-    renderMorningMenu();
+    setMenuDayOffset(0); // a new day always opens on its own lunch
   }
 }
 
@@ -1138,12 +1259,18 @@ function updateMorningClock(now = boardNow()) {
 }
 
 buildClockFace();
-/* Keep the weather strip exactly as wide as the dial it sits above. */
+/* The curve draws itself in real pixels, so a column that changes width has to
+   draw it again — otherwise it keeps the geometry of the old size. Guarded on
+   the width actually changing, since rendering into the element would
+   otherwise notify this observer straight back. */
 if (window.ResizeObserver) {
-  const side = document.querySelector('.morning-clock-side');
+  let lastCurveWidth = 0;
   new ResizeObserver(entries => {
-    side.style.setProperty('--clock-width', `${Math.round(entries[0].contentRect.width)}px`);
-  }).observe(clockEl);
+    const width = Math.round(entries[0].contentRect.width);
+    if (width === lastCurveWidth) return;
+    lastCurveWidth = width;
+    if (liveWeather) renderWeather();
+  }).observe(document.getElementById('tempCurve'));
 }
 
 /* =========================================================================
@@ -1202,10 +1329,16 @@ function tempColor(t) {
 /* Today's temperatures as a labelled curve: six sampled hours, each with its
    own reading, plus a marker for right now. The hourly block was already
    being fetched and thrown away. */
+/* The viewBox is sized in real pixels rather than a fixed 620, so the SVG
+   never scales: "88°" is 17px whether the curve gets a third of a wide board
+   or the full width of a narrow one. The trade is that a narrow curve has
+   fewer pixels between readings, so it drops to four sampled hours instead of
+   six rather than letting the labels collide. */
+
 function renderTempCurve(currentTemp, offset) {
   const el = document.getElementById('tempCurve');
   const hourly = liveWeather && liveWeather.hourly;
-  if (!hourly || !hourly.time) { el.innerHTML = ''; return; }
+  if (!hourly || !hourly.time) { el.innerHTML = ''; return ''; }
 
   const byHour = new Map();
   hourly.time.forEach((stamp, i) => {
@@ -1213,10 +1346,19 @@ function renderTempCurve(currentTemp, offset) {
     const temp = hourly.temperature_2m[i] + offset;
     if (Number.isFinite(temp)) byHour.set(at.getHours(), { time: at, temp });
   });
-  const points = [6, 9, 12, 15, 18, 21].map(h => byHour.get(h)).filter(Boolean);
-  if (points.length < 4) { el.innerHTML = ''; return; }
 
-  const W = 620, LEFT = 34, RIGHT = 586, TOP = 32, BOTTOM = 72;
+  const W = Math.max(200, Math.round(el.clientWidth) || 380);
+  const LEFT = 22, RIGHT = W - 22, TOP = 24, BOTTOM = 64;
+  /* A "103°" label is a third wider than "88°", so how many readings fit
+     depends on the day and not just on the width. Roughly 10px a digit at the
+     17px label size, plus room to breathe between neighbours. */
+  const digits = Math.max(...[...byHour.values()].map(p => String(Math.round(p.temp)).length));
+  const hours = (RIGHT - LEFT) / 5 >= digits * 10 + 20
+    ? [6, 9, 12, 15, 18, 21]
+    : [6, 11, 16, 21];
+  const points = hours.map(h => byHour.get(h)).filter(Boolean);
+  if (points.length < 4) { el.innerHTML = ''; return ''; }
+
   const temps = points.map(p => p.temp);
   const min = Math.min(...temps), max = Math.max(...temps);
   const span = Math.max(1, max - min);
@@ -1249,26 +1391,33 @@ function renderTempCurve(currentTemp, offset) {
   const rest = ahead.length ? ahead : points.slice(-1);
   const peak = rest.reduce((a, b) => (b.temp > a.temp ? b : a));
   const trough = rest.reduce((a, b) => (b.temp < a.temp ? b : a));
-  let note;
-  if (peak.temp - nowTemp >= 3) note = `Warming up — ${Math.round(peak.temp)}° by ${hourLabel(peak.time)}`;
-  else if (nowTemp - trough.temp >= 3) note = `Cooling off — ${Math.round(trough.temp)}° by ${hourLabel(trough.time)}`;
-  else note = `Holding around ${Math.round(nowTemp)}° the rest of the day`;
+  let note, spoken;
+  if (peak.temp - nowTemp >= 3) {
+    note = `Up to ${Math.round(peak.temp)}° by ${hourLabel(peak.time)}`;
+    spoken = `Warming up to ${Math.round(peak.temp)} degrees by ${hourLabel(peak.time)}`;
+  } else if (nowTemp - trough.temp >= 3) {
+    note = `Down to ${Math.round(trough.temp)}° by ${hourLabel(trough.time)}`;
+    spoken = `Cooling off to ${Math.round(trough.temp)} degrees by ${hourLabel(trough.time)}`;
+  } else {
+    note = `Steady near ${Math.round(nowTemp)}°`;
+    spoken = `Holding around ${Math.round(nowTemp)} degrees the rest of the day`;
+  }
 
   const gradient = points.map((p, i) =>
     `<stop offset="${((i / (points.length - 1)) * 100).toFixed(1)}%" stop-color="${tempColor(p.temp)}"/>`).join('');
 
   el.innerHTML = `
-    <div class="tc-head"><span class="tc-title">Daytime temp trend</span><span class="tc-note">${note}</span></div>
-    <svg viewBox="0 0 ${W} 90" role="img" aria-label="${note}">
+    <svg viewBox="0 0 ${W} 82" role="img" aria-label="Daytime temperature trend. ${spoken}">
       <defs><linearGradient id="tcLine" x1="0" y1="0" x2="1" y2="0">${gradient}</linearGradient></defs>
       <path d="${line}" fill="none" stroke="url(#tcLine)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
       ${points.map((p, i) => `
         <circle cx="${xOf(i).toFixed(1)}" cy="${yOf(p.temp).toFixed(1)}" r="4.2" fill="#FCFBF7" stroke="${tempColor(p.temp)}" stroke-width="2.6"/>
         <text class="tc-val" x="${xOf(i).toFixed(1)}" y="${(yOf(p.temp) - 11).toFixed(1)}" text-anchor="middle">${Math.round(p.temp)}°</text>
-        <text class="tc-tick" x="${xOf(i).toFixed(1)}" y="86" text-anchor="middle">${hourLabel(p.time)}</text>`).join('')}
+        <text class="tc-tick" x="${xOf(i).toFixed(1)}" y="78" text-anchor="middle">${hourLabel(p.time)}</text>`).join('')}
       ${inWindow ? `<circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="7" fill="none" stroke="#2F7D5B" stroke-width="2.4"/>
         <circle cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="3" fill="#2F7D5B"/>` : ''}
     </svg>`;
+  return note; // the strip above shows it, so the curve needs no heading
 }
 
 function renderWeather() {
@@ -1289,21 +1438,20 @@ function renderWeather() {
   const rainChance = Math.round((fake ? fake.rain : daily.precipitation_probability_max[0]) || 0);
   const [icon, condition] = weatherDescription(code);
   clockEl.dataset.wx = weatherBackdrop(code);
+  document.getElementById('clockCondition').textContent = `${icon} ${condition}`;
   el.classList.remove('is-error');
   el.innerHTML = `
-    <div class="weather-strip-now">
-      <span class="weather-strip-icon" aria-hidden="true">${icon}</span>
-      <div>
-        <div class="weather-strip-temp"><b>${temp}°</b><span class="weather-strip-cond">${condition}</span></div>
-        <div class="weather-strip-place">Tulsa weather</div>
-      </div>
+    <div class="weather-strip-read">
+      <div class="weather-strip-temp"><b>${temp}°</b></div>
     </div>
     <div class="weather-strip-stats">
-      <span class="hi">↑ ${high}°</span><i></i>
-      <span class="lo">↓ ${low}°</span><i></i>
-      <span class="rain">☂ ${rainChance}%</span>
+      <span class="hi">↑ ${high}°</span>
+      <span class="lo">↓ ${low}°</span>
+      <span class="rain"><span class="mark">☂</span> ${rainChance}%</span>
     </div>`;
-  renderTempCurve(temp, fake ? fake.temp - current.temperature_2m : 0);
+  const trend = renderTempCurve(temp, fake ? fake.temp - current.temperature_2m : 0);
+  const trendEl = document.getElementById('weatherTrend');
+  if (trendEl) trendEl.textContent = trend;
 }
 
 async function fetchWeather() {
@@ -1422,6 +1570,28 @@ let tokenExpiresAt = 0;
 let renewalInFlight = false;
 let renewalWatchdog = null;
 
+/* Every token request opens a window, and Firefox on Android asks permission
+   for each one. A token is good for about an hour, so parking it here means a
+   reload — a kiosk restart, a pulled plug, a manual refresh — reuses the token
+   it already has instead of asking Google (and the browser) all over again.
+   It lives only in this origin's storage on the family's own screen. */
+const TOKEN_KEY = 'homeboard_token_v1';
+const TOKEN_MIN_LIFE_MS = 10 * 60 * 1000; // don't restore one about to expire
+
+function storeToken(token, expiresAt) {
+  try { localStorage.setItem(TOKEN_KEY, JSON.stringify({ token, expiresAt })); } catch (e) { /* private mode */ }
+}
+function clearStoredToken() {
+  try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* private mode */ }
+}
+function loadStoredToken() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem(TOKEN_KEY)); } catch (e) { return null; }
+  if (!saved || !saved.token) return null;
+  if (Date.now() > saved.expiresAt - TOKEN_MIN_LIFE_MS) { clearStoredToken(); return null; }
+  return saved;
+}
+
 function settleTokenWaiters(ok) {
   const waiters = tokenWaiters;
   tokenWaiters = [];
@@ -1432,8 +1602,8 @@ function handleTokenResponse(resp) {
   endRenewal();
   if (resp.error) {
     settleTokenWaiters(false);
-    if (pendingInteractive) { setConnected(false); return; }
-    if (!accessToken) setConnected(false); // nothing to fall back on yet
+    if (pendingInteractive) { clearStoredToken(); setConnected(false); return; }
+    if (!accessToken) { clearStoredToken(); setConnected(false); } // nothing to fall back on yet
     scheduleSilentRetry();
     return;
   }
@@ -1442,6 +1612,7 @@ function handleTokenResponse(resp) {
   accessToken = resp.access_token;
   const lifetime = Number(resp.expires_in) || 3600;
   tokenExpiresAt = Date.now() + lifetime * 1000;
+  storeToken(accessToken, tokenExpiresAt);
   scheduleTokenRenewal(lifetime);
   setConnected(true);
   settleTokenWaiters(true);
@@ -1527,12 +1698,9 @@ function setConnected(connected) {
   btn.classList.toggle('is-connected', connected);
   btn.title = connected ? 'Connected — synced with your Google account' : 'Connect Google';
   btn.setAttribute('aria-label', btn.title);
-  ['calendarEyebrow', 'tasksEyebrow', 'groceryEyebrow', 'morningsEyebrow'].forEach(id => {
+  ['calendarEyebrow', 'tasksEyebrow', 'groceryEyebrow'].forEach(id => {
     const el = document.getElementById(id);
-    el.textContent = connected
-      ? (id === 'calendarEyebrow' ? 'Google Calendar' : id === 'tasksEyebrow' ? 'Google Tasks' : 'Google Sheet')
-      : 'Demo data';
-    el.classList.toggle('demo', !connected);
+    if (el) el.classList.toggle('is-hidden', connected);
   });
 }
 
@@ -1543,9 +1711,11 @@ document.getElementById('connectBtn').addEventListener('click', () => {
       google.accounts.oauth2.revoke(accessToken, () => {});
     }
     accessToken = null;
+    tokenExpiresAt = 0;
+    clearStoredToken();
     clearTimeout(tokenRenewTimer);
     silentRetries = 0;
-    liveEvents = liveCalendars = liveTasks = liveGroceries = liveMorningMenu = null;
+    liveEvents = liveCalendars = liveTasks = liveGroceries = liveMorningMenus = null;
     setConnected(false);
     renderCalendar();
     renderTaskLanes();
@@ -1560,14 +1730,23 @@ document.getElementById('connectBtn').addEventListener('click', () => {
   requestAccessToken(true);
 });
 
-// On page load, if a Client ID is already configured, try a silent
-// (non-interactive) reconnect — this is what lets a kiosk skip the login
-// screen on every reload as long as the browser stays signed in to Google.
+// On page load, reuse the token from the last session if it still has real
+// life in it — that reload then costs no window and no permission prompt at
+// all. Only when there is nothing usable do we fall back to asking Google for
+// a silent grant, which is what lets a kiosk skip the login screen.
 window.addEventListener('load', () => {
-  if (CONFIG.clientId) {
-    setUpTokenClient();
-    waitForGis(() => requestAccessToken(false), 40);
+  if (!CONFIG.clientId) return;
+  setUpTokenClient();
+  const saved = loadStoredToken();
+  if (saved) {
+    accessToken = saved.token;
+    tokenExpiresAt = saved.expiresAt;
+    scheduleTokenRenewal(Math.floor((saved.expiresAt - Date.now()) / 1000));
+    setConnected(true);
+    fetchAllData(); // a stale token surfaces as a 401 and renews from there
+    return;
   }
+  waitForGis(() => requestAccessToken(false), 40);
 });
 
 /* =========================================================================
@@ -1766,19 +1945,23 @@ async function fetchGroceries() {
   renderGroceries();
 }
 
+/* The sheet is one row per weekday, so a single read already holds the whole
+   week — keep all of it, and the board can show tomorrow without another call. */
 async function fetchMorningMenu() {
-  if (!CONFIG.menuSheetId) { liveMorningMenu = null; renderMorningMenu(); return; }
+  if (!CONFIG.menuSheetId) { liveMorningMenus = null; renderMorningMenu(); return; }
   try {
     const range = CONFIG.menuSheetRange || 'Mornings!A2:E200';
     const data = await readSheet(CONFIG.menuSheetId, range);
-    const weekday = boardNow().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const row = (data.values || []).find(values => (values[0] || '').toString().trim().toLowerCase() === weekday);
-    liveMorningMenu = row ? {
-      main: row[1] || '', veggie: row[2] || '', fruit: row[3] || '', extra: row[4] || ''
-    } : null;
+    const byDay = {};
+    (data.values || []).forEach(row => {
+      const weekday = (row[0] || '').toString().trim().toLowerCase();
+      if (!weekday || byDay[weekday]) return; // first row for a day wins
+      byDay[weekday] = { main: row[1] || '', veggie: row[2] || '', fruit: row[3] || '', extra: row[4] || '' };
+    });
+    liveMorningMenus = byDay;
   } catch (err) {
     console.error('Morning menu fetch failed', err);
-    liveMorningMenu = null;
+    liveMorningMenus = null;
   }
   renderMorningMenu();
 }
@@ -2014,10 +2197,15 @@ function checkSVG() {
 function currentEvents() { return isConnected && liveEvents ? liveEvents : DEMO_EVENTS; }
 function currentTasks() { return isConnected && liveTasks ? liveTasks : DEMO_TASKS; }
 function currentGroceries() { return isConnected && liveGroceries ? liveGroceries : DEMO_GROCERIES; }
-function currentMorningMenu() {
-  if (isConnected) return liveMorningMenu;
-  const weekday = boardNow().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-  return DEMO_MORNING_MENU[weekday] || null; // no demo row on weekends, same as the sheet
+function currentMorningMenus() {
+  if (isConnected) return liveMorningMenus;
+  return DEMO_MORNING_MENU; // weekdays only, same shape as the sheet
+}
+function menuForDate(date) {
+  const menus = currentMorningMenus();
+  if (!menus) return null;
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  return menus[weekday] || null; // nothing on weekends, same as the sheet
 }
 
 function renderCalendar() {
@@ -2179,27 +2367,103 @@ function renderGroceries() {
 /* =========================================================================
    RENDER: MORNING MENU
    ========================================================================= */
-function renderMorningMenu() {
-  const menu = currentMorningMenu();
-  const el = document.getElementById('morningMenu');
-  const note = document.getElementById('morningMenuNote');
-  const categories = [
-    ['main', '#C68A2E'], ['veggie', '#6E8B6E'],
-    ['fruit', '#B5533C'], ['extra', '#5B6C8A'],
-  ];
-  el.innerHTML = categories.map(([key, color]) => {
+const MENU_CATEGORIES = [
+  ['main', '#C68A2E'], ['veggie', '#6E8B6E'],
+  ['fruit', '#B5533C'], ['extra', '#5B6C8A'],
+];
+
+function menuChipsHtml(menu) {
+  return MENU_CATEGORIES.map(([key, color]) => {
     const food = menu && menu[key] ? menu[key] : '';
     return `<div class="menu-chip${food ? '' : ' is-empty'}" style="--cat:${color}" title="${key}">
       <span class="emoji">${taskIcon(key === 'main' ? 'lunch' : key)}</span><span class="food">${escapeHtml(food || '—')}</span>
     </div>`;
   }).join('');
-
-  if (!isConnected) note.textContent = 'Demo menu · connect Google to load today’s row.';
-  else if (!CONFIG.menuSheetId) note.textContent = 'Add the menu Spreadsheet ID in Settings.';
-  else if (!menu && [0, 6].includes(boardNow().getDay())) note.textContent = 'No school menu on weekends.';
-  else if (!menu) note.textContent = 'No menu row found for today’s weekday.';
-  else note.textContent = 'Loaded from today’s row in Google Sheets.';
 }
+
+/* Packing tomorrow's lunch the night before is the common case, so the heading
+   steps a day at a time. It always walks back to today on its own — the board
+   spends most of its life unattended and must never greet the morning showing
+   Thursday. */
+const MENU_MAX_OFFSET = 6;             // today plus the rest of the week
+const MENU_RETURN_DELAY = 60 * 1000;   // back to today after a minute untouched
+let menuDayOffset = 0;
+let menuReturnTimer = null;
+
+function menuDate(offset) {
+  const d = boardNow();
+  d.setDate(d.getDate() + offset);
+  d.setHours(12, 0, 0, 0); // midday, so a DST shift can't move the weekday
+  return d;
+}
+
+function setMenuDayOffset(offset) {
+  menuDayOffset = Math.min(MENU_MAX_OFFSET, Math.max(0, offset));
+  clearTimeout(menuReturnTimer);
+  if (menuDayOffset !== 0) menuReturnTimer = setTimeout(() => setMenuDayOffset(0), MENU_RETURN_DELAY);
+  renderMorningMenu();
+}
+
+function menuHeading(offset, date) {
+  if (offset === 0) return 'Today’s Lunch';
+  if (offset === 1) return 'Tomorrow’s Lunch';
+  return `${date.toLocaleDateString('en-US', { weekday: 'long' })}’s Lunch`;
+}
+
+function renderMorningMenu() {
+  const date = menuDate(menuDayOffset);
+  const menu = menuForDate(date);
+  const isSchoolDay = ![0, 6].includes(date.getDay());
+  const el = document.getElementById('morningMenu');
+  const note = document.getElementById('morningMenuNote');
+
+  document.getElementById('morningMenuTitle').textContent = menuHeading(menuDayOffset, date);
+  document.getElementById('menuPrevDay').disabled = menuDayOffset <= 0;
+  document.getElementById('menuNextDay').disabled = menuDayOffset >= MENU_MAX_OFFSET;
+  el.innerHTML = menuChipsHtml(menu);
+
+  const when = menuDayOffset === 0 ? 'today’s' : `${date.toLocaleDateString('en-US', { weekday: 'long' })}’s`;
+  const dayStamp = menuDayOffset === 0 ? '' : ` · ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  if (!isConnected) note.textContent = `Demo menu · connect Google to load the real rows.${dayStamp}`;
+  else if (!CONFIG.menuSheetId) note.textContent = 'Add the menu Spreadsheet ID in Settings.';
+  else if (!menu && !isSchoolDay) note.textContent = `No school menu on weekends.${dayStamp}`;
+  else if (!menu) note.textContent = `No menu row found for ${when} weekday.${dayStamp}`;
+  else note.textContent = `From ${when} row in Google Sheets.${dayStamp}`;
+}
+
+document.getElementById('menuPrevDay').addEventListener('click', () => setMenuDayOffset(menuDayOffset - 1));
+document.getElementById('menuNextDay').addEventListener('click', () => setMenuDayOffset(menuDayOffset + 1));
+
+/* ---- the whole week at once ---- */
+const menuWeekOverlay = document.getElementById('menuWeekOverlay');
+
+function renderMenuWeek() {
+  const menus = currentMorningMenus();
+  const list = document.getElementById('menuWeekList');
+  const todayKey = boardNow().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+
+  list.innerHTML = days.map(day => {
+    const menu = menus && menus[day];
+    const label = day.charAt(0).toUpperCase() + day.slice(1);
+    const isToday = day === todayKey;
+    return `<div class="week-menu-day${isToday ? ' is-today' : ''}">
+      <div class="week-menu-name">${label}${isToday ? '<span class="when">today</span>' : ''}</div>
+      ${menu ? `<div class="menu-row">${menuChipsHtml(menu)}</div>`
+             : '<div class="week-menu-empty">No row for this day yet.</div>'}
+    </div>`;
+  }).join('');
+
+  document.getElementById('menuWeekNote').textContent = isConnected
+    ? 'Straight from the Mornings sheet — one row per weekday.'
+    : 'Demo menu · connect Google to load the real rows.';
+}
+
+function openMenuWeek() { renderMenuWeek(); menuWeekOverlay.classList.add('active'); }
+function closeMenuWeek() { menuWeekOverlay.classList.remove('active'); }
+document.getElementById('menuWeekBtn').addEventListener('click', openMenuWeek);
+document.getElementById('closeMenuWeekBtn').addEventListener('click', closeMenuWeek);
+menuWeekOverlay.addEventListener('click', e => { if (e.target === menuWeekOverlay) closeMenuWeek(); });
 
 /* =========================================================================
    RENDER: MORNING CHECKLISTS
