@@ -182,7 +182,7 @@
      the clock, the curve and the readings sit side by side and the curve takes
      whatever the other two leave. */
   .now-strip {
-    --side-col: auto;
+    --side-col: 132px;
     width: 100%; flex: 0 0 auto;
     display: flex; align-items: center; gap: 14px;
     padding: 7px 14px; border-radius: 22px;
@@ -202,10 +202,8 @@
      own — a column the condition then had to fit around, which is how "Cloudy"
      ended up as "Clou...". */
   .weather-strip-read { flex: 0 0 auto; text-align: right; }
-  .weather-strip-icon { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
   .weather-strip-temp { display: flex; align-items: baseline; justify-content: flex-end; gap: 8px; }
-  .weather-strip-temp b { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.3rem, 2.6vw, 1.8rem); line-height: 1; }
-  .weather-strip-cond { display: flex; align-items: center; justify-content: flex-end; gap: 5px; margin-top: 3px; font-size: clamp(0.72rem, 1.4vw, 0.86rem); font-weight: 600; white-space: nowrap; }
+  .weather-strip-temp b { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.35rem, 2.8vw, 2rem); line-height: 1; }
   /* The trend sits under the hi/lo pill rather than under the condition: that
      column is sized by the pill, which is wider than the sentence, so it has
      room to spare where the condition column had none. */
@@ -222,11 +220,9 @@
   .weather-strip-stats .lo { color: var(--dusk); }
   .weather-strip-stats .rain { color: #3E6E8E; }
 
-  /* Squaring the flanks up centres the curve but costs it width: 220px is what
-     the widest reading needs ("Thunderstorms" at three digits) against 118px of
-     clock. Above this there is room to pay that and still plot all six
-     readings; below it, the readings matter more than the symmetry. */
-  @media (min-width: 1800px) { .now-strip { --side-col: 220px; } }
+  /* With the description moved onto the dial the flanks come out at 118px and
+     129px, so squaring them up costs the curve almost nothing and it can stay
+     centred at every width. */
 
   .temp-curve { flex: 1 1 auto; min-width: 0; }
   .temp-curve:empty { display: none; }
@@ -244,6 +240,9 @@
   @media (prefers-reduced-motion: reduce) { .clock-band.is-urgent { animation: none; } }
   .clock-num { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 23px; fill: var(--ink); stroke: rgba(255, 255, 255, 0.85); stroke-width: 5px; paint-order: stroke fill; }
   .clock-num.n12 { font-size: 26px; }
+  /* The dial already draws the weather; the words for it belong here too,
+     rather than costing the widget a column. */
+  .clock-condition { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 21px; fill: var(--ink); stroke: rgba(255, 255, 255, 0.85); stroke-width: 4.5px; paint-order: stroke fill; }
   .clock-hand { stroke-linecap: round; transform-box: view-box; transform-origin: 200px 200px; }
   .clock-hand.hour { stroke: var(--ink); stroke-width: 7; }
   .clock-hand.minute { stroke: var(--ink-soft); stroke-width: 5; }
@@ -413,10 +412,6 @@
     .now-time { flex: 0 0 auto; text-align: center; }
     .now-weather { flex: 0 0 auto; justify-content: center; gap: 10px; }
     .weather-strip-trend { display: none; }
-    /* Sharing the line with the hi/lo pill leaves the condition too little to
-       spell itself; the icon beside the temperature already says "cloudy". */
-    .weather-strip-cond { display: none; }
-    .weather-strip-icon { font-size: 1.25rem; }
     .now-clock { font-size: 1.35rem; }
     .weather-strip-stats { gap: 6px; padding: 4px 8px; }
     .menu-row { gap: 6px; }
@@ -755,6 +750,7 @@
                   <line id="departureTick" stroke="#B02D16" stroke-width="3" stroke-linecap="round"/>
 
                   <g id="clockNumbers"></g>
+                  <text class="clock-condition" id="clockCondition" x="200" y="268" text-anchor="middle" dominant-baseline="central"></text>
 
                   <line class="clock-hand hour"   id="morningHourHand"   x1="200" y1="216" x2="200" y2="118"/>
                   <line class="clock-hand minute" id="morningMinuteHand" x1="200" y1="220" x2="200" y2="70"/>
@@ -1316,7 +1312,6 @@ function tempColor(t) {
    or the full width of a narrow one. The trade is that a narrow curve has
    fewer pixels between readings, so it drops to four sampled hours instead of
    six rather than letting the labels collide. */
-const CURVE_MIN_GAP = 46; // px between readings before they start to crowd
 
 function renderTempCurve(currentTemp, offset) {
   const el = document.getElementById('tempCurve');
@@ -1332,7 +1327,13 @@ function renderTempCurve(currentTemp, offset) {
 
   const W = Math.max(200, Math.round(el.clientWidth) || 380);
   const LEFT = 22, RIGHT = W - 22, TOP = 24, BOTTOM = 64;
-  const hours = (RIGHT - LEFT) / 5 >= CURVE_MIN_GAP ? [6, 9, 12, 15, 18, 21] : [6, 11, 16, 21];
+  /* A "103°" label is a third wider than "88°", so how many readings fit
+     depends on the day and not just on the width. Roughly 10px a digit at the
+     17px label size, plus room to breathe between neighbours. */
+  const digits = Math.max(...[...byHour.values()].map(p => String(Math.round(p.temp)).length));
+  const hours = (RIGHT - LEFT) / 5 >= digits * 10 + 20
+    ? [6, 9, 12, 15, 18, 21]
+    : [6, 11, 16, 21];
   const points = hours.map(h => byHour.get(h)).filter(Boolean);
   if (points.length < 4) { el.innerHTML = ''; return ''; }
 
@@ -1415,11 +1416,11 @@ function renderWeather() {
   const rainChance = Math.round((fake ? fake.rain : daily.precipitation_probability_max[0]) || 0);
   const [icon, condition] = weatherDescription(code);
   clockEl.dataset.wx = weatherBackdrop(code);
+  document.getElementById('clockCondition').textContent = `${icon} ${condition}`;
   el.classList.remove('is-error');
   el.innerHTML = `
     <div class="weather-strip-read">
       <div class="weather-strip-temp"><b>${temp}°</b></div>
-      <div class="weather-strip-cond"><span class="weather-strip-icon" aria-hidden="true">${icon}</span>${condition}</div>
     </div>
     <div class="weather-strip-stats">
       <span class="hi">↑ ${high}°</span>
