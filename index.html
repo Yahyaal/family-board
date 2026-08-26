@@ -277,9 +277,9 @@
 
   /* Lunch reads as a row of chips under the dial — the emoji is the category,
      so the words are only ever the food itself. */
-  .menu-block { flex: 0 0 auto; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+  .menu-block { flex: 0 0 auto; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .menu-title { margin: 0; font-family: 'Fraunces', serif; font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 1.1; flex: 0 1 auto; text-align: center; }
-  .menu-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+  .menu-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
   /* The heading doubles as the day stepper: peek at tomorrow's lunch without
      leaving the board, and it springs back to today on its own. */
   /* Arrows hug the title so the pair stays centred over the chips; the week
@@ -331,9 +331,9 @@
   .week-menu-empty { font-size: 0.8rem; color: var(--ink-soft); }
   /* Each category carries a colour as well as an emoji, so the four slots are
      tellable apart from across the kitchen. */
-  .menu-chip { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 10px 19px 10px 14px; border-radius: 100px; background: #fff; border: 2px solid var(--cat); }
-  .menu-chip .emoji { font-size: 1.35rem; line-height: 1; flex-shrink: 0; }
-  .menu-chip .food { font-family: 'Fraunces', serif; font-size: clamp(1rem, 1.75vw, 1.35rem); line-height: 1.15; }
+  .menu-chip { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 16px 7px 12px; border-radius: 100px; background: #fff; border: 2px solid var(--cat); }
+  .menu-chip .emoji { font-size: 1.15rem; line-height: 1; flex-shrink: 0; }
+  .menu-chip .food { font-family: 'Fraunces', serif; font-size: clamp(0.92rem, 1.55vw, 1.2rem); line-height: 1.15; }
   .menu-chip.is-empty { border-style: dashed; opacity: 0.5; }
   .morning-note { font-size: 0.68rem; color: var(--ink-soft); text-align: center; }
 
