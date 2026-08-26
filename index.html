@@ -210,6 +210,10 @@
   /* Two columns, marks in one and figures in the other. Right-aligning whole
      lines instead lines up their right edges, which pushed the umbrella out
      past the arrows above it whenever the rain figure was the narrowest. */
+  /* Mark in one column, reading in the other and centred there, so a lone "1%"
+     sits under the middle of "96°" instead of under its last character.
+     Splitting the unit into a third column lines the ° and % up too, but then
+     a centred "1" leaves a gap before its "%" and reads as "1 %". */
   .weather-strip-stats {
     display: grid; grid-template-columns: auto auto; align-items: center;
     column-gap: 7px; row-gap: 1px; flex-shrink: 0;
@@ -217,7 +221,7 @@
     font-size: clamp(0.88rem, 1.7vw, 1.1rem);
   }
   .weather-strip-stats .mark { justify-self: center; line-height: 1; }
-  .weather-strip-stats .val { justify-self: end; font-variant-numeric: tabular-nums; }
+  .weather-strip-stats .val { justify-self: center; font-variant-numeric: tabular-nums; }
   .weather-strip-stats .hi { color: var(--red); }
   .weather-strip-stats .lo { color: var(--dusk); }
   .weather-strip-stats .rain { color: #3E6E8E; }
