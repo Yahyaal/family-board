@@ -78,16 +78,15 @@
   .tab-panel { display: none; flex-direction: column; height: 100%; min-height: 0; }
   .tab-panel.active { display: flex; }
 
+  /* Only ever on screen while the data is fake — connected, the label just
+     repeated the name of the tab it was sitting in. */
   .eyebrow-tag {
     display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
     font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; font-weight: 500;
-    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
-    background: var(--dusk-soft); padding: 4px 10px; border-radius: 6px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    background: #F1DEB4; color: #6b4f1c; padding: 4px 10px; border-radius: 6px;
     margin-bottom: 12px; flex-shrink: 0;
   }
-  .eyebrow-tag.demo { background: #F1DEB4; color: #6b4f1c; }
-  /* Only worth a line of screen while the data is fake — once Google is
-     connected the label just repeats what the tab already is. */
   .eyebrow-tag.is-hidden { display: none; }
 
   ::-webkit-scrollbar { width: 7px; height: 7px; }
@@ -179,23 +178,24 @@
   .morning-side-panel { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 16px; border-left: 1px solid var(--line); padding-left: 22px; }
 
   /* ---- compact weather strip: the numbers the clock backdrop can't spell out ---- */
-  /* One widget: the "right now" row and today's curve share a card, so the
-     two of them cost one border, one shadow and one set of padding instead of
-     two stacked blocks with a gap down the middle. */
+  /* One widget, three columns: the board has far more width than height, so
+     the clock, the curve and the readings sit side by side and the curve takes
+     whatever the other two leave. */
   .now-strip {
-    width: min(100%, max(530px, var(--clock-width, 620px))); flex: 0 0 auto;
-    display: flex; flex-direction: column;
-    padding: 9px 17px 7px; border-radius: 22px;
+    width: 100%; flex: 0 0 auto;
+    display: flex; align-items: center; gap: 14px;
+    padding: 9px 16px; border-radius: 22px;
     background: var(--paper-panel); border: 1px solid var(--line); box-shadow: var(--shadow);
   }
-  .now-row { display: flex; align-items: center; gap: 15px; }
-  .now-time { flex-shrink: 0; }
+  .now-time { flex: 0 0 auto; }
   .now-clock { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.5rem, 2.9vw, 2.15rem); line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
   .now-clock .ampm { margin-left: 5px; font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 0.4em; color: var(--ink-soft); }
   .now-date { margin-top: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.02em; color: var(--ink-soft); white-space: nowrap; }
-  .now-divider { flex-shrink: 0; width: 1px; align-self: stretch; margin: 2px 0; background: var(--line); }
-  .now-weather { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .now-weather.is-error { justify-content: center; font-size: 0.78rem; color: var(--ink-soft); }
+  .now-divider { flex-shrink: 0; width: 1px; align-self: stretch; margin: 4px 0; background: var(--line); }
+  /* The readings stack into the right-hand column so the widget stays as short
+     as the curve rather than as wide as a single line of them. */
+  .now-weather { flex: 0 0 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .now-weather.is-error { flex: 1; align-items: center; justify-content: center; font-size: 0.78rem; color: var(--ink-soft); }
   .weather-strip-now { display: flex; align-items: center; gap: 11px; min-width: 0; }
   .weather-strip-now > div { min-width: 0; } /* lets the condition ellipsis instead of overlapping */
   .weather-strip-icon { font-size: clamp(1.5rem, 3vw, 2.05rem); line-height: 1; flex-shrink: 0; }
@@ -205,6 +205,7 @@
   /* The trend sits under the hi/lo pill rather than under the condition: that
      column is sized by the pill, which is wider than the sentence, so it has
      room to spare where the condition column had none. */
+  .weather-strip-now { align-self: flex-end; }
   .weather-strip-side { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
   .weather-strip-trend { white-space: nowrap; font-size: clamp(0.68rem, 1.2vw, 0.8rem); font-weight: 600; color: var(--ink); }
   .weather-strip-trend:empty { display: none; }
@@ -218,7 +219,7 @@
   .weather-strip-stats .rain { color: #3E6E8E; }
   .weather-strip-stats i { width: 1px; height: 13px; background: var(--line); }
 
-  .temp-curve { width: 100%; flex: 0 0 auto; margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line); }
+  .temp-curve { flex: 1 1 auto; min-width: 0; }
   .temp-curve:empty { display: none; }
   .temp-curve svg { display: block; width: 100%; height: auto; overflow: visible; }
   .tc-tick { font-family: 'IBM Plex Mono', monospace; font-size: 13px; fill: var(--ink-soft); opacity: 0.8; }
@@ -396,20 +397,17 @@
     .morning-layout { grid-template-columns: 42% 58%; gap: 12px; }
     .morning-side-panel { padding-left: 12px; gap: 10px; }
     .morning-clock-side { gap: 7px; padding: 2px; }
-    .now-strip { width: 100%; padding: 6px 12px 5px; border-radius: 16px; }
-    /* 265px of column cannot hold the clock, the reading and the hi/lo pill on
-       one line, so the row wraps into two instead of crushing the condition to
-       nothing. The trend sentence goes — the curve below says the same thing. */
-    .now-row { gap: 4px 9px; flex-wrap: wrap; justify-content: center; }
+    /* 265px of column will not take three columns, so the widget stacks back
+       up: clock, then the curve across the full width, then the readings. */
+    .now-strip { width: 100%; flex-direction: column; align-items: stretch; gap: 5px; padding: 6px 12px 5px; border-radius: 16px; }
     .now-divider { display: none; }
-    .now-time, .now-weather { flex: 0 0 auto; }
     .now-time { text-align: center; }
-    .now-weather { width: 100%; justify-content: center; gap: 10px; }
+    .now-weather { flex-direction: row; align-items: center; justify-content: center; gap: 10px; }
+    .weather-strip-now { align-self: auto; }
     .weather-strip-trend { display: none; }
     /* Sharing the line with the hi/lo pill leaves the condition too little to
        spell itself; the icon beside the temperature already says "cloudy". */
     .weather-strip-cond { display: none; }
-    .weather-strip-stats { gap: 5px; padding: 4px 8px; }
     .weather-strip-icon { font-size: 1.25rem; }
     .now-clock { font-size: 1.35rem; }
     .weather-strip-stats { gap: 6px; padding: 4px 8px; }
@@ -629,18 +627,18 @@
 
       <div class="tab-panels">
         <div class="tab-panel" id="tab-calendar">
-          <div class="eyebrow-tag demo" id="calendarEyebrow">Demo data</div>
+          <div class="eyebrow-tag" id="calendarEyebrow">Demo data</div>
           <div class="week-agenda" id="weekAgenda"></div>
           <div class="week-lanes" id="weekLanes"></div>
         </div>
 
         <div class="tab-panel" id="tab-tasks">
-          <div class="eyebrow-tag demo" id="tasksEyebrow">Demo data</div>
+          <div class="eyebrow-tag" id="tasksEyebrow">Demo data</div>
           <div class="task-lanes" id="taskLanes"></div>
         </div>
 
         <div class="tab-panel" id="tab-grocery">
-          <div class="eyebrow-tag demo" id="groceryEyebrow">Demo data</div>
+          <div class="eyebrow-tag" id="groceryEyebrow">Demo data</div>
           <form class="grocery-add" id="groceryAddForm">
             <input name="item" id="groceryItemInput" aria-label="Grocery item" placeholder="Add an item" autocomplete="off">
             <input name="qty" id="groceryQtyInput" aria-label="Quantity" placeholder="Qty" autocomplete="off">
@@ -654,15 +652,14 @@
           <div class="morning-layout">
             <div class="morning-clock-side">
               <div class="now-strip">
-                <div class="now-row">
-                  <div class="now-time">
-                    <div class="now-clock" id="clock">--:--<span class="ampm" id="ampm">AM</span></div>
-                    <div class="now-date" id="dateline">Loading&hellip;</div>
-                  </div>
-                  <div class="now-divider"></div>
-                  <div class="now-weather is-error" id="weatherStrip" aria-live="polite">Loading Tulsa weather…</div>
+                <div class="now-time">
+                  <div class="now-clock" id="clock">--:--<span class="ampm" id="ampm">AM</span></div>
+                  <div class="now-date" id="dateline">Loading&hellip;</div>
                 </div>
+                <div class="now-divider"></div>
                 <div class="temp-curve" id="tempCurve"></div>
+                <div class="now-divider"></div>
+                <div class="now-weather is-error" id="weatherStrip" aria-live="polite">Loading Tulsa weather…</div>
               </div>
               <div class="clock-fit">
               <div class="analog-clock" id="morningClock" data-wx="partly" aria-label="Current time">
@@ -1235,12 +1232,18 @@ function updateMorningClock(now = boardNow()) {
 }
 
 buildClockFace();
-/* Keep the weather strip exactly as wide as the dial it sits above. */
+/* The curve draws itself in real pixels, so a column that changes width has to
+   draw it again — otherwise it keeps the geometry of the old size. Guarded on
+   the width actually changing, since rendering into the element would
+   otherwise notify this observer straight back. */
 if (window.ResizeObserver) {
-  const side = document.querySelector('.morning-clock-side');
+  let lastCurveWidth = 0;
   new ResizeObserver(entries => {
-    side.style.setProperty('--clock-width', `${Math.round(entries[0].contentRect.width)}px`);
-  }).observe(clockEl);
+    const width = Math.round(entries[0].contentRect.width);
+    if (width === lastCurveWidth) return;
+    lastCurveWidth = width;
+    if (liveWeather) renderWeather();
+  }).observe(document.getElementById('tempCurve'));
 }
 
 /* =========================================================================
@@ -1299,6 +1302,13 @@ function tempColor(t) {
 /* Today's temperatures as a labelled curve: six sampled hours, each with its
    own reading, plus a marker for right now. The hourly block was already
    being fetched and thrown away. */
+/* The viewBox is sized in real pixels rather than a fixed 620, so the SVG
+   never scales: "88°" is 17px whether the curve gets a third of a wide board
+   or the full width of a narrow one. The trade is that a narrow curve has
+   fewer pixels between readings, so it drops to four sampled hours instead of
+   six rather than letting the labels collide. */
+const CURVE_MIN_GAP = 46; // px between readings before they start to crowd
+
 function renderTempCurve(currentTemp, offset) {
   const el = document.getElementById('tempCurve');
   const hourly = liveWeather && liveWeather.hourly;
@@ -1310,10 +1320,13 @@ function renderTempCurve(currentTemp, offset) {
     const temp = hourly.temperature_2m[i] + offset;
     if (Number.isFinite(temp)) byHour.set(at.getHours(), { time: at, temp });
   });
-  const points = [6, 9, 12, 15, 18, 21].map(h => byHour.get(h)).filter(Boolean);
+
+  const W = Math.max(200, Math.round(el.clientWidth) || 380);
+  const LEFT = 22, RIGHT = W - 22, TOP = 24, BOTTOM = 64;
+  const hours = (RIGHT - LEFT) / 5 >= CURVE_MIN_GAP ? [6, 9, 12, 15, 18, 21] : [6, 11, 16, 21];
+  const points = hours.map(h => byHour.get(h)).filter(Boolean);
   if (points.length < 4) { el.innerHTML = ''; return ''; }
 
-  const W = 620, LEFT = 34, RIGHT = 586, TOP = 24, BOTTOM = 64;
   const temps = points.map(p => p.temp);
   const min = Math.min(...temps), max = Math.max(...temps);
   const span = Math.max(1, max - min);
@@ -1661,10 +1674,7 @@ function setConnected(connected) {
   btn.setAttribute('aria-label', btn.title);
   ['calendarEyebrow', 'tasksEyebrow', 'groceryEyebrow'].forEach(id => {
     const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = 'Demo data';
-    el.classList.toggle('demo', !connected);
-    el.classList.toggle('is-hidden', connected);
+    if (el) el.classList.toggle('is-hidden', connected);
   });
 }
 
