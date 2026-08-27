@@ -1480,7 +1480,8 @@ function openSettings() {
     : 'Connect Google account';
   renderCalendarPicker();
   renderAmbientStatus();
-  document.getElementById('dataAgeHint').textContent = isConnected ? dataAgeLabel() : '';
+  document.getElementById('dataAgeHint').textContent =
+    `${isConnected ? dataAgeLabel() + ' ' : ''}Build ${BOARD_BUILD}.`;
   document.getElementById('morningStartInput').value = CONFIG.morningStart || DEFAULT_MORNING_START;
   document.getElementById('menuSheetInput').value = CONFIG.menuSheetId || '';
   document.getElementById('grocerySheetInput').value = CONFIG.sheetId || '';
@@ -1673,26 +1674,34 @@ function endRenewal() {
   clearTimeout(renewalWatchdog);
 }
 
-/* Even a window the browser allows costs the kiosk its full screen: Firefox
-   on Android opens it as a tab and the board comes back windowed, with browser
-   chrome the kids should never see. Nothing can re-enter full screen on its
-   own — the API demands a gesture — so note that we lost it and put it back on
-   the next touch, which is exactly when someone is there to see it happen. */
-let lastTokenRequestAt = 0;
-let fullscreenBeforeToken = false;
-let restoreFullscreenPending = false;
+/* KIOSK MODE. Pressing the full-screen button does not just go full screen,
+   it declares "this device is the wall board", and that sticks in localStorage
+   across reloads and reboots. So anything that drops the board out of full
+   screen — a token window opening as a tab, a kiosk restart, a crash — is
+   repaired by the next touch. Nothing can re-enter full screen on its own; the
+   API demands a gesture, and a touch is the first gesture going.
 
-document.addEventListener('fullscreenchange', () => {
-  if (document.fullscreenElement) { restoreFullscreenPending = false; return; }
-  // Only ours to fix. Anything else — Escape on the laptop — is deliberate.
-  if (fullscreenBeforeToken && Date.now() - lastTokenRequestAt < 30000) {
-    restoreFullscreenPending = true;
-  }
-});
+   The first version of this tried to be clever, watching fullscreenchange and
+   only repairing exits within 30 seconds of a token request. It failed in the
+   field for the obvious reason: a person walks over, reads the prompt, taps
+   allow, and by then the 30 seconds are long gone. Persist the intent instead
+   of trying to infer it.
+
+   Press the button again to turn it off. Escape alone will not: on the wall
+   that is the whole point, and on a laptop the button is right there. */
+const KIOSK_KEY = 'homeboard_kiosk_v1';
+function kioskMode() {
+  try { return localStorage.getItem(KIOSK_KEY) === '1'; } catch (e) { return false; }
+}
+function setKioskMode(on) {
+  try {
+    if (on) localStorage.setItem(KIOSK_KEY, '1');
+    else localStorage.removeItem(KIOSK_KEY);
+  } catch (e) { /* private mode */ }
+}
 
 function restoreFullscreenIfLost() {
-  if (!restoreFullscreenPending || document.fullscreenElement) return false;
-  restoreFullscreenPending = false;
+  if (!kioskMode() || document.fullscreenElement) return false;
   document.documentElement.requestFullscreen().catch(() => {});
   return true;
 }
@@ -1705,8 +1714,6 @@ function requestAccessToken(interactive) {
     beginRenewal();
   }
   pendingInteractive = interactive;
-  lastTokenRequestAt = Date.now();
-  fullscreenBeforeToken = Boolean(document.fullscreenElement);
   /* '' shows the consent screen only when consent is actually missing, so a
      reconnect after the first grant is silent — 'consent' would force Google's
      unverified-app warning every single time. 'none' guarantees a background
@@ -1872,6 +1879,7 @@ async function fetchAllData() {
        wake, never overnight. Asking drops a kiosk out of full screen even when
        the browser allows it, so a board nobody is standing at must never ask.
    ========================================================================= */
+const BOARD_BUILD = '2026-08-27a';   // shown in Settings; bump when shipping
 const DATA_KEY = 'homeboard_data_v1';
 const DATA_MAX_AGE_MS = 60 * 60 * 1000;   // an hour is plenty for a lunch row
 let dataSavedAt = 0;
@@ -1962,8 +1970,17 @@ async function refreshData({ allowWindow = false, force = false } = {}) {
 
 /* The first touch of a stale board is the good moment to refresh: a token
    requested from inside a gesture opens its window without asking anyone's
-   permission. Capture phase, so it runs before whatever the touch was for. */
-document.addEventListener('pointerdown', () => {
+   permission. Capture phase, so it runs before whatever the touch was for.
+
+   It must be pointerup, and that is not a detail. Firefox will only let a page
+   open a window from an event in `dom.popup_allowed_events`, which by default
+   is: change click dblclick mouseup pointerup notificationclick reset submit
+   touchend. pointerdown is not on that list. Neither is mousedown, nor
+   touchstart. The first cut of this hooked pointerdown, so every token request
+   still counted as unsolicited and the tablet went on raising the prompt once
+   an hour — the exact bug it was written to kill. If this ever moves to
+   another event, check that list first. */
+document.addEventListener('pointerup', () => {
   /* One gesture, one job: requesting full screen spends the activation that
      opening a window would need, so never attempt both on the same touch. A
      restore only ever follows a token request, so nothing is due anyway. */
@@ -3295,8 +3312,10 @@ resetIdleTimer();
    ========================================================================= */
 document.getElementById('fullscreenBtn').addEventListener('click', () => {
   if (!document.fullscreenElement) {
+    setKioskMode(true);   // and stay that way, through reloads and restarts
     document.documentElement.requestFullscreen().catch(() => {});
   } else {
+    setKioskMode(false);
     document.exitFullscreen();
   }
 });
